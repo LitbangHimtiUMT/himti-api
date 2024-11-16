@@ -8,6 +8,7 @@ export interface AttendanceDTO {
     coordinate: string
     address?: string
     attendanceTime?:string
+    point?:number
 }
 
 export interface TokenTypes {

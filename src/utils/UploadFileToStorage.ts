@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, PutObjectCommand, S3 } from "@aws-sdk/client-s3"
+import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3 } from "@aws-sdk/client-s3"
 import { Request } from "express"
 import multer, { FileFilterCallback } from "multer"
 import { environment } from "../libs"
@@ -75,6 +75,7 @@ export const UploadFileToStorage = async (data: FileInterface) => {
         }
     } catch (error) {
         console.log('error', error)
+        return error
     }
 }
 
@@ -89,6 +90,27 @@ export const RemoveFileFromStorage = async (key: string) => {
     } catch (error) {
         console.log(error)
     }
+}
+
+export const GetFileFromStorage = async (key: string) => {
+	const command = new HeadObjectCommand({
+		Bucket: environment.STORAGE.BUCKET,
+		Key: key,
+	})
+
+	try {
+		await StorageS3Client.send(command)
+		console.log(`File exists: ${key}`)
+		return { exists: true, error: null }
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	} catch (error: any) {
+		if (error.name === 'NotFound') {
+			console.log(`File does not exist: ${key}`)
+			return { exists: false, error: null }
+		}
+		console.error(`Error checking file existence: ${error}`)
+		return { exists: false, error }
+	}
 }
 
 

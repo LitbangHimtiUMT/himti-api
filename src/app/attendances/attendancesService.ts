@@ -1,16 +1,17 @@
-import { Meta } from "../../utils/Meta";
+import sharp from "sharp";
 import { environment } from "../../libs";
 import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { FormatIDTime } from "../../utils/FormatIDTime";
 import { ErrorApp } from "../../utils/HttpError";
 import { MESSAGES } from "../../utils/Messages";
+import { Meta } from "../../utils/Meta";
 import {
   BUCKET_FOLDER,
   FileType,
+  GetFileFromStorage,
+  RemoveFileFromStorage,
   UploadFileToStorage,
 } from "../../utils/UploadFileToStorage";
 import { getMeetingById } from "../meetings/meetingsRepository";
-import { addPoint } from "../point/pointRepository";
 import { AttendanceDTO, FilterAttendance } from "./attendancesDTO";
 import {
   AttendanceData,
@@ -28,95 +29,115 @@ import {
   getAttendancesCount,
 } from "./attendancesRepository";
 import { createAttendanceValidate } from "./attendancesValidate";
-import sharp from "sharp";
 
 export const createAttendanceService = async (
   { meetingId, image, coordinate, address, attendanceTime }: AttendanceDTO,
   userId: string
 ) => {
-  const validate = await createAttendanceValidate({
-    meetingId,
-    image,
-    userId,
-    coordinate,
-  });
+  let filename;
+  try {
+    const validate = await createAttendanceValidate({
+      meetingId,
+      image,
+      userId,
+      coordinate,
+    });
 
-  if (validate instanceof ErrorApp) {
-    return validate;
-  }
+    if (validate instanceof ErrorApp) {
+      return validate;
+    }
 
-  const attendance = await getAttendanceByMeetingId(
-    meetingId as string,
-    userId as string
-  );
+    const attendance = await getAttendanceByMeetingId(
+      meetingId as string,
+      userId as string
+    );
 
-  if (attendance) {
+    if (attendance) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.ABSENSI_ONCE,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
+    const absensiDate = new Date();
+    const meeting = await getMeetingById(meetingId as string);
+    const timeDifference =
+      (absensiDate?.getTime() -
+        new Date(meeting?.startTime as Date)?.getTime()) /
+      (1000 * 60 * 60);
+
+    if (timeDifference <= 0) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.ABSENSI_NOT_OPEN,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
+    const img = image as Express.Multer.File;
+    // const filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}${FileType[img?.mimetype as string]}`;
+    filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}.webp`;
+    const quality =
+      ((image as unknown as Express.Multer.File)?.size as number) >
+      5 * 1024 * 1024
+        ? 75
+        : 100;
+    const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
+    await UploadFileToStorage({
+      Bucket: environment.STORAGE.BUCKET,
+      Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`,
+      Body: compress,
+      ContentType: FileType["image/webp"],
+      ACL: "public-read",
+    });
+
+    console.log({
+      timeDifference,
+      targetTime: new Date(meeting?.startTime as Date),
+      absensiDate,
+    });
+
+    // Notes: Cek waktu absensi
+    let points = 20; // Poin default
+
+    if (timeDifference >= 0 && timeDifference <= 1) {
+      points = 100; // Poin untuk absen 3 jam lebih awal
+    }
+    if (timeDifference >= 1 && timeDifference <= 2) {
+      points = 50;
+    }
+    console.log({ points });
+    // await addPoint(absensi.id, userId, points);
+    const absensi = await createAttendance({
+      meetingId: meeting?.id as string,
+      image: filename,
+      userId,
+      coordinate,
+      address,
+      attendanceTime,
+      eventMeetingId: meeting?.eventMeetingId,
+      point: points,
+    });
+    return absensi;
+  } catch (error) {
+    console.log({
+      error,
+    });
+    const exist = await GetFileFromStorage(
+      `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`
+    );
+    if (exist.exists) {
+      await RemoveFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`
+      );
+    }
     return new ErrorApp(
-      MESSAGES.ERROR.INVALID.ABSENSI_ONCE,
+      "Failed to create attendance",
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
   }
-
-  const absensiDate = new Date(FormatIDTime(new Date()));
-  const meeting = await getMeetingById(meetingId as string);
-  const timeDifference =
-    (absensiDate?.getTime() - new Date(meeting?.startTime as Date)?.getTime()) /
-    (1000 * 60 * 60);
-
-  if (timeDifference <= 0) {
-    return new ErrorApp(
-      MESSAGES.ERROR.INVALID.ABSENSI_NOT_OPEN,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
-  }
-
-  const img = image as Express.Multer.File;
-  // const filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}${FileType[img?.mimetype as string]}`;
-  const filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}.webp`;
-  const quality =
-    ((image as unknown as Express.Multer.File)?.size as number) >
-    5 * 1024 * 1024
-      ? 75
-      : 100;
-  const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
-  await UploadFileToStorage({
-    Bucket: environment.STORAGE.BUCKET,
-    Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`,
-    Body: compress,
-    ContentType: FileType["image/webp"],
-    ACL: "public-read",
-  });
-
-  const absensi = await createAttendance({
-    meetingId: meeting?.id as string,
-    image: filename,
-    userId,
-    coordinate,
-    address,
-    attendanceTime,
-    eventMeetingId: meeting?.eventMeetingId,
-  });
-
-  console.log({
-    timeDifference,
-    targetTime: new Date(FormatIDTime(meeting?.startTime as Date)),
-    absensiDate,
-  });
-
-  // Notes: Cek waktu absensi
-  let points = 20; // Poin default
-
-  if (timeDifference >= 0 && timeDifference <= 1) {
-    points = 100; // Poin untuk absen 3 jam lebih awal
-  }
-  if (timeDifference >= 1 && timeDifference <= 2) {
-    points = 50;
-  }
-  console.log({ points });
-  await addPoint(absensi.id, userId, points);
-  return;
 };
 
 export const getAttendanceService = async ({

@@ -10,6 +10,7 @@ export const createAttendance = async ({
   address,
   attendanceTime,
   eventMeetingId,
+  point,
 }: AttendanceDTO) => {
   return await prisma.attendance.create({
     data: {
@@ -20,6 +21,12 @@ export const createAttendance = async ({
       coordinate: coordinate as string,
       address,
       attendanceTime: attendanceTime as string,
+      Point: {
+        create: {
+          point: point ?? 0,
+          userId: userId as string,
+        },
+      },
     },
     select: {
       id: true,
@@ -280,7 +287,7 @@ export const getAttendances = async (query: FilterAttendance) => {
 };
 
 export const getAttendancesCount = async (query: FilterAttendance) => {
-    const { search, meetingId} = query ?? {};
+  const { search, meetingId } = query ?? {};
 
   return await prisma.attendance.count({
     where: {

@@ -18,7 +18,7 @@ model User {
   Attendance          Attendance[]
   createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt           DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
-  isLogin             Boolean               @default(false) @map("is_login") 
+  isLogin             Boolean               @default(false) @map("is_login")
   photo               String?               @db.VarChar(255)
   Member              Member?               @relation(fields: [memberId], references: [id], onDelete: NoAction)
   Point               Point[]
@@ -149,7 +149,7 @@ model Meeting {
 }
 
 model Attendance {
-  id             Int          @id @unique @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   image          String       @db.VarChar(255)
   userId         String       @map("user_id") @db.VarChar(110)
   meetingId      String       @map("meeting_id") @db.VarChar(110)
@@ -209,7 +209,7 @@ model OTP {
 }
 
 model Point {
-  id           Int        @id @unique @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   point        Int
   userId       String
   user         User       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
