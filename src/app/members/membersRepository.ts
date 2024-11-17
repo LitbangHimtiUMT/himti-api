@@ -43,18 +43,21 @@ export const getAllMember = async ({
       {
         name: {
           contains: search,
+          mode: "insensitive",
         },
       },
       {
         User: {
           email: {
             contains: search,
+            mode: "insensitive",
           },
         },
       },
       {
         nim: {
           contains: search,
+          mode: "insensitive",
         },
       },
     ];
@@ -107,18 +110,21 @@ export const getMemberCount = async (
       {
         name: {
           contains: search,
+          mode: "insensitive",
         },
       },
       {
         User: {
           email: {
             contains: search,
+            mode: "insensitive",
           },
         },
       },
       {
         nim: {
           contains: search,
+          mode: "insensitive",
         },
       },
     ];

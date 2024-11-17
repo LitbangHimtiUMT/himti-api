@@ -264,6 +264,7 @@ export const getAttendances = async (query: FilterAttendance) => {
       User: {
         name: {
           contains: search,
+          mode: "insensitive",
         },
       },
     },
@@ -295,6 +296,7 @@ export const getAttendancesCount = async (query: FilterAttendance) => {
       User: {
         name: {
           contains: search,
+          mode: "insensitive",
         },
       },
     },

@@ -118,6 +118,7 @@ export const getMeetings = async (query: Query) => {
       EventMeeting: {
         name: {
           contains: search,
+          mode: "insensitive",
         },
       },
     },
@@ -160,6 +161,7 @@ export const getMeetingsCount = async (query: Query) => {
       EventMeeting: {
         name: {
           contains: search,
+          mode: "insensitive",
         },
       },
     },
@@ -180,18 +182,20 @@ export const updateMeeting = async (data: UpdateMeetingBodyRequest) => {
   });
 };
 
-export const deleteMeetingManyByEventMeetingId = async(eventMeetingId: string) => {
+export const deleteMeetingManyByEventMeetingId = async (
+  eventMeetingId: string
+) => {
   return await prisma.meeting.deleteMany({
     where: {
-      eventMeetingId
-    }
-  })
-}
+      eventMeetingId,
+    },
+  });
+};
 
-export const deleteMeeting = async(meetingId: string) => {
+export const deleteMeeting = async (meetingId: string) => {
   return await prisma.meeting.delete({
     where: {
-      id: meetingId
-    }
-  })
-}
+      id: meetingId,
+    },
+  });
+};
