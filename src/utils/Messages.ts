@@ -263,5 +263,10 @@ export const MESSAGES = {
       DELETE: "Success to delete meeting",
       UPDATE: "Success to update meeting",
     },
+    FCM: {
+      GET: "Success to fetch fcm",
+      DELETE: "Success to delete fcm",
+      UPDATE: "Success to update fcm",
+    }
   },
 };
