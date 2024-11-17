@@ -11,6 +11,7 @@ import {
   deleteMember,
   getAllMember,
   getMemberById,
+  getMemberByNIM,
   getMemberCount,
   updateMember,
   updateMemberNonActive,
@@ -68,7 +69,6 @@ export const getMembersService = async ({
   const data = memberMapper(member as MemberData[]);
   const meta = Meta(page, perPage, totalData);
 
-
   return {
     data,
     meta,
@@ -104,6 +104,16 @@ export const updateAnggotaService = async ({
       404,
       MESSAGE_CODE.NOT_FOUND
     );
+  }
+  if (nim) {
+    const memberNIM = await getMemberByNIM(nim.toString());
+    if (memberNIM && memberNIM.id !== matchAnggota.id) {
+      return new ErrorApp(
+        MESSAGES.ERROR.ALREADY.GLOBAL.NIM,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
   }
   const updateFields: Partial<MemberBodyDTO> = { id };
 
