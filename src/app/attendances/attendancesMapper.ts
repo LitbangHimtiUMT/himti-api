@@ -116,6 +116,7 @@ export const getAttendanceByMeetingMapper = (data: AttendanceData[]) => {
       id: item.User.id,
       name: item.User.name as string,
       email: item.User.nim as string,
+      nim: item.User.nim,
     },
     location: item.address,
     image: item.image.includes("https")
