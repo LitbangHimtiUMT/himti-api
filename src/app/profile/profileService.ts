@@ -38,7 +38,7 @@ export const getProfileService = async (token: string) => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER_ID,
       404,
-      MESSAGE_CODE.NOT_FOUND
+      MESSAGE_CODE.NOT_FOUND,
     );
   }
   const profile = await getProfile((decodeToken as ProfileDTO)?.id as string);
@@ -46,7 +46,7 @@ export const getProfileService = async (token: string) => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND
+      MESSAGE_CODE.NOT_FOUND,
     );
   }
   const result = ProfileDTOMapper(profile as unknown as ProfileData);
@@ -65,7 +65,7 @@ export const updateProfileService = async (
     twitter,
     linkedin,
     photo,
-  }: ProfileDTO
+  }: ProfileDTO,
 ) => {
   const sosmed = facebook || instagram || twitter || linkedin;
   console.log({
@@ -77,7 +77,7 @@ export const updateProfileService = async (
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND
+      MESSAGE_CODE.NOT_FOUND,
     );
   }
 
@@ -85,14 +85,14 @@ export const updateProfileService = async (
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.ANGGOTA,
       400,
-      MESSAGE_CODE.BAD_REQUEST
+      MESSAGE_CODE.BAD_REQUEST,
     );
   }
   if (nim && user.memberId && user.role === "ANGGOTA") {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.NIM_ANGGOTA,
       400,
-      MESSAGE_CODE.BAD_REQUEST
+      MESSAGE_CODE.BAD_REQUEST,
     );
   }
 
@@ -102,14 +102,14 @@ export const updateProfileService = async (
       return new ErrorApp(
         MESSAGES.ERROR.ALREADY.USER_NIM,
         400,
-        MESSAGE_CODE.BAD_REQUEST
+        MESSAGE_CODE.BAD_REQUEST,
       );
     }
     if (nim && nim.length >= 14) {
       return new ErrorApp(
         MESSAGES.ERROR.INVALID.NIM.LENGTH,
         400,
-        MESSAGE_CODE.BAD_REQUEST
+        MESSAGE_CODE.BAD_REQUEST,
       );
     }
   }
@@ -124,7 +124,7 @@ export const updateProfileService = async (
     return new ErrorApp(
       MESSAGES.ERROR.ALREADY.GLOBAL.NIM,
       400,
-      MESSAGE_CODE.BAD_REQUEST
+      MESSAGE_CODE.BAD_REQUEST,
     );
   }
 
@@ -137,7 +137,7 @@ export const updateProfileService = async (
     return new ErrorApp(
       MESSAGES.ERROR.ALREADY.GLOBAL.EMAIL,
       400,
-      MESSAGE_CODE.BAD_REQUEST
+      MESSAGE_CODE.BAD_REQUEST,
     );
   }
 
@@ -150,7 +150,9 @@ export const updateProfileService = async (
     const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
 
     if (user.photo) {
-      await RemoveFileFromStorage(`${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.user}/${user.photo}`);
+      await RemoveFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.user}/${user.photo}`,
+      );
     }
     await UploadFileToStorage({
       Bucket: environment.STORAGE.BUCKET,
@@ -212,7 +214,7 @@ export const updateProfileService = async (
 
 export const updatePasswordService = async (
   token: string,
-  { newPassword, oldPassword }: ChangePasswordDTO
+  { newPassword, oldPassword }: ChangePasswordDTO,
 ) => {
   const decodeToken = decode(token) as TokenDecodeInterface;
   const id = decodeToken.id;
@@ -221,7 +223,14 @@ export const updatePasswordService = async (
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND
+      MESSAGE_CODE.NOT_FOUND,
+    );
+  }
+  if (newPassword.length < 8 || (oldPassword?.length as number) < 8) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.USER.PASSWORD_LENGTH,
+      400,
+      MESSAGE_CODE.BAD_REQUEST,
     );
   }
   const match = await bcrypt.compare(oldPassword as string, user.password);
@@ -229,7 +238,7 @@ export const updatePasswordService = async (
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.USER.PASSWORD,
       401,
-      MESSAGE_CODE.UNAUTHORIZED
+      MESSAGE_CODE.UNAUTHORIZED,
     );
   }
 
@@ -237,7 +246,7 @@ export const updatePasswordService = async (
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.NEW_PASSWORD,
       400,
-      MESSAGE_CODE.BAD_REQUEST
+      MESSAGE_CODE.BAD_REQUEST,
     );
   }
 
@@ -260,14 +269,14 @@ export const deletePhotoProfile = async (userId: string) => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND
+      MESSAGE_CODE.NOT_FOUND,
     );
   }
   if (!user.photo) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.PHOTO,
       404,
-      MESSAGE_CODE.NOT_FOUND
+      MESSAGE_CODE.NOT_FOUND,
     );
   }
   const key = `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.user}/${user.photo}`;
