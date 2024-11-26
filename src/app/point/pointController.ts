@@ -1,0 +1,27 @@
+import { NextFunction, Request, Response } from "express";
+import { getUserPointsService } from "./pointService";
+import { ErrorApp } from "utils/HttpError";
+import { HandleResponse } from "utils/HandleResponse";
+import { MESSAGE_CODE } from "utils/ErrorCode";
+import { MESSAGES } from "utils/Messages";
+
+export const getUserPointsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const {} = req;
+  const result = await getUserPointsService();
+
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.POINTS.GET,
+    result,
+  );
+};

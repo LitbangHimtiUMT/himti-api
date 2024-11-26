@@ -7,43 +7,6 @@ import {
   UserRequestBodyDTO,
 } from "./userDTO";
 
-// export const createAbsensi = async ({ acaraId, image, userId, coordinate }: AbsensiDTO) => {
-//     return await prisma.absensi.create({
-//         data: {
-//             image,
-//             acaraId,
-//             userId: userId as string,
-//             coordinate
-//         }
-//     })
-// }
-
-// export const getAbsensiByUserId = async (userId: string) => {
-//     return await prisma.attendance.findMany({
-//         where: {
-//             userId
-//         },
-//         include: {
-//             acara: {
-//                 select: {
-//                     id: true,
-//                     name: true
-//                 }
-//             },
-//             user: {
-//                 select: {
-//                     id: true,
-//                     name: true,
-//                     nim: true
-//                 }
-//             }
-//         },
-//         orderBy: {
-//             createdAt: 'desc'
-//         }
-//     })
-// }
-
 export const getUsers = async ({
   page,
   perPage,
@@ -160,7 +123,7 @@ export const createUser = async (data: UserRequestBodyDTO) => {
 
 export const updateUser = async (
   userId: string,
-  data: UpdateUserBodyRequest
+  data: UpdateUserBodyRequest,
 ) => {
   return await prisma.user.update({
     where: {
@@ -182,4 +145,27 @@ export const getAllUsers = async () => {
 
 export const getAllUsersCount = async () => {
   return await prisma.user.count();
+};
+
+export const getUserPoint = async () => {
+  return await prisma.user.findMany({
+    where: {
+      Member: {
+        isNot: null,
+      },
+    },
+    orderBy: {
+      Point: {
+        _count: "desc",
+      },
+    },
+    include: {
+      Point: true,
+      Member: {
+        include: {
+          Generation: true,
+        },
+      },
+    },
+  });
 };

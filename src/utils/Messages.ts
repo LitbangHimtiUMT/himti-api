@@ -23,7 +23,7 @@ export const MESSAGES = {
         ACCOUNT: "User not found",
         FCM: "FCM Token not found",
         FCM_USER: "FCM User not found",
-        PHOTO: "You're doesn't have photo"
+        PHOTO: "You're doesn't have photo",
       },
       ANGKATAN: {
         ID: "Angkatan ID not found",
@@ -113,7 +113,7 @@ export const MESSAGES = {
       DATE: "Date is invalid",
       START_TIME: "Start Time must be date time",
       END_TIME: "End Time must be date",
-      NAME_MEMBER: "The name entered must match the registered NIM"
+      NAME_MEMBER: "The name entered must match the registered NIM",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -267,6 +267,10 @@ export const MESSAGES = {
       GET: "Success to fetch fcm",
       DELETE: "Success to delete fcm",
       UPDATE: "Success to update fcm",
-    }
+    },
+    POINTS: {
+      GET: "Success to fetch points",
+      UPDATE: "Success to update points",
+    },
   },
 };
