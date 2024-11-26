@@ -1,4 +1,6 @@
 import { Member, Point, User } from "@prisma/client";
+import { ImagePath } from "utils/ImagePath";
+import { BUCKET_FOLDER } from "utils/UploadFileToStorage";
 
 export interface MemberData extends Member {
   Generation: {
@@ -18,6 +20,9 @@ export const getUserPointsDTOMapper = (users: UserData[]) => {
       id: item.id,
       name: item.name,
       nim: item.nim,
+      photo: item.photo
+        ? ImagePath(`${BUCKET_FOLDER.user}/${item?.photo}`)
+        : null,
       generation: {
         id: item.Member?.Generation.id,
         year: item.Member?.Generation.year,
@@ -31,12 +36,18 @@ export const getUserPointsDTOMapper = (users: UserData[]) => {
     rank: index + 1,
     name: item.name,
     nim: item.nim,
+    photo: item.photo,
     generation: item.generation,
     point: item.point,
   }));
+
   const topThree = finalData.slice(0, 3);
+  const reordered = topThree.sort((a, b) => {
+    const order = [2, 1, 3];
+    return order.indexOf(a.rank) - order.indexOf(b.rank);
+  });
   return {
-    topThree,
+    topThree: reordered,
     other: finalData,
   };
 };
