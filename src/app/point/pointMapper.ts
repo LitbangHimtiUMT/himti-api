@@ -34,10 +34,9 @@ export const getUserPointsDTOMapper = (users: UserData[]) => {
     generation: item.generation,
     point: item.point,
   }));
-  const topFour = finalData.slice(0, 4);
-  const other = finalData.slice(4);
+  const topThree = finalData.slice(0, 3);
   return {
-    topFour,
-    other,
+    topThree,
+    other: finalData,
   };
 };
