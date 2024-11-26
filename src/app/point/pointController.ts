@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { getUserPointsService } from "./pointService";
-import { ErrorApp } from "utils/HttpError";
-import { HandleResponse } from "utils/HandleResponse";
-import { MESSAGE_CODE } from "utils/ErrorCode";
-import { MESSAGES } from "utils/Messages";
+import { ErrorApp } from "../../utils/HttpError";
+import { HandleResponse } from "../../utils/HandleResponse";
+import { MESSAGE_CODE } from "../../utils/ErrorCode";
+import { MESSAGES } from "../../utils/Messages";
 
 export const getUserPointsController = async (
   req: Request,
