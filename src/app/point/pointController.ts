@@ -6,11 +6,10 @@ import { MESSAGE_CODE } from "../../utils/ErrorCode";
 import { MESSAGES } from "../../utils/Messages";
 
 export const getUserPointsController = async (
-  req: Request,
+  _: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const {} = req;
   const result = await getUserPointsService();
 
   if (result instanceof ErrorApp) {

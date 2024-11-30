@@ -32,7 +32,7 @@ import { createAttendanceValidate } from "./attendancesValidate";
 
 export const createAttendanceService = async (
   { meetingId, image, coordinate, address, attendanceTime }: AttendanceDTO,
-  userId: string
+  userId: string,
 ) => {
   let filename;
   try {
@@ -49,14 +49,14 @@ export const createAttendanceService = async (
 
     const attendance = await getAttendanceByMeetingId(
       meetingId as string,
-      userId as string
+      userId as string,
     );
 
     if (attendance) {
       return new ErrorApp(
         MESSAGES.ERROR.INVALID.ABSENSI_ONCE,
         400,
-        MESSAGE_CODE.BAD_REQUEST
+        MESSAGE_CODE.BAD_REQUEST,
       );
     }
 
@@ -71,7 +71,7 @@ export const createAttendanceService = async (
       return new ErrorApp(
         MESSAGES.ERROR.INVALID.ABSENSI_NOT_OPEN,
         400,
-        MESSAGE_CODE.BAD_REQUEST
+        MESSAGE_CODE.BAD_REQUEST,
       );
     }
 
@@ -99,16 +99,15 @@ export const createAttendanceService = async (
     });
 
     // Notes: Cek waktu absensi
-    let points = 20; // Poin default
+    let points = Math.round(Math.random() * 40); // Poin default
 
     if (timeDifference >= 0 && timeDifference <= 1) {
-      points = 100; // Poin untuk absen 3 jam lebih awal
+      points = 100;
     }
     if (timeDifference >= 1 && timeDifference <= 2) {
       points = 50;
     }
     console.log({ points });
-    // await addPoint(absensi.id, userId, points);
     const absensi = await createAttendance({
       meetingId: meeting?.id as string,
       image: filename,
@@ -125,17 +124,17 @@ export const createAttendanceService = async (
       error,
     });
     const exist = await GetFileFromStorage(
-      `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`
+      `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`,
     );
     if (exist.exists) {
       await RemoveFileFromStorage(
-        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`,
       );
     }
     return new ErrorApp(
       "Failed to create attendance",
       400,
-      MESSAGE_CODE.BAD_REQUEST
+      MESSAGE_CODE.BAD_REQUEST,
     );
   }
 };
@@ -152,7 +151,7 @@ export const getAttendanceService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.ABSENSI,
       404,
-      MESSAGE_CODE.NOT_FOUND
+      MESSAGE_CODE.NOT_FOUND,
     );
   }
 
@@ -166,12 +165,12 @@ export const getAttendanceByIdService = async (id: number) => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.ABSENSI,
       404,
-      MESSAGE_CODE.NOT_FOUND
+      MESSAGE_CODE.NOT_FOUND,
     );
   }
 
   const data = getAttendanceDTOMapper(
-    attendance as unknown as EventMeetingData
+    attendance as unknown as EventMeetingData,
   );
   return data;
 };
@@ -188,7 +187,7 @@ export const getAttendancesService = async (query: FilterAttendance) => {
 
   return {
     data: getAttendanceByMeetingMapper(
-      absensies as unknown as AttendanceData[]
+      absensies as unknown as AttendanceData[],
     ),
     meta,
   };
