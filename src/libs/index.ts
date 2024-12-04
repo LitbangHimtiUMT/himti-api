@@ -33,6 +33,7 @@ export const environment = {
     STORAGE: {
         BUCKET: env.AWS_STORAGE_BUCKET ?? '',
         ENDPOINT: env.AWS_STORAGE_ENDPOINT ?? '',
+        ENDPOINT_RESPONSE: env.AWS_STORAGE_ENDPOINT ?  `${env.AWS_STORAGE_ENDPOINT}/object/public`: '',
         REGION: env.AWS_STORAGE_REGION ?? '',
         ACCESS_KEY: env.AWS_STORAGE_ACCESS_KEY ?? '',
         SECRET_KEY: env.AWS_STORAGE_SECRET_KEY ?? '',
