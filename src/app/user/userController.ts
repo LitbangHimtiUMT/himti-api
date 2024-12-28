@@ -4,7 +4,8 @@ import { MESSAGE_CODE } from '../../utils/ErrorCode'
 import { HandleResponse } from '../../utils/HandleResponse'
 import { ErrorApp } from '../../utils/HttpError'
 import { MESSAGES } from '../../utils/Messages'
-import { createUserService, getUserService, getUsersService, updateUserService } from "./userService"
+import { createUserService, deleteUserService, getUserService, getUsersService, updateUserService } from "./userService"
+import { RequestWithAccessToken } from '../../interface/Request'
 
 export const getUsersController = async (req: Request, res: Response, next: NextFunction) => {
     const { search, role, page, perPage } = req.query
@@ -65,4 +66,18 @@ export const updateUserController = async (
         return
     }
     HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.USER_DATA.UPDATE)
+}
+
+export const deleteUserController = async (
+    req: RequestWithAccessToken,
+    res: Response,
+    next: NextFunction
+) => {
+    const { userId } = req
+    const result = await deleteUserService(userId ?? '')
+    if (result instanceof ErrorApp) {
+        next(result)
+        return
+    }
+    HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.USER_DATA.DELETE)
 }

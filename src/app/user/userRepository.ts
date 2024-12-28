@@ -123,7 +123,7 @@ export const createUser = async (data: UserRequestBodyDTO) => {
 
 export const updateUser = async (
   userId: string,
-  data: UpdateUserBodyRequest,
+  data: UpdateUserBodyRequest
 ) => {
   return await prisma.user.update({
     where: {
@@ -154,11 +154,6 @@ export const getUserPoint = async () => {
         isNot: null,
       },
     },
-    orderBy: {
-      Point: {
-        _count: "desc",
-      },
-    },
     include: {
       Point: true,
       Member: {
@@ -166,6 +161,14 @@ export const getUserPoint = async () => {
           Generation: true,
         },
       },
+    },
+  });
+};
+
+export const deleteUser = async (userId: string) => {
+  return await prisma.user.delete({
+    where: {
+      id: userId,
     },
   });
 };

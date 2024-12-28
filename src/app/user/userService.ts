@@ -13,6 +13,7 @@ import {
 import { userDTOMapper } from "./userMapper";
 import {
   createUser,
+  deleteUser,
   getUserByEmail,
   getUsers,
   getUsersCount,
@@ -43,7 +44,7 @@ export const createUserService = async (body: UserRequestBodyDTO) => {
     return new ErrorApp(
       MESSAGES.ERROR.ALREADY.USER,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -64,7 +65,7 @@ export const getUserService = async (userId: string) => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 
@@ -74,17 +75,30 @@ export const getUserService = async (userId: string) => {
 
 export const updateUserService = async (
   userId: string,
-  data: UpdateUserBodyRequest,
+  data: UpdateUserBodyRequest
 ) => {
   const user = await getUserById(userId);
   if (!user) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 
   const result = await updateUser(userId, data);
+  return result;
+};
+
+export const deleteUserService = async (userId: string) => {
+  const user = await getUserById(userId);
+  if (!user) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  const result = await deleteUser(userId);
   return result;
 };
