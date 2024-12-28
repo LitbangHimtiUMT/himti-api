@@ -34,7 +34,7 @@ model UserFCM {
   id       String @id @unique @default(uuid())
   userId   String @map("user_id") @db.VarChar(110)
   fcmToken String @map("fcm_token") @db.VarChar(255)
-  User     User   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User     User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([userId], map: "user_fcm_fk_1")
   @@map("user_fcm")
@@ -159,7 +159,7 @@ model Attendance {
   attendanceTime String?      @map("attendance_time") @db.VarChar(150)
   createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamp(0)
-  User           User         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User           User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   Meeting        Meeting      @relation(fields: [meetingId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   EventMeeting   EventMeeting @relation(fields: [eventMeetingId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   Point          Point[]
@@ -228,7 +228,7 @@ model NotificationHistory {
   eventId   String?  @map("acara_id") @db.VarChar(110)
   userId    String   @map("user_id") @db.VarChar(110)
   Event     Event?   @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  User      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   Meeting   Meeting? @relation(fields: [meetingId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   title     String   @db.VarChar(155)
   body      String   @db.Text
