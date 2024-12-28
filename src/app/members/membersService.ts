@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { statusValue } from "../../utils/FilterStatus";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
-import { Meta } from "../../utils/Meta";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { statusValue } from "../../utils/filter-status";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
+import { Meta } from "../../utils/meta";
 import { MemberBodyDTO } from "./membersDTO";
 import { MemberData, memberMapper } from "./membersMapper";
 import {

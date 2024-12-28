@@ -7,10 +7,10 @@ import {
   getEventMeetingsService,
   updateEventMeetingService,
 } from "./eventMeetingService";
-import { ErrorApp } from "../../utils/HttpError";
-import { HandleResponse } from "../../utils/HandleResponse";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { MESSAGES } from "../../utils/Messages";
+import { ErrorApp } from "../../utils/http-error";
+import { HandleResponse } from "../../utils/handle-response";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { MESSAGES } from "../../utils/messages";
 import { RequestWithAccessToken } from "interface/Request";
 
 export const createEventMeetingController = async (
@@ -113,7 +113,7 @@ export const getEventMeetingByIdController = async (
   next: NextFunction
 ) => {
   const { params } = req;
-  const { eventMeetingId } = params;  
+  const { eventMeetingId } = params;
   const result = await getEventMeetingByIdService(eventMeetingId as string);
   if (result instanceof ErrorApp) {
     next(result);
@@ -126,7 +126,7 @@ export const getEventMeetingByIdController = async (
     MESSAGES.SUCCESS.EVENT_MEETING.GET,
     result
   );
-}
+};
 
 export const deleteEventMeetingController = async (
   req: Request,
@@ -134,9 +134,8 @@ export const deleteEventMeetingController = async (
   next: NextFunction
 ) => {
   const { params } = req;
-  const { eventMeetingId } = params;  
+  const { eventMeetingId } = params;
   const result = await deleteEventMeetingService(eventMeetingId as string);
-
 
   if (result instanceof ErrorApp) {
     next(result);
@@ -149,4 +148,4 @@ export const deleteEventMeetingController = async (
     MESSAGES.SUCCESS.EVENT_MEETING.DELETE,
     result
   );
-}
+};

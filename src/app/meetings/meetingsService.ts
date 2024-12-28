@@ -1,8 +1,8 @@
 import { Query } from "../../interface/Query";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
-import { Meta } from "../../utils/Meta";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
+import { Meta } from "../../utils/meta";
 import { getEventMeetingById } from "../eventMeeting/eventMeetingRepository";
 import {
   CreateMeetingBodyRequest,
@@ -204,13 +204,13 @@ export const deleteMeetingService = async (meetingId: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  if(meeting.Attendance.length > 0) {
+  if (meeting.Attendance.length > 0) {
     return new ErrorApp(
       MESSAGES.ERROR.RELATION.MEETING,
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
   }
-  const data = await deleteMeeting(meetingId);  
+  const data = await deleteMeeting(meetingId);
   return data;
-}
+};

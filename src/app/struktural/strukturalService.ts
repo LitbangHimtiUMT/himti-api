@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
-import { Meta } from "../../utils/Meta";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
+import { Meta } from "../../utils/meta";
 import { StructuralBodyDTO } from "./strukturalDTO";
 import {
   createStructural,
@@ -22,8 +22,12 @@ import {
   FileType,
   RemoveFileFromStorage,
   UploadFileToStorage,
-} from "../../utils/UploadFileToStorage";
-import { getStructuralDTOMapper, StructuralData, structuralMapper } from "./strukturalMapper";
+} from "../../utils/upload-file-to-storage";
+import {
+  getStructuralDTOMapper,
+  StructuralData,
+  structuralMapper,
+} from "./strukturalMapper";
 import { IFilterStructural } from "./strukturalTypes";
 import { strukturalValidate } from "./strukturalValidate";
 import sharp from "sharp";
@@ -92,11 +96,11 @@ export const getStrukturalService = async ({
   search,
   page = 1,
   perPage = 10,
-  angkatan
+  angkatan,
 }: IFilterStructural) => {
   const [struktural, totalData] = await Promise.all([
     getStructural({ search, page, perPage, angkatan }),
-    getStructuralCount({ search,angkatan }),
+    getStructuralCount({ search, angkatan }),
   ]);
 
   const meta = Meta(page, perPage, totalData);

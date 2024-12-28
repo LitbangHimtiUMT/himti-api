@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validateRequest";
 import { VerifyToken } from "../../middleware/verifyToken";
-import { CatchWrapper } from "../../utils/CatchWrapper";
-import { upload as UploadFile } from "../../utils/UploadFileToStorage";
+import { CatchWrapper } from "../../utils/catch-wrapper";
+import { upload as UploadFile } from "../../utils/upload-file-to-storage";
 import {
   deletePhotoProfileController,
   getProfileController,

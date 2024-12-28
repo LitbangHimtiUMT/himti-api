@@ -1,9 +1,9 @@
 import { NextFunction, type Request, type Response } from "express";
-import { Result } from "../../utils/ApiResponse";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { HandleResponse } from "../../utils/HandleResponse";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
+import { Result } from "../../utils/api-response";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { HandleResponse } from "../../utils/handle-response";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
 import {
   createAnggotaService,
   deleteAnggotaService,

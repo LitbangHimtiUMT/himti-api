@@ -2,7 +2,7 @@ import { Router } from "express";
 import { validateRequest } from "../../middleware/validateRequest";
 import { VerifyAdmin } from "../../middleware/verifyAdmin";
 import { VerifySuperAdmin } from "../../middleware/verifySuperAdmin";
-import { CatchWrapper } from "../../utils/CatchWrapper";
+import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createUserController,
   deleteUserController,

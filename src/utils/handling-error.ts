@@ -1,8 +1,8 @@
 import { NextFunction, type Request, type Response } from "express";
-import { MESSAGE_CODE } from "./ErrorCode";
-import { HandleResponse } from "./HandleResponse";
-import { ErrorApp } from "./HttpError";
-import { MESSAGES } from "./Messages";
+import { MESSAGE_CODE } from "./error-code";
+import { HandleResponse } from "./handle-response";
+import { ErrorApp } from "./http-error";
+import { MESSAGES } from "./messages";
 
 export const HandlingError = (
   err: ErrorApp | Error,
@@ -10,8 +10,8 @@ export const HandlingError = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log('errr =>>', err)
-  console.log(next)
+  console.log("errr =>>", err);
+  console.log(next);
   if (err instanceof ErrorApp) {
     console.log({
       err,

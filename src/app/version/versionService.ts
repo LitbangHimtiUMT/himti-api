@@ -1,12 +1,12 @@
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
 import { VersionBodyRequest } from "./versionDTO";
 import { getVersion, getVersionById, updateVersion } from "./versionRepository";
 
 export const updateVersionService = async (
   versionId: number,
-  body: VersionBodyRequest,
+  body: VersionBodyRequest
 ) => {
   const version = await getVersionById(versionId);
 
@@ -14,7 +14,7 @@ export const updateVersionService = async (
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.VERSION,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 
@@ -28,7 +28,7 @@ export const getVersionService = async () => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.VERSION,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
   return version;

@@ -1,5 +1,5 @@
 import { Member, Structural } from "@prisma/client";
-import { ImagePath } from "../../utils/ImagePath";
+import { ImagePath } from "../../utils/image-path";
 
 export interface StructuralData extends Structural {
   Member: Member;
@@ -19,7 +19,9 @@ export const getStructuralDTOMapper = (data: StructuralData) => {
   return {
     id: data.id,
     jabatan: data.jabatan,
-    image: data.image.includes("https") ? data.image : ImagePath(`struktural/${data.image}`),
+    image: data.image.includes("https")
+      ? data.image
+      : ImagePath(`struktural/${data.image}`),
     memberId: "667ea366768c4c597992623e",
     member: {
       id: data.Member.id,

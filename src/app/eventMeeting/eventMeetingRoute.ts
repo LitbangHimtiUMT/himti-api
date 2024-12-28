@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validateRequest";
 import { VerifyToken } from "../../middleware/verifyToken";
-import { CatchWrapper } from "../../utils/CatchWrapper";
+import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createEventMeetingController,
   deleteEventMeetingController,

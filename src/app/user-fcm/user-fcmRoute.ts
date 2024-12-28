@@ -1,9 +1,12 @@
 import { Router } from "express";
-import { CatchWrapper } from "../../utils/CatchWrapper";
-import { deleteFCMUserController, getAllFCMUserController } from "./user-fcmController";
+import { CatchWrapper } from "../../utils/catch-wrapper";
+import {
+  deleteFCMUserController,
+  getAllFCMUserController,
+} from "./user-fcmController";
 
-const route = Router()
+const route = Router();
 
-route.get("/", CatchWrapper(getAllFCMUserController))
-route.delete('/:fcmUserId', CatchWrapper(deleteFCMUserController))
-export default route
+route.get("/", CatchWrapper(getAllFCMUserController));
+route.delete("/:fcmUserId", CatchWrapper(deleteFCMUserController));
+export default route;

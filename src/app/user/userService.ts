@@ -1,9 +1,9 @@
 import { User } from "@prisma/client";
 import * as bcrypt from "bcrypt";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
-import { Meta } from "../../utils/Meta";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
+import { Meta } from "../../utils/meta";
 import { getUserById } from "../authentication/authRepository";
 import {
   IFilterUser,

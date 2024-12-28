@@ -1,6 +1,6 @@
 import { Member, Point, User } from "@prisma/client";
-import { ImagePath } from "../../utils/ImagePath";
-import { BUCKET_FOLDER } from "../../utils/UploadFileToStorage";
+import { ImagePath } from "../../utils/image-path";
+import { BUCKET_FOLDER } from "../../utils/upload-file-to-storage";
 
 export interface MemberData extends Member {
   Generation: {

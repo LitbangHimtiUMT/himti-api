@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { MESSAGES } from "../../utils/Messages";
+import { MESSAGES } from "../../utils/messages";
 
 export const updateProfileSchema = Joi.object({
   name: Joi.string().optional().messages({

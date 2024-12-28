@@ -23,8 +23,8 @@ import versionRoute from "../app/version/versionRoute";
 import eventMeetingRoute from "../app/eventMeeting/eventMeetingRoute";
 import meetingRoute from "../app/meetings/meetingsRoute";
 import notificationRoute from "../app/notification/notificationRoute";
-import { MESSAGE_CODE } from "../utils/ErrorCode";
-import { MESSAGES } from "../utils/Messages";
+import { MESSAGE_CODE } from "../utils/error-code";
+import { MESSAGES } from "../utils/messages";
 
 const route = Router();
 
@@ -61,7 +61,7 @@ route.get("/generate", async (req: Request, res: Response) => {
   // Load template sertifikat
   const templatePath = path.join(
     __dirname,
-    "../../public/Sertifikat-Template.png",
+    "../../public/Sertifikat-Template.png"
   );
   const canvas = createCanvas(800, 600); // Ukuran sesuai dengan template
   const ctx = canvas.getContext("2d");
@@ -92,7 +92,7 @@ route.get("/generate", async (req: Request, res: Response) => {
     // Generate QR code
     const qrCodeUrl = await QRCode.toDataURL(
       JSON.stringify({ id }),
-      qrCodeOptions as QRCodeToDataURLOptions,
+      qrCodeOptions as QRCodeToDataURLOptions
     );
 
     // Load QR code image
@@ -105,14 +105,14 @@ route.get("/generate", async (req: Request, res: Response) => {
       canvas.width - qrCodeSize - 60,
       canvas.height - qrCodeSize - 20,
       qrCodeSize,
-      qrCodeSize,
+      qrCodeSize
     );
 
     // Set header respons sebagai PDF
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      'attachment; filename="certificate.pdf"',
+      'attachment; filename="certificate.pdf"'
     );
 
     // Stream gambar ke respons

@@ -4,11 +4,11 @@ import dotenv from "dotenv";
 import jwt, { decode } from "jsonwebtoken";
 import { TokenDecodeInterface } from "../../interface";
 import { environment } from "../../libs";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { random } from "../../utils/GeneratedRandomOTP";
-import { ErrorApp } from "../../utils/HttpError";
-import { SendEmail } from "../../utils/MailerConfig";
-import { MESSAGES } from "../../utils/Messages";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { random } from "../../utils/generate-random-otp";
+import { ErrorApp } from "../../utils/http-error";
+import { SendEmail } from "../../utils/mailer-config";
+import { MESSAGES } from "../../utils/messages";
 import { getMemberByNIM } from "../members/membersRepository";
 import { createUserFCM, deleteUserFCM } from "../user-fcm/user-fcm.repository";
 import {
@@ -43,14 +43,14 @@ export const registerService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.ALREADY.USER,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
   if ((password?.length as number) < 8) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.USER.PASSWORD_LENGTH,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
   const hashPassword = await bcrypt.hash(password, 10);
@@ -64,7 +64,7 @@ export const registerService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.REQUIRED.CODE_ANGGOTA,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -72,7 +72,7 @@ export const registerService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.CODE_ANGGOTA,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
   let isContains = false;
@@ -96,7 +96,7 @@ export const registerService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.NAME_MEMBER,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -104,7 +104,7 @@ export const registerService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.CODE_USER,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -113,7 +113,7 @@ export const registerService = async ({
       return new ErrorApp(
         MESSAGES.ERROR.ALREADY.GLOBAL.NIM,
         400,
-        MESSAGE_CODE.BAD_REQUEST,
+        MESSAGE_CODE.BAD_REQUEST
       );
     }
   }
@@ -130,7 +130,7 @@ export const registerService = async ({
       return new ErrorApp(
         MESSAGES.ERROR.ALREADY.GLOBAL.EMAIL,
         400,
-        MESSAGE_CODE.BAD_REQUEST,
+        MESSAGE_CODE.BAD_REQUEST
       );
     }
   }
@@ -157,14 +157,14 @@ export const loginService = async (data: LoginAuthBodyDTO) => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
   if ((password?.length as number) < 8) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.USER.PASSWORD_LENGTH,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
   const match = await bcrypt.compare(password, user.password);
@@ -172,7 +172,7 @@ export const loginService = async (data: LoginAuthBodyDTO) => {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.USER.PASSWORD,
       401,
-      MESSAGE_CODE.UNAUTHORIZED,
+      MESSAGE_CODE.UNAUTHORIZED
     );
   }
 
@@ -180,7 +180,7 @@ export const loginService = async (data: LoginAuthBodyDTO) => {
     return new ErrorApp(
       MESSAGES.ERROR.UNAUTHORIZED.ADMIN,
       401,
-      MESSAGE_CODE.UNAUTHORIZED,
+      MESSAGE_CODE.UNAUTHORIZED
     );
   }
 
@@ -202,7 +202,7 @@ export const loginService = async (data: LoginAuthBodyDTO) => {
       id: user.id,
     },
     environment.JWT_SECRET as string,
-    { expiresIn: environment.JWT_EXPIRES },
+    { expiresIn: environment.JWT_EXPIRES }
   );
 
   const userInfo = {
@@ -223,7 +223,7 @@ export const loginAdminService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 
@@ -232,7 +232,7 @@ export const loginAdminService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.USER.PASSWORD,
       401,
-      MESSAGE_CODE.UNAUTHORIZED,
+      MESSAGE_CODE.UNAUTHORIZED
     );
   }
 
@@ -240,7 +240,7 @@ export const loginAdminService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.ROLE_ADMIN,
       401,
-      MESSAGE_CODE.UNAUTHORIZED,
+      MESSAGE_CODE.UNAUTHORIZED
     );
   }
 
@@ -249,7 +249,7 @@ export const loginAdminService = async ({
       id: user.id,
     },
     environment.JWT_SECRET as string,
-    { expiresIn: "3d" },
+    { expiresIn: "3d" }
   );
 
   return { access_token: token };
@@ -261,7 +261,7 @@ export const requestOtpService = async (email: string) => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 
@@ -290,7 +290,7 @@ export const validateOtpService = async ({ key, otp }: ValidateOtpDTO) => {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.OTP_KEY,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -298,7 +298,7 @@ export const validateOtpService = async ({ key, otp }: ValidateOtpDTO) => {
     return new ErrorApp(
       MESSAGES.ERROR.ALREADY.OTP_VERIFIED,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -308,7 +308,7 @@ export const validateOtpService = async ({ key, otp }: ValidateOtpDTO) => {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.OTP_NUMBER,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -317,7 +317,7 @@ export const validateOtpService = async ({ key, otp }: ValidateOtpDTO) => {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.OTP_EXPIRED,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -341,7 +341,7 @@ export const forgotPasswordService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.OTP_KEY,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
   const user = await getUserByEmail(otp.email);
@@ -350,7 +350,7 @@ export const forgotPasswordService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 
@@ -362,7 +362,7 @@ export const forgotPasswordService = async ({
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.OTP_VERIFIED,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -379,7 +379,7 @@ export const logoutService = async (token: string) => {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
   // const fcm = await getUserFCMByUserId(user.id)

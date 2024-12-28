@@ -1,22 +1,28 @@
-import { NextFunction, type Request, type Response } from "express"
-import { MESSAGE_CODE } from "../../utils/ErrorCode"
-import { HandleResponse } from "../../utils/HandleResponse"
-import { ErrorApp } from "../../utils/HttpError"
-import { MESSAGES } from "../../utils/Messages"
-import { getPrestasiService } from "./achievementsService"
-
+import { NextFunction, type Request, type Response } from "express";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { HandleResponse } from "../../utils/handle-response";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
+import { getPrestasiService } from "./achievementsService";
 
 export const getPrestasiController = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
+  req: Request,
+  res: Response,
+  next: NextFunction
 ) => {
-    const { query } = req
-    const result = await getPrestasiService(query)
+  const { query } = req;
+  const result = await getPrestasiService(query);
 
-    if (result instanceof ErrorApp) {
-        next(result)
-        return
-    }
-    HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.PRESTASI.GET, result?.data, result?.meta)
-}
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.PRESTASI.GET,
+    result?.data,
+    result?.meta
+  );
+};

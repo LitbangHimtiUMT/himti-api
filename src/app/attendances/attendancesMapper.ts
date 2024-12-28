@@ -1,5 +1,5 @@
 import { Attendance, Point, User } from "@prisma/client";
-import { ImagePath } from "../../utils/ImagePath";
+import { ImagePath } from "../../utils/image-path";
 
 interface MeetingHistoryResponse {
   eventMeeting: {

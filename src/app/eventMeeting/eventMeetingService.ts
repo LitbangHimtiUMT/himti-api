@@ -1,9 +1,9 @@
 import { deleteMeetingManyByEventMeetingId } from "../meetings/meetingsRepository";
 import { Query } from "../../interface/Query";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
-import { Meta } from "../../utils/Meta";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
+import { Meta } from "../../utils/meta";
 import {
   CreateEventMeetingBodyRequest,
   UpdateEventMeetingRequest,
@@ -22,7 +22,10 @@ import {
   getEventMeetingsCount,
   updateEventMeeting,
 } from "./eventMeetingRepository";
-import { PrismaClientKnownRequestError, PrismaClientValidationError } from "@prisma/client/runtime/library";
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from "@prisma/client/runtime/library";
 
 export const createEventMeetingService = async (
   body: CreateEventMeetingBodyRequest
@@ -134,10 +137,14 @@ export const deleteEventMeetingService = async (eventMeetingId: string) => {
     deleteEventMeeting(eventMeeting.id),
   ]);
 
-  const errValidation = deleteEM instanceof PrismaClientValidationError || deleteMeeting instanceof PrismaClientValidationError
-  const errRequest = deleteEM instanceof PrismaClientKnownRequestError || deleteMeeting instanceof PrismaClientKnownRequestError
+  const errValidation =
+    deleteEM instanceof PrismaClientValidationError ||
+    deleteMeeting instanceof PrismaClientValidationError;
+  const errRequest =
+    deleteEM instanceof PrismaClientKnownRequestError ||
+    deleteMeeting instanceof PrismaClientKnownRequestError;
 
-  if(errValidation || errRequest){
+  if (errValidation || errRequest) {
     return new ErrorApp(
       MESSAGES.ERROR.FAILED.EVENT_MEETING,
       404,

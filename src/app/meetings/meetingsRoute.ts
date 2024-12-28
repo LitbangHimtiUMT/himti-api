@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { VerifyToken } from "../../middleware/verifyToken";
 import { validateRequest } from "../../middleware/validateRequest";
-import { CatchWrapper } from "../../utils/CatchWrapper";
+import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createMeetingController,
   deleteMeetingController,
@@ -33,6 +33,10 @@ route.get(
   VerifyToken,
   CatchWrapper(getMeetingByEventMeetingIdController)
 );
-route.delete('/:meetingId', VerifySuperAdmin, CatchWrapper(deleteMeetingController))
+route.delete(
+  "/:meetingId",
+  VerifySuperAdmin,
+  CatchWrapper(deleteMeetingController)
+);
 
 export default route;

@@ -3,16 +3,16 @@ import dotenv from "dotenv";
 import { Query } from "../../interface/Query";
 import sharp from "sharp";
 import { environment } from "../../libs";
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
-import { Meta } from "../../utils/Meta";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
+import { Meta } from "../../utils/meta";
 import {
   BUCKET_FOLDER,
   FileType,
   RemoveFileFromStorage,
   UploadFileToStorage,
-} from "../../utils/UploadFileToStorage";
+} from "../../utils/upload-file-to-storage";
 import { CreateEventBodyRequest, EventBodyDTO } from "./eventDTO";
 import { eventDTOMapper, eventsDTOMapper } from "./eventMapper";
 import {
@@ -77,7 +77,8 @@ export const createEventService = async ({
     const img = image as Express.Multer.File;
     filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}.webp`;
     const quality =
-      ((image as unknown as Express.Multer.File)?.size as number) > 5 * 1024 * 1024
+      ((image as unknown as Express.Multer.File)?.size as number) >
+      5 * 1024 * 1024
         ? 75
         : 100;
     const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
@@ -86,7 +87,7 @@ export const createEventService = async ({
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.event}/${filename}`,
       Body: compress,
-      ContentType: FileType['image/webp'],
+      ContentType: FileType["image/webp"],
       ACL: "public-read",
     });
 

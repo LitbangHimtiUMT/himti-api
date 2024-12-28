@@ -1,29 +1,32 @@
-import { NextFunction, type Request, type Response } from 'express';
+import { NextFunction, type Request, type Response } from "express";
 import Joi from "joi";
-import { MESSAGE_CODE } from "../utils/ErrorCode";
-import { HandleResponse } from "../utils/HandleResponse";
+import { MESSAGE_CODE } from "../utils/error-code";
+import { HandleResponse } from "../utils/handle-response";
 
-export const validateRequest = (body: Joi.ObjectSchema, file?: Joi.ObjectSchema) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        const bv = body.validate(req.body, { abortEarly: false });
-        const fv = file ? file.validate(req.file, { abortEarly: false }) : { error: null }
-        
-        const errors = []
+export const validateRequest = (
+  body: Joi.ObjectSchema,
+  file?: Joi.ObjectSchema
+) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const bv = body.validate(req.body, { abortEarly: false });
+    const fv = file
+      ? file.validate(req.file, { abortEarly: false })
+      : { error: null };
 
-        if (fv.error) {
-            errors.push(...fv.error.details.map(i => i.message.replace(/"/g, '')))
-        }
+    const errors = [];
 
-        if (bv.error) {
-            errors.push(...bv.error.details.map(i => i.message.replace(/"/g, '')))
+    if (fv.error) {
+      errors.push(...fv.error.details.map((i) => i.message.replace(/"/g, "")));
+    }
 
-        }
-        console.log(console.log(errors))
-        if (errors.length) {
+    if (bv.error) {
+      errors.push(...bv.error.details.map((i) => i.message.replace(/"/g, "")));
+    }
+    console.log(console.log(errors));
+    if (errors.length) {
+      return HandleResponse(res, 400, MESSAGE_CODE.BAD_REQUEST, errors[0]);
+    }
 
-            return HandleResponse(res, 400, MESSAGE_CODE.BAD_REQUEST, errors[0]);
-        }
-
-        next();
-    };
+    next();
+  };
 };

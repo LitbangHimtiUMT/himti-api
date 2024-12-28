@@ -1,10 +1,5 @@
-import {
-  Event,
-  Meeting,
-  NotificationHistory,
-  Role
-} from "@prisma/client";
-import { FormatIDTime } from "../../utils/FormatIDTime";
+import { Event, Meeting, NotificationHistory, Role } from "@prisma/client";
+import { FormatIDTime } from "../../utils/format-id-time";
 
 export interface NotificationData extends NotificationHistory {
   Event: Event;

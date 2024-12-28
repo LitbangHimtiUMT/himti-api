@@ -1,6 +1,6 @@
-import { MESSAGE_CODE } from "../../utils/ErrorCode";
-import { ErrorApp } from "../../utils/HttpError";
-import { MESSAGES } from "../../utils/Messages";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
 import { getUserById } from "../authentication/authRepository";
 import { getMeetingById } from "../meetings/meetingsRepository";
 import { getMemberByNIM } from "../members/membersRepository";

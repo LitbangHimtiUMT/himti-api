@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../config";
-import { ReturnValue } from "../../utils/ReturnValue";
+import { ReturnValue } from "../../utils/return-value";
 import {
   IFilterUser,
   UpdateUserBodyRequest,
