@@ -18,7 +18,11 @@ route.post(
   validateRequest(sendNotificationSchema),
   CatchWrapper(sendNotificationController)
 );
-route.post("/:fcm", CatchWrapper(sendSingleNotificationController));
+route.post(
+  "/:fcm",
+  validateRequest(sendNotificationSchema),
+  CatchWrapper(sendSingleNotificationController)
+);
 route.post("/fcm/:fcmId", CatchWrapper(sendNotificationByFcmIdController));
 route.get("/", VerifyToken, CatchWrapper(getNotificationController));
 route.put(

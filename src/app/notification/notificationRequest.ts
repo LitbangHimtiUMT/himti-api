@@ -1,13 +1,8 @@
 import Joi from "joi";
-import { MESSAGES } from "../../utils/messages";
 
 export const sendNotificationSchema = Joi.object({
-  title: Joi.string().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.TITLE,
-  }),
-  body: Joi.string().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.BODY,
-  }),
+  title: Joi.string().required(),
+  body: Joi.string().required(),
   eventId: Joi.string().optional().allow(null),
   meetingId: Joi.string().optional().allow(null),
 });
