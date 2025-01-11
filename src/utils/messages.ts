@@ -165,6 +165,9 @@ export const MESSAGES = {
     SERVER_ERROR: {
       INTERNAL_SERVER_ERROR: "Internal server error",
     },
+    UNDER_MAINTENANCE: {
+      FEATURES: "Features are under maintenance",
+    },
   },
   SUCCESS: {
     USER: "User logged in successfully",

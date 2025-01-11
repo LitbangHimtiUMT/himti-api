@@ -98,6 +98,14 @@ export const getStrukturalService = async ({
   perPage = 10,
   angkatan,
 }: IFilterStructural) => {
+  if (environment.UNDER_MAINTENANCE === "YES") {
+    return new ErrorApp(
+      `Structural ${MESSAGES.ERROR.UNDER_MAINTENANCE.FEATURES}`,
+      503,
+      MESSAGE_CODE.UNDER_MAINTENANCE
+    );
+  }
+
   const [struktural, totalData] = await Promise.all([
     getStructural({ search, page, perPage, angkatan }),
     getStructuralCount({ search, angkatan }),
