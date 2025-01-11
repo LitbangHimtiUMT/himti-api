@@ -14,7 +14,6 @@ import {
   getStructuralCount,
   updateStructural,
 } from "./strukturalRepository";
-// import { strukturalMapper } from './strukturalResponse'
 import { Jabatan } from "@prisma/client";
 import { environment } from "../../libs";
 import {
