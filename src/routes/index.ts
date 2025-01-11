@@ -17,7 +17,7 @@ import pointsRoute from "../app/point/pointsRoute";
 import profileRoute from "../app/profile/profileRoute";
 import strukturalRoute from "../app/struktural/strukturalRoute";
 // import subAcaraRoute from '../app/sub-acara/subAcaraRoute';
-import userFcmRoute from "../app/user-fcm/user-fcmRoute";
+import userFcmRoute from "../app/user-fcm/user-fcm.route";
 import userRoute from "../app/user/userRoute";
 import versionRoute from "../app/version/versionRoute";
 import eventMeetingRoute from "../app/eventMeeting/eventMeetingRoute";

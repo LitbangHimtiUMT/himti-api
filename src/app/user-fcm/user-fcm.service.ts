@@ -8,8 +8,8 @@ import {
   getAllFCMUserCount,
   getFCMUserById,
 } from "./user-fcm.repository";
-import { UserFCMQuery } from "./user-fcmDTO";
-import { userFCMDTOMapper } from "./user-fcmMapper";
+import { UserFCMQuery } from "./user-fcm.dto";
+import { userFCMDTOMapper } from "./user-fcm.mapper";
 
 export const getAllFCMUserService = async (query: UserFCMQuery) => {
   const { page = "1", perPage = "10" } = query;

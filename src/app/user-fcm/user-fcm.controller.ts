@@ -6,7 +6,7 @@ import { MESSAGES } from "../../utils/messages";
 import {
   deleteUserFCMUserService,
   getAllFCMUserService,
-} from "./user-fcmService";
+} from "./user-fcm.service";
 
 export const getAllFCMUserController = async (
   req: Request,

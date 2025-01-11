@@ -47,6 +47,8 @@ export const createMeeting = async ({
     },
     select: {
       id: true,
+      name: true,
+      description: true,
     },
   });
 };

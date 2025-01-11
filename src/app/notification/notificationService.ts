@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role, UserFCM } from "@prisma/client";
 import { FirebaseNotificationMessage } from "../../interface/FirebaseNotificationMessage";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import {
@@ -51,46 +51,45 @@ export const sendNotificationService = async (
       );
     }
   }
+  const fcmUnique = () => {
+    const map = new Map();
+    const userFcm = fcm.map((userFcm) => ({
+      id: userFcm.id,
+      fcmToken: userFcm.fcmToken,
+      userId: userFcm.userId,
+    }));
+    userFcm.forEach((item) => map.set(item.userId, item));
+    return Array.from(map.values()) as UserFCM[];
+  };
 
-  try {
-    const result = await Promise.all(
-      fcm.map(async (item) => {
-        const message = NotificationMessage(
-          title,
-          body,
-          item.fcmToken
-        ) as FirebaseNotificationMessage;
-        const user = await getUserById(item.userId);
-        if (user?.role === "USER" && meetingId) {
-          return;
-        }
-        await SendFirebaseNotification(message);
-        await createNotification({
-          body,
-          title,
-          eventId: eventId ? eventId : undefined,
-          meetingId: meetingId ? meetingId : undefined,
-          userId: item.userId,
-        });
-      })
-    );
+  await Promise.all(
+    fcm.map(async (item) => {
+      const message = NotificationMessage(
+        title,
+        body,
+        item.fcmToken
+      ) as FirebaseNotificationMessage;
+      const user = await getUserById(item.userId);
+      if (user?.role === "USER" && meetingId) {
+        return;
+      }
+      await SendFirebaseNotification(message);
+    })
+  );
 
-    console.log("Successfully sent message:");
-    return result;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    // if (error.message.toLowerCase() === "auth error from apns or web push service") {
-
-    //     const result = await createNotification(title, body, idAcara, subAcaraId)
-    //     return result
-    // }
-    console.error("Error sending message:", error?.message);
-    if (error instanceof ErrorApp) {
-      return new ErrorApp(error.message, error.statusCode, error.code);
-    }
-    throw error;
-    // throw error;
+  const unique = fcmUnique();
+  for (const item of unique) {
+    await createNotification({
+      body,
+      title,
+      eventId: eventId ? eventId : undefined,
+      meetingId: meetingId ? meetingId : undefined,
+      userId: item.userId,
+    });
   }
+
+  console.log("Successfully sent message:");
+  return null;
 };
 
 export const sendSingleNotificationService = async (
@@ -114,7 +113,11 @@ export const sendSingleNotificationService = async (
   } catch (error: any) {
     console.error("Error sending message:", error.message);
     // res.status(500).json({ error: error.message });
-    return new ErrorApp(MESSAGE_CODE.BAD_REQUEST, 400, error);
+    return new ErrorApp(
+      error?.message ?? "Requested Entity Not Found",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
   }
 };
 

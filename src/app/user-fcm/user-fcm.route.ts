@@ -3,7 +3,7 @@ import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   deleteFCMUserController,
   getAllFCMUserController,
-} from "./user-fcmController";
+} from "./user-fcm.controller";
 
 const route = Router();
 

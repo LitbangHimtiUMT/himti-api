@@ -1,5 +1,5 @@
 import { Role, User, UserFCM } from "@prisma/client";
-import { UserFCMDTO } from "./user-fcmDTO";
+import { UserFCMDTO } from "./user-fcm.dto";
 
 interface UserFCMData extends UserFCM {
     User: User
