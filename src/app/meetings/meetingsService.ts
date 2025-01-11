@@ -9,7 +9,7 @@ import { Meta } from "../../utils/meta";
 import { NotificationMessage } from "../../utils/notification-message";
 import { getEventMeetingById } from "../eventMeeting/eventMeetingRepository";
 import { createNotification } from "../notification/notificationRepository";
-import { getAllFCMUser } from "../user-fcm/user-fcm.repository";
+import { getAllMemberFCMUser } from "../user-fcm/user-fcm.repository";
 import {
   CreateMeetingBodyRequest,
   FilterMeeting,
@@ -84,7 +84,10 @@ export const createMeetingService = async (body: CreateMeetingBodyRequest) => {
     return Array.from(map.values()) as UserFCM[];
   };
 
-  const fcm = await getAllFCMUser(1, 999999);
+  const fcm = await getAllMemberFCMUser({
+    page: "1",
+    perPage: "99999",
+  });
   if (fcm.length) {
     for (const item of fcm) {
       const message = NotificationMessage(

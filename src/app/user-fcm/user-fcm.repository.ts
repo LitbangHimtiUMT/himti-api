@@ -1,4 +1,6 @@
 import { prisma } from "../../config";
+import { Query } from "../../interface/Query";
+import { queryPagination } from "../achievements/achievementsRepository";
 
 export const createUserFCM = async (userId: string, fcmToken: string) => {
   return await prisma.userFCM.create({
@@ -41,15 +43,52 @@ export const getUserFCMByUserId = async (userId: string) => {
   });
 };
 
-export const getAllFCMUser = async (page?: number, perPage?: number) => {
+export const getAllFCMUser = async (query: Query) => {
+  const { search } = query;
   return await prisma.userFCM.findMany({
+    where: {
+      User: {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    },
     include: {
       User: true,
     },
-    take: perPage,
-    skip: (Number(page) - 1) * Number(perPage),
+    ...queryPagination(query),
   });
 };
-export const getAllFCMUserCount = async () => {
-  return await prisma.userFCM.count();
+
+export const getAllMemberFCMUser = async (query: Query) => {
+  return await prisma.userFCM.findMany({
+    where: {
+      User: {
+        memberId: {
+          not: null,
+        },
+        role: "ANGGOTA",
+      },
+    },
+    include: {
+      User: true,
+    },
+    ...queryPagination(query),
+  });
+};
+
+export const getAllFCMUserCount = async (query: Query) => {
+  const { search } = query;
+
+  return await prisma.userFCM.count({
+    where: {
+      User: {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    },
+  });
 };

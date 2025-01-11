@@ -31,7 +31,10 @@ export const sendNotificationService = async (
   eventId?: string,
   meetingId?: string
 ) => {
-  const fcm = await getAllFCMUser(1, 99999999);
+  const fcm = await getAllFCMUser({
+    page: "1",
+    perPage: "99999",
+  });
 
   if (!fcm.length) {
     return new ErrorApp(

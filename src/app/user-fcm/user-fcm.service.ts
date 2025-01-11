@@ -1,21 +1,21 @@
+import { Query } from "../../interface/Query";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
 import { Meta } from "../../utils/meta";
+import { userFCMDTOMapper } from "./user-fcm.mapper";
 import {
   deleteUserFCM,
   getAllFCMUser,
   getAllFCMUserCount,
   getFCMUserById,
 } from "./user-fcm.repository";
-import { UserFCMQuery } from "./user-fcm.dto";
-import { userFCMDTOMapper } from "./user-fcm.mapper";
 
-export const getAllFCMUserService = async (query: UserFCMQuery) => {
+export const getAllFCMUserService = async (query: Query) => {
   const { page = "1", perPage = "10" } = query;
   const [fcmUser, totalData] = await Promise.all([
-    getAllFCMUser(Number(page), Number(perPage)),
-    getAllFCMUserCount(),
+    getAllFCMUser(query),
+    getAllFCMUserCount(query),
   ]);
 
   const data = userFCMDTOMapper(fcmUser);
