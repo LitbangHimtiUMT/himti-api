@@ -10,7 +10,11 @@ import { ErrorApp } from "../../utils/http-error";
 import { SendEmail } from "../../utils/mailer-config";
 import { MESSAGES } from "../../utils/messages";
 import { getMemberByNIM } from "../members/membersRepository";
-import { createUserFCM, deleteUserFCM } from "../user-fcm/user-fcm.repository";
+import {
+  createUserFCM,
+  deleteManyUserFCM,
+  deleteUserFCM,
+} from "../user-fcm/user-fcm.repository";
 import {
   ForgotPasswordDTO,
   LoginAuthBodyDTO,
@@ -387,7 +391,7 @@ export const logoutService = async (token: string) => {
   //     return new ErrorApp(MESSAGES.ERROR.NOT_FOUND.USER.FCM, 404, MESSAGE_CODE.NOT_FOUND)
   // }
   if (user.UserFCM.length > 0) {
-    await deleteUserFCM(user.UserFCM[0].id);
+    await deleteManyUserFCM(user.id);
   }
   const response = await userLogin(user.id, false);
   return response;
