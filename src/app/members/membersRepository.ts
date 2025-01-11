@@ -178,6 +178,25 @@ export const updateMemberNonActive = async () => {
   });
 };
 
+export const getMemberUnderFiveYear = async () => {
+  const now = new Date().getFullYear();
+  const fiveYearAgo = now - 5;
+  return await prisma.member.findFirst({
+    where: {
+      AND: [
+        {
+          Generation: {
+            year: fiveYearAgo.toString(),
+          },
+        },
+        {
+          isActive: true,
+        },
+      ],
+    },
+  });
+};
+
 export const getMemberById = async (id: string) => {
   return await prisma.member.findUnique({
     where: {

@@ -13,6 +13,7 @@ import {
   getMemberById,
   getMemberByNIM,
   getMemberCount,
+  getMemberUnderFiveYear,
   updateMember,
   updateMemberNonActive,
 } from "./membersRepository";
@@ -52,7 +53,7 @@ export const getMembersService = async ({
   year,
   status,
 }: IFilterAnggota) => {
-  const st = statusValue(status as string);
+  const memberStatus = statusValue(status as string);
   const gen = year && year.toLowerCase() == "all" ? undefined : year;
   const [member, totalData] = await Promise.all([
     getAllMember({
@@ -60,12 +61,19 @@ export const getMembersService = async ({
       page,
       perPage,
       year: gen,
-      status: st,
+      status: memberStatus,
     }),
-    getMemberCount({ search, year, status: st as unknown as string }, st),
+    getMemberCount(
+      { search, year, status: memberStatus as unknown as string },
+      memberStatus
+    ),
   ]);
-  console.log(member[0]);
-  await updateMemberNonActive();
+
+  const memberActiveUnderFiveYear = await getMemberUnderFiveYear();
+  if (memberActiveUnderFiveYear) {
+    await updateMemberNonActive();
+  }
+
   const data = memberMapper(member as MemberData[]);
   const meta = Meta(page, perPage, totalData);
 
