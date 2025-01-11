@@ -114,14 +114,19 @@ export const getMeetingsByEventMeetingIdCount = async (
 };
 
 export const getMeetings = async (query: Query) => {
-  const { page = "1", perPage = "10", search } = query;
+  const { page = "1", perPage = "10", search, eventMeetingId } = query;
   return await prisma.meeting.findMany({
     where: {
+      eventMeetingId,
       EventMeeting: {
         name: {
           contains: search,
           mode: "insensitive",
         },
+      },
+      name: {
+        contains: search,
+        mode: "insensitive",
       },
     },
     select: {
@@ -157,14 +162,20 @@ export const getMeetings = async (query: Query) => {
 };
 
 export const getMeetingsCount = async (query: Query) => {
-  const { search } = query;
+  const { search, eventMeetingId } = query;
   return await prisma.meeting.count({
     where: {
+      eventMeetingId,
+
       EventMeeting: {
         name: {
           contains: search,
           mode: "insensitive",
         },
+      },
+      name: {
+        contains: search,
+        mode: "insensitive",
       },
     },
   });

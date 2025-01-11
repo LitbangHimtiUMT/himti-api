@@ -63,8 +63,8 @@ export const getMeetingsController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { query, userId } = req;
-  const result = await getMeetingsService(query, userId as string);
+  const { query } = req;
+  const result = await getMeetingsService(query);
 
   if (result instanceof ErrorApp) {
     next(result);

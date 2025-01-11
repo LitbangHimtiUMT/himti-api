@@ -3,4 +3,5 @@ export interface Query {
     perPage?: string
     search?: string
     isOpen?:string
+    eventMeetingId?:string
 }

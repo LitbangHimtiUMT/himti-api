@@ -18,7 +18,7 @@ import {
 import {
   MeetingData,
   getMeetingDTOMapper,
-  groupingMeetingsByEventMeetingsDTOMapper,
+  getMeetingsDTOMapper,
   meetingsDTOMapper,
 } from "./meetingsMapper";
 import {
@@ -196,7 +196,6 @@ export const getMeetingsByEventMeetingsIdService = async (
   ]);
 
   const meta = Meta(Number(page), Number(perPage), totalData);
-  console.log(meetings);
   const data = meetingsDTOMapper(meetings as MeetingData[], userId);
 
   return {
@@ -205,7 +204,7 @@ export const getMeetingsByEventMeetingsIdService = async (
   };
 };
 
-export const getMeetingsService = async (query: Query, userId: string) => {
+export const getMeetingsService = async (query: Query) => {
   const { page = "1", perPage = "10" } = query;
   const [meetings, totalData] = await Promise.all([
     getMeetings(query),
@@ -214,10 +213,7 @@ export const getMeetingsService = async (query: Query, userId: string) => {
 
   const meta = Meta(Number(page), Number(perPage), totalData);
 
-  const data = groupingMeetingsByEventMeetingsDTOMapper(
-    meetings as MeetingData[],
-    userId as string
-  );
+  const data = getMeetingsDTOMapper(meetings as MeetingData[]);
 
   return {
     data,

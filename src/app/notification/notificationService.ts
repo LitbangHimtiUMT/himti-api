@@ -10,6 +10,7 @@ import { MESSAGES } from "../../utils/messages";
 import { NotificationMessage } from "../../utils/notification-message";
 import { getUserById } from "../authentication/authRepository";
 import { getEventById } from "../event/eventRepository";
+import { getMeetingById } from "../meetings/meetingsRepository";
 import { getAllFCMUser, getFCMUserById } from "../user-fcm/user-fcm.repository";
 import { NotificationBodyRequest } from "./notificationDTO";
 import {
@@ -22,8 +23,6 @@ import {
   getNotifications,
   updateStatusNotification,
 } from "./notificationRepository";
-import { getEventMeetingById } from "../eventMeeting/eventMeetingRepository";
-import { getMeetingById } from "../meetings/meetingsRepository";
 
 export const sendNotificationService = async (
   title: string = "testing title notification",
@@ -185,7 +184,8 @@ export const sendNotificationByFcmIdService = async (
     );
   }
   if (meetingId) {
-    const sub = await getEventMeetingById(meetingId);
+    const sub = await getMeetingById(meetingId);
+    console.log({ sub });
     if (!sub) {
       return new ErrorApp(
         MESSAGES.ERROR.NOT_FOUND.SUB_ACARA,

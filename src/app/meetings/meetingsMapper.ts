@@ -35,6 +35,24 @@ export const meetingsDTOMapper = (
   };
 };
 
+export const getMeetingsDTOMapper = (
+  data: MeetingData[],
+): Omit<MeetingDTO, "resume" | "isAlreadyAttend">[] => {
+  const datas = data.map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description as string,
+    startTime: item.startTime as Date,
+    endTime: item.endTime as Date,
+    isOpen: generateOpen(item.startTime, item.endTime),
+    eventMeeting: {
+      id: item.EventMeeting.id,
+      name: item.EventMeeting.name,
+    },
+  }));
+  return datas;
+};
+
 export const groupingMeetingsByEventMeetingsDTOMapper = (
   meetings: MeetingsData[],
   userId: string
