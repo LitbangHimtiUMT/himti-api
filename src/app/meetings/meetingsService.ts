@@ -1,15 +1,9 @@
-import { UserFCM } from "@prisma/client";
-import { FirebaseNotificationMessage } from "../../interface/FirebaseNotificationMessage";
 import { Query } from "../../interface/Query";
 import { MESSAGE_CODE } from "../../utils/error-code";
-import { SendFirebaseNotification } from "../../utils/firebase-config";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
 import { Meta } from "../../utils/meta";
-import { NotificationMessage } from "../../utils/notification-message";
 import { getEventMeetingById } from "../eventMeeting/eventMeetingRepository";
-import { createNotification } from "../notification/notificationRepository";
-import { getAllMemberFCMUser } from "../user-fcm/user-fcm.repository";
 import {
   CreateMeetingBodyRequest,
   FilterMeeting,
@@ -73,48 +67,48 @@ export const createMeetingService = async (body: CreateMeetingBodyRequest) => {
     endTime: new Date(body.endTime as Date),
   });
 
-  const fcmUnique = () => {
-    const map = new Map();
-    const userFcm = fcm.map((userFcm) => ({
-      id: userFcm.id,
-      fcmToken: userFcm.fcmToken,
-      userId: userFcm.userId,
-    }));
-    userFcm.forEach((item) => map.set(item.userId, item));
-    return Array.from(map.values()) as UserFCM[];
-  };
+  // const fcmUnique = () => {
+  //   const map = new Map();
+  //   const userFcm = fcm.map((userFcm) => ({
+  //     id: userFcm.id,
+  //     fcmToken: userFcm.fcmToken,
+  //     userId: userFcm.userId,
+  //   }));
+  //   userFcm.forEach((item) => map.set(item.userId, item));
+  //   return Array.from(map.values()) as UserFCM[];
+  // };
 
-  const fcm = await getAllMemberFCMUser({
-    page: "1",
-    perPage: "99999",
-  });
-  if (fcm.length) {
-    for (const item of fcm) {
-      const message = NotificationMessage(
-        data.name,
-        data.description ?? "",
-        item.fcmToken
-      ) as FirebaseNotificationMessage;
+  // const fcm = await getAllMemberFCMUser({
+  //   page: "1",
+  //   perPage: "99999",
+  // });
+  // if (fcm.length) {
+  //   for (const item of fcm) {
+  //     const message = NotificationMessage(
+  //       data.name,
+  //       data.description ?? "",
+  //       item.fcmToken
+  //     ) as FirebaseNotificationMessage;
 
-      SendFirebaseNotification(message)
-        .then(() => {})
-        .catch((err) => {
-          if (err) {
-            return;
-          }
-        });
-    }
+  //     SendFirebaseNotification(message)
+  //       .then(() => {})
+  //       .catch((err) => {
+  //         if (err) {
+  //           return;
+  //         }
+  //       });
+  //   }
 
-    const unique = fcmUnique();
-    for (const item of unique) {
-      await createNotification({
-        body: data.description ?? "",
-        title: data.name,
-        meetingId: data.id,
-        userId: item.userId,
-      });
-    }
-  }
+  //   const unique = fcmUnique();
+  //   for (const item of unique) {
+  //     await createNotification({
+  //       body: data.description ?? "",
+  //       title: data.name,
+  //       meetingId: data.id,
+  //       userId: item.userId,
+  //     });
+  //   }
+  // }
 
   return data;
 };
