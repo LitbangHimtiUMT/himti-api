@@ -1,5 +1,5 @@
 import admin from "firebase-admin";
-import { FirebaseNotificationMessage } from "../interface/FirebaseNotificationMessage";
+import { FirebaseNotificationMessage } from "../interface/firebase-notification-message";
 import { environment } from "../libs";
 
 export const firebase = admin.initializeApp({

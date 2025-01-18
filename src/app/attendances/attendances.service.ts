@@ -1,0 +1,194 @@
+import sharp from "sharp";
+import { environment } from "../../libs";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import { ErrorApp } from "../../utils/http-error";
+import { MESSAGES } from "../../utils/messages";
+import { Meta } from "../../utils/meta";
+import {
+  BUCKET_FOLDER,
+  FileType,
+  GetFileFromStorage,
+  RemoveFileFromStorage,
+  UploadFileToStorage,
+} from "../../utils/upload-file-to-storage";
+import { getMeetingById } from "../meetings/meetings.repository";
+import { AttendanceDTO, FilterAttendance } from "./attendances.dto";
+import {
+  AttendanceData,
+  EventMeetingData,
+  getAttendanceByMeetingMapper,
+  getAttendanceDTOMapper,
+  historyAbsensiMapper,
+} from "./attendances.mapper";
+import {
+  createAttendance,
+  getAttendanceById,
+  getAttendanceByMeetingId,
+  getAttendanceByUserId,
+  getAttendances,
+  getAttendancesCount,
+} from "./attendances.repository";
+import { createAttendanceValidate } from "./attendances.validate";
+
+export const createAttendanceService = async (
+  { meetingId, image, coordinate, address, attendanceTime }: AttendanceDTO,
+  userId: string
+) => {
+  let filename;
+  try {
+    const validate = await createAttendanceValidate({
+      meetingId,
+      image,
+      userId,
+      coordinate,
+    });
+
+    if (validate instanceof ErrorApp) {
+      return validate;
+    }
+
+    const attendance = await getAttendanceByMeetingId(
+      meetingId as string,
+      userId as string
+    );
+
+    if (attendance) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.ABSENSI_ONCE,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
+    const absensiDate = new Date();
+    const meeting = await getMeetingById(meetingId as string);
+    const timeDifference =
+      (absensiDate?.getTime() -
+        new Date(meeting?.startTime as Date)?.getTime()) /
+      (1000 * 60 * 60);
+
+    if (timeDifference <= 0) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.ABSENSI_NOT_OPEN,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
+    const img = image as Express.Multer.File;
+    // const filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}${FileType[img?.mimetype as string]}`;
+    filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}.webp`;
+    const quality =
+      ((image as unknown as Express.Multer.File)?.size as number) >
+      5 * 1024 * 1024
+        ? 75
+        : 100;
+    const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
+    await UploadFileToStorage({
+      Bucket: environment.STORAGE.BUCKET,
+      Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`,
+      Body: compress,
+      ContentType: FileType["image/webp"],
+      ACL: "public-read",
+    });
+
+    console.log({
+      timeDifference,
+      targetTime: new Date(meeting?.startTime as Date),
+      absensiDate,
+    });
+
+    // Notes: Cek waktu absensi
+    let points = Math.round(Math.random() * 40); // Poin default
+
+    if (timeDifference >= 0 && timeDifference <= 1) {
+      points = 100;
+    }
+    if (timeDifference >= 1 && timeDifference <= 2) {
+      points = 50;
+    }
+    console.log({ points });
+    const absensi = await createAttendance({
+      meetingId: meeting?.id as string,
+      image: filename,
+      userId,
+      coordinate,
+      address,
+      attendanceTime,
+      eventMeetingId: meeting?.eventMeetingId,
+      point: points,
+    });
+    return absensi;
+  } catch (error) {
+    console.log({
+      error,
+    });
+    const exist = await GetFileFromStorage(
+      `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`
+    );
+    if (exist.exists) {
+      await RemoveFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`
+      );
+    }
+    return new ErrorApp(
+      "Failed to create attendance",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+};
+
+export const getAttendanceService = async ({
+  userId,
+  meetingId,
+}: FilterAttendance) => {
+  const meeting = await getAttendanceByUserId(userId as string, meetingId);
+
+  const data = historyAbsensiMapper(meeting as unknown as EventMeetingData[]);
+
+  if (!data.length) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.ABSENSI,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  return data;
+};
+
+export const getAttendanceByIdService = async (id: number) => {
+  const attendance = await getAttendanceById(id);
+
+  if (!attendance) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.ABSENSI,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const data = getAttendanceDTOMapper(
+    attendance as unknown as EventMeetingData
+  );
+  return data;
+};
+
+export const getAttendancesService = async (query: FilterAttendance) => {
+  const { page = "1", perPage = "10" } = query;
+
+  const [absensies, totalData] = await Promise.all([
+    getAttendances(query),
+    getAttendancesCount(query),
+  ]);
+
+  const meta = Meta(Number(page), Number(perPage), totalData);
+
+  return {
+    data: getAttendanceByMeetingMapper(
+      absensies as unknown as AttendanceData[]
+    ),
+    meta,
+  };
+};

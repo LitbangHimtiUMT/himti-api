@@ -1,0 +1,31 @@
+import { Router } from "express";
+import { VerifyToken } from "../../middleware/verify-token";
+import { CatchWrapper } from "../../utils/catch-wrapper";
+import { upload as UploadFile } from "../../utils/upload-file-to-storage";
+import {
+  createEventController,
+  deleteEventController,
+  getDetailEventController,
+  getEventController,
+  updateEventController,
+} from "./event.controller";
+
+const route = Router();
+
+route.post(
+  "/",
+  VerifyToken,
+  CatchWrapper(UploadFile.single("image")),
+  CatchWrapper(createEventController)
+);
+route.get("/", CatchWrapper(getEventController));
+route.delete("/:id", VerifyToken, CatchWrapper(deleteEventController));
+route.put(
+  "/:id",
+  VerifyToken,
+  CatchWrapper(UploadFile.single("image")),
+  CatchWrapper(updateEventController)
+);
+route.get("/:id", CatchWrapper(getDetailEventController));
+
+export default route;

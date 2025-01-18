@@ -1,6 +1,6 @@
 import { prisma } from "../../config";
 import { Query } from "../../interface/Query";
-import { queryPagination } from "../achievements/achievementsRepository";
+import { queryPagination } from "../achievements/achievements.repository";
 
 export const createUserFCM = async (userId: string, fcmToken: string) => {
   return await prisma.userFCM.create({
