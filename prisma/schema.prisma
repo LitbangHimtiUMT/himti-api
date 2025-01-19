@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id                  String                @id @default(uuid())
+  id                  String                @id @default(uuid()) @db.VarChar(110)
   name                String                @db.VarChar(255)
   email               String                @unique @db.VarChar(110)
   password            String                @db.VarChar(110)
@@ -21,9 +21,17 @@ model User {
   isLogin             Boolean               @default(false) @map("is_login")
   photo               String?               @db.VarChar(255)
   Member              Member?               @relation(fields: [memberId], references: [id], onDelete: NoAction)
+  mentor              Mentor?               @relation(fields: [id], references: [userId], onDelete: NoAction)
   Point               Point[]
   UserFCM             UserFCM[]
   NotificationHistory NotificationHistory[]
+  Classes             Class[]
+  ClassParticipant    ClassParticipant[]
+  CompletedModule     CompletedModule[]
+  CompletedClass      CompletedClass[]
+  Certificate         Certificate[]
+  Submission          Submission[]
+  Transaction         Transaction[]
 
   @@index([memberId], map: "user_fk_1")
   @@index([email], map: "user_fk_2")
@@ -211,7 +219,7 @@ model OTP {
 model Point {
   id           Int        @id @default(autoincrement())
   point        Int
-  userId       String
+  userId       String     @map("user_id") @db.VarChar(110)
   user         User       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   attendanceId Int
   attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -232,7 +240,7 @@ model NotificationHistory {
   Meeting   Meeting? @relation(fields: [meetingId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   title     String   @db.VarChar(155)
   body      String   @db.Text
-  isRead    Boolean
+  isRead    Boolean  @map("is_read")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
   meetingId String?  @map("meeting_id") @db.VarChar(110)
@@ -253,6 +261,219 @@ model Version {
   @@map("version")
 }
 
+model Mentor {
+  id                       String                     @id @unique @default(uuid())
+  userId                   String                     @unique @map("user_id") @db.VarChar(110)
+  balance                  Decimal                    @db.Decimal()
+  createdAt                DateTime                   @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt                DateTime                   @updatedAt @map("updated_at") @db.Timestamp(0)
+  user                     User?                      @relation
+  Submission               Submission[]
+  MentorTransactionHistory MentorTransactionHistory[]
+  WithDrawApproval         WithDrawApproval[]
+
+  @@index([userId], map: "mentors_fk_1")
+  @@map("mentors")
+}
+
+model Class {
+  id               String             @id @unique @default(uuid())
+  createdBy        String             @map("created_by") @db.VarChar(110)
+  name             String             @db.VarChar(255)
+  description      String?            @db.Text
+  thumbnail        String?            @db.VarChar(255)
+  price            Decimal            @db.Decimal()
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamp(0)
+  user             User               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  Session          Session[]
+  ClassParticipant ClassParticipant[]
+  CompletedClass   CompletedClass[]
+  Certificate      Certificate[]
+  Transaction      Transaction[]
+
+  @@index([createdBy], map: "classess_fk_1")
+  @@map("classes")
+}
+
+model ClassParticipant {
+  id        String   @id @unique @default(uuid())
+  userId    String   @map("user_id") @db.VarChar(110)
+  classId   String   @map("class_id") @db.VarChar(110)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "class_participants_fk_1")
+  @@index([classId], map: "class_participants_fk_2")
+  @@map("class_participants")
+}
+
+model Session {
+  id        String   @id @unique @default(uuid())
+  classId   String   @map("class_id") @db.VarChar(110)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  Module    Module[]
+
+  @@index([classId], map: "sessions_fk_1")
+  @@map("sessions")
+}
+
+model Module {
+  id         String      @id @unique @default(uuid())
+  sessionId  String      @map("session_id") @db.VarChar(110)
+  textModule String?     @map("text_module") @db.Text
+  videoUrl   String?     @map("video_url") @db.VarChar(255)
+  fileModule String?     @map("file_module") @db.VarChar(255)
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamp(0)
+  session    Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  assignment Assignment? @relation(fields: [id], references: [moduleId], onDelete: Cascade)
+
+  CompletedModule CompletedModule[]
+
+  @@index([sessionId], map: "modules_fk_1")
+  @@map("modules")
+}
+
+model CompletedModule {
+  id        String   @id @unique @default(uuid())
+  moduleId  String   @map("module_id") @db.VarChar(110)
+  userId    String   @map("user_id") @db.VarChar(110)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([moduleId], map: "completed_modules_fk_1")
+  @@index([userId], map: "completed_modules_fk_2")
+  @@map("completed_modules")
+}
+
+model CompletedClass {
+  id        String   @id @unique @default(uuid())
+  classId   String   @map("module_id") @db.VarChar(110)
+  userId    String   @map("user_id") @db.VarChar(110)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([classId], map: "completed_class_fk_1")
+  @@index([userId], map: "completed_class_fk_2")
+  @@map("completed_class")
+}
+
+model Certificate {
+  id        String   @id @unique @default(uuid())
+  classId   String   @map("class_id") @db.VarChar(110)
+  userId    String   @map("user_id") @db.VarChar(110)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  class     Class    @relation(fields: [classId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([classId], map: "certificates_fk_1")
+  @@index([userId], map: "certificates_fk_2")
+  @@map("certificates")
+}
+
+model Assignment {
+  id               String       @id @unique @default(uuid())
+  title            String       @db.VarChar(255)
+  description      String?      @db.Text
+  moduleId         String       @unique @map("module_id") @db.VarChar(110)
+  dueDate          DateTime     @map("due_date")
+  isFinalAssigment Boolean?     @default(false) @map("is_final_assignment") @db.Boolean
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamp(0)
+  module           Module?      @relation
+  Submission       Submission[]
+
+  @@index([moduleId], map: "assignments_fk_1")
+  @@map("assignments")
+}
+
+model Submission {
+  id           String           @id @unique @default(uuid())
+  assignmentId String           @map("assignment_id") @db.VarChar(110)
+  userId       String           @map("user_id") @db.VarChar(110)
+  status       SubmissionStatus @default(REVIEWED)
+  feedback     String?          @db.Text
+  actionBy     String?          @map("action_by") @db.VarChar(110)
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.Timestamp(0)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mentor       Mentor?          @relation(fields: [actionBy], references: [id], onDelete: Cascade)
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+
+  @@index([assignmentId], map: "submissions_fk_1")
+  @@index([userId], map: "submissions_fk_2")
+  @@map("submissions")
+}
+
+model MentorTransactionHistory {
+  id        String                @id @unique @default(uuid())
+  mentorId  String                @map("mentor_id") @db.VarChar(110)
+  amount    Decimal               @db.Decimal()
+  type      MentorTransactionType
+  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
+  mentor    Mentor                @relation(fields: [mentorId], references: [id], onDelete: NoAction)
+
+  @@index([mentorId], map: "mentor_transactions_history_fk_2")
+  @@map("mentor_transactions_history")
+}
+
+model WithDrawApproval {
+  id        String                 @id @unique @default(uuid())
+  mentorId  String                 @map("mentor_id") @db.VarChar(110)
+  status    WithDrawApprovalStatus @default(WAITING)
+  amount    Decimal
+  evidence  String?                @db.VarChar(255)
+  createdAt DateTime               @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime               @updatedAt @map("updated_at") @db.Timestamp(0)
+  mentor    Mentor                 @relation(fields: [mentorId], references: [id], onDelete: NoAction)
+
+  @@index([mentorId], map: "with_draw_approval_fk_1")
+  @@map("with_draw_approval")
+}
+
+model Transaction {
+  id            String            @id @unique @default(uuid())
+  uniqueCode    String            @unique @map("unique_code")
+  classId       String            @map("class_id") @db.VarChar(110)
+  userId        String            @map("user_id") @db.VarChar(110)
+  status        TransactionStatus @default(PENDING)
+  amount        Decimal           @db.Decimal()
+  paymentMethod String?           @map("payment_method") @db.VarChar(255)
+  paymentTime   DateTime?         @map("payment_time")
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
+  class         Class             @relation(fields: [classId], references: [id], onDelete: NoAction)
+  user          User              @relation(fields: [userId], references: [id], onDelete: NoAction)
+  Enrollment    Enrollment[]
+
+  @@unique([uniqueCode], map: "transactions_unique_pk_1")
+  @@index([classId], map: "transactions_fk_1")
+  @@index([userId], map: "transactions_fk_2")
+  @@map("transactions")
+}
+
+model Enrollment {
+  id            String      @id @unique @default(uuid())
+  transactionId String      @map("transaction_id") @db.VarChar(110)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamp(0)
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  @@index([transactionId], map: "enrollment_fk_1")
+  @@map("enrollment")
+}
+
 enum Jabatan {
   KETUA_HIMPUNAN
   WAKIL_KETUA_HIMPUNAN
@@ -268,7 +489,31 @@ enum Role {
   ANGGOTA
 }
 
+enum MentorTransactionType {
+  INCOME
+  EXPEND
+}
+
 enum BussinessType {
   MERCHANDISE
   SERVICE
+}
+
+enum WithDrawApprovalStatus {
+  APPROVED
+  REJECTED
+  WAITING
+}
+
+enum TransactionStatus {
+  PENDING
+  FAILED
+  CANCELED
+  SUCCESS
+}
+
+enum SubmissionStatus {
+  REVIEWED
+  APPROVED
+  REJECTED
 }
