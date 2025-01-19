@@ -21,7 +21,7 @@ model User {
   isLogin             Boolean               @default(false) @map("is_login")
   photo               String?               @db.VarChar(255)
   Member              Member?               @relation(fields: [memberId], references: [id], onDelete: NoAction)
-  mentor              Mentor?               @relation(fields: [id], references: [userId], onDelete: NoAction)
+  mentor              Mentor?               @relation
   Point               Point[]
   UserFCM             UserFCM[]
   NotificationHistory NotificationHistory[]
@@ -267,7 +267,7 @@ model Mentor {
   balance                  Decimal                    @db.Decimal()
   createdAt                DateTime                   @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt                DateTime                   @updatedAt @map("updated_at") @db.Timestamp(0)
-  user                     User?                      @relation
+  user                     User?                      @relation(fields: [userId], references: [id])
   Submission               Submission[]
   MentorTransactionHistory MentorTransactionHistory[]
   WithDrawApproval         WithDrawApproval[]
