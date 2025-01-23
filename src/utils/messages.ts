@@ -16,6 +16,7 @@ export const MESSAGES = {
     MERCHANDISE: "Merchandise created successfully",
     EVENT_MEETING: "Event Meeting created successfully",
     MEETING: "Meeting created successfully",
+    MENTOR: "Mentor created successfully",
   },
   ERROR: {
     NOT_FOUND: {
@@ -70,6 +71,7 @@ export const MESSAGES = {
       INITIAL_VERSION: "Initial version already exist",
       EVENT_MEETING: "Event Meeting is already exist",
       MEETING: "Meeting at this meeting event already exists",
+      USER_MENTOR: "User has become a mentor",
     },
     INVALID: {
       GLOBAL: {
