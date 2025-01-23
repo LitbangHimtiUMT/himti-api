@@ -1,10 +1,15 @@
+import { Query } from "../../interface/Query";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
+import { Meta } from "../../utils/meta";
 import { getUserById } from "../authentication/auth.repository";
+import { getMentorsDTOMapper } from "./mentor.mapper";
 import {
   createMentorRepository,
   getMentorByUserIdRepository,
+  getMentorsCountRepository,
+  getMentorsRepository,
 } from "./mentor.repository";
 
 export const createMentorService = async (userId: string) => {
@@ -28,4 +33,20 @@ export const createMentorService = async (userId: string) => {
   const mentor = await createMentorRepository(user.id);
 
   return mentor;
+};
+
+export const getMentorsService = async (query: Query) => {
+  const { page = "1", perPage = "10" } = query;
+  const [mentors, totalData] = await Promise.all([
+    getMentorsRepository(query),
+    getMentorsCountRepository(query),
+  ]);
+
+  const meta = Meta(Number(page), Number(perPage), totalData);
+  const data = getMentorsDTOMapper(mentors);
+
+  return {
+    data,
+    meta,
+  };
 };

@@ -277,5 +277,10 @@ export const MESSAGES = {
       GET: "Success to fetch points",
       UPDATE: "Success to update points",
     },
+    MENTOR: {
+      GET: "Success to fetch mentor",
+      DELETE: "Success to delete mentor",
+      UPDATE: "Success to update mentor",
+    }
   },
 };
