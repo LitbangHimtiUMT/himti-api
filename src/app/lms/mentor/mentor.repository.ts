@@ -1,6 +1,6 @@
-import { prisma } from "../../config";
-import { Query } from "../../interface/Query";
-import { queryPagination } from "../achievements/achievements.repository";
+import { prisma } from "../../../config";
+import { Query } from "../../../interface/Query";
+import { queryPagination } from "../../achievements/achievements.repository";
 
 export const createMentorRepository = async (userId: string) => {
   return await prisma.mentor.create({

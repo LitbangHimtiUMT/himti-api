@@ -23,7 +23,8 @@ import meetingRoute from "../app/meetings/meetings.route";
 import notificationRoute from "../app/notification/notification.route";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { MESSAGES } from "../utils/messages";
-import { mentorsRoute } from "../app/mentor/mentor.route";
+import { lmsRoute } from "../app/lms/lms.route";
+
 
 const route = Router();
 
@@ -43,7 +44,7 @@ route.use("/prestasi", prestasiRoute);
 route.use("/user", userRoute);
 route.use("/notification", notificationRoute);
 route.use("/user-fcm", userFcmRoute);
-route.use("/mentors", mentorsRoute);
+route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
 

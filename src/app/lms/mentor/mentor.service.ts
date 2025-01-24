@@ -1,9 +1,9 @@
-import { Query } from "../../interface/Query";
-import { MESSAGE_CODE } from "../../utils/error-code";
-import { ErrorApp } from "../../utils/http-error";
-import { MESSAGES } from "../../utils/messages";
-import { Meta } from "../../utils/meta";
-import { getUserById } from "../authentication/auth.repository";
+import { Query } from "../../../interface/Query";
+import { MESSAGE_CODE } from "../../../utils/error-code";
+import { ErrorApp } from "../../../utils/http-error";
+import { MESSAGES } from "../../../utils/messages";
+import { Meta } from "../../../utils/meta";
+import { getUserById } from "../../authentication/auth.repository";
 import { getMentorsDTOMapper } from "./mentor.mapper";
 import {
   createMentorRepository,
