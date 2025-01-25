@@ -3,30 +3,28 @@ import { Router, type Request, type Response } from "express";
 import path from "path";
 import PDFDocument from "pdfkit";
 import QRCode, { QRCodeToDataURLOptions } from "qrcode";
-import absensiRoute from "../app/attendances/attendances.route";
 import prestasiRoute from "../app/achievements/achievements.route";
+import absensiRoute from "../app/attendances/attendances.route";
 import authRoute from "../app/authentication/auth.route";
 import businessRoute from "../app/business/business.route";
-import dosenRoute from "../app/lecturers/lecturers.route";
+import eventMeetingRoute from "../app/event-meeting/event-meeting.route";
 import acaraRoute from "../app/event/event.route";
 import angkatanRoute from "../app/generations/generations.route";
 import initialRoute from "../app/initial/initial.route";
+import dosenRoute from "../app/lecturers/lecturers.route";
+import { lmsRoute } from "../app/lms/lms.route";
+import meetingRoute from "../app/meetings/meetings.route";
 import anggotaRoute from "../app/members/members.route";
+import notificationRoute from "../app/notification/notification.route";
+import { testingCronjob } from "../app/playground/testing-cronjob";
 import pointsRoute from "../app/point/points.route";
 import profileRoute from "../app/profile/profile.route";
 import strukturalRoute from "../app/struktural/struktural.route";
 import userFcmRoute from "../app/user-fcm/user-fcm.route";
 import userRoute from "../app/user/user.route";
 import versionRoute from "../app/version/version.route";
-import eventMeetingRoute from "../app/event-meeting/event-meeting.route";
-import meetingRoute from "../app/meetings/meetings.route";
-import notificationRoute from "../app/notification/notification.route";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { MESSAGES } from "../utils/messages";
-import { lmsRoute } from "../app/lms/lms.route";
-import { getUserFCMByNIM } from "../app/user-fcm/user-fcm.repository";
-import { SendFirebaseNotification } from "../utils/firebase-config";
-import { NotificationMessage } from "../utils/notification-message";
 
 const route = Router();
 
@@ -50,19 +48,7 @@ route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
 
-route.get("/testing-cronjob", async (req, res) => {
-  req.query;
-  const fcm = await getUserFCMByNIM("2255201237");
-  for (const item of fcm) {
-    await SendFirebaseNotification(
-      NotificationMessage("ABAIKAN INI", "TESTING", item.fcmToken)
-    );
-  }
-  console.log("running a task every 30 seconds");
-  res.json({
-    message: "success",
-  });
-});
+route.get("/testing-cronjob", testingCronjob);
 
 registerFont(path.join(__dirname, "../../public/times-new-roman.ttf"), {
   family: "Times New Roman",
@@ -155,10 +141,7 @@ route.get("/generate", async (req: Request, res: Response) => {
   }
 });
 
-route.get("/", (req: Request, res: Response) => {
-  console.log('HELLO WORLD')
-  return res.json({ message: "Hello World 🚀" });
-});
+route.get("/");
 
 route.use("*", (req: Request, res: Response) => {
   return res.status(404).json({
