@@ -17,6 +17,7 @@ export const MESSAGES = {
     EVENT_MEETING: "Event Meeting created successfully",
     MEETING: "Meeting created successfully",
     MENTOR: "Mentor created successfully",
+    CATEGORY: "Category created successfully",
   },
   ERROR: {
     NOT_FOUND: {
@@ -72,6 +73,7 @@ export const MESSAGES = {
       EVENT_MEETING: "Event Meeting is already exist",
       MEETING: "Meeting at this meeting event already exists",
       USER_MENTOR: "User has become a mentor",
+      CATEGORY: "Category is already exist",
     },
     INVALID: {
       GLOBAL: {
