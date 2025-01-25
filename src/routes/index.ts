@@ -48,7 +48,7 @@ route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
 
-route.get("/testing-cronjob", testingCronjob);
+route.use("/testing-cronjob", testingCronjob);
 
 registerFont(path.join(__dirname, "../../public/times-new-roman.ttf"), {
   family: "Times New Roman",
@@ -140,8 +140,6 @@ route.get("/generate", async (req: Request, res: Response) => {
     res.status(500).send("Error generating certificate");
   }
 });
-
-route.get("/");
 
 route.use("*", (req: Request, res: Response) => {
   return res.status(404).json({
