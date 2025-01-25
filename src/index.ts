@@ -1,34 +1,62 @@
 // import { dbconnect } from 'config'
-import cookieParser from 'cookie-parser'
-import cors from 'cors'
-import dotenv from 'dotenv'
-import express from 'express'
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
 
-import { environment } from './libs'
-import routes from './routes'
-import { HandlingError } from './utils/handling-error'
+import { environment } from "./libs";
+import routes from "./routes";
+import { HandlingError } from "./utils/handling-error";
+import schedule from "node-schedule";
+import { getUserFCMByNIM } from "./app/user-fcm/user-fcm.repository";
+import { SendFirebaseNotification } from "./utils/firebase-config";
+import { NotificationMessage } from "./utils/notification-message";
 
-const app = express()
+const app = express();
 
-const port = environment.PORT || 5000
-dotenv.config()
+const port = environment.PORT || 5000;
+dotenv.config();
 // dbconnect()
-app.use(cors({
+app.use(
+  cors({
     origin: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Requested-With', 'Accept', 'Accept-Version', 'Content-Length', 'Content-MD5', 'Content-Type', 'Date', 'X-Api-Version'],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-CSRF-Token",
+      "X-Requested-With",
+      "Accept",
+      "Accept-Version",
+      "Content-Length",
+      "Content-MD5",
+      "Content-Type",
+      "Date",
+      "X-Api-Version",
+    ],
     credentials: true,
-    preflightContinue: false
-}));
+    preflightContinue: false,
+  })
+);
 
-app.use(cookieParser())
+app.use(cookieParser());
 // app.use(bodyParser.json())
-app.use(express.json())
+app.use(express.json());
 app.use(routes);
-app.use(HandlingError)
+app.use(HandlingError);
+
+schedule.scheduleJob("35 20 * * *", async () => {
+  const fcm = await getUserFCMByNIM("2255201237");
+  for (const item of fcm) {
+    await SendFirebaseNotification(
+      NotificationMessage("ABAIKAN INI", "TESTING", item.fcmToken)
+    );
+  }
+  console.log("running a task every 30 seconds");
+});
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}🚀`)
-})
+  console.log(`Server running on port ${port}🚀`);
+});
 
-export default app
+export default app;

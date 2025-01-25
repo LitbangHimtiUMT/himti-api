@@ -92,3 +92,13 @@ export const getAllFCMUserCount = async (query: Query) => {
     },
   });
 };
+
+export const getUserFCMByNIM = (nim: string) => {
+  return prisma.userFCM.findMany({
+    where: {
+      User: {
+        nim,
+      },
+    },
+  });
+};
