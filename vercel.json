@@ -21,15 +21,7 @@
   "crons": [
     {
       "path": "/testing-cronjob",
-      "schedule": "33 21 * * *"
-    },
-    {
-      "path": "/src/app/playground/testing-cronjob.ts",
-      "schedule": "33 21 * * *"
-    },
-    {
-      "path": "/",
-      "schedule": "33 21 * * *"
+      "schedule": "35 21 * * *"
     }
   ]
 }
