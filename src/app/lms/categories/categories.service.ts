@@ -1,9 +1,14 @@
+import { Query } from "../../../interface/Query";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
+import { Meta } from "../../../utils/meta";
 import { CreateCategoryDAO } from "./categories.dao";
+import { getCategoriesDTOMapper } from "./categories.mapper";
 import {
   createCategoryRepository,
+  getCategoriesCountRepository,
+  getCategoriesRepository,
   getCategoryNameRepository,
 } from "./categories.repository";
 
@@ -23,4 +28,20 @@ export const createCategoryService = async (data: CreateCategoryDAO) => {
     name: data.name,
   });
   return result;
+};
+
+export const getCategoriesService = async (query: Query) => {
+  const { page = "1", perPage = "10" } = query;
+  const [categories, totalData] = await Promise.all([
+    getCategoriesRepository(query),
+    getCategoriesCountRepository(query),
+  ]);
+
+  const meta = Meta(Number(page), Number(perPage), totalData);
+  const data = getCategoriesDTOMapper(categories);
+
+  return {
+    data,
+    meta,
+  };
 };

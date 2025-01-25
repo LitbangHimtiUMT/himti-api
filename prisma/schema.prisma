@@ -268,9 +268,9 @@ model Mentor {
   createdAt                DateTime                   @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt                DateTime                   @updatedAt @map("updated_at") @db.Timestamp(0)
   user                     User?                      @relation(fields: [userId], references: [id])
-  Submission               Submission[]
-  MentorTransactionHistory MentorTransactionHistory[]
-  WithDrawApproval         WithDrawApproval[]
+  submission               Submission[]
+  mentorTransactionHistory MentorTransactionHistory[]
+  withDrawApproval         WithDrawApproval[]
 
   @@index([userId], map: "mentors_fk_1")
   @@map("mentors")
@@ -281,7 +281,7 @@ model Category {
   name      String
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
-  Class     Class[]
+  class     Class[]
 
   @@map("categories")
 }
@@ -300,10 +300,10 @@ model Class {
   user             User               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   category         Category           @relation(fields: [categoryId], onDelete: Cascade, onUpdate: NoAction, references: [id])
   Session          Session[]
-  ClassParticipant ClassParticipant[]
-  CompletedClass   CompletedClass[]
-  Certificate      Certificate[]
-  Transaction      Transaction[]
+  classParticipant ClassParticipant[]
+  completedClass   CompletedClass[]
+  certificate      Certificate[]
+  cransaction      Transaction[]
 
   @@index([createdBy], map: "classess_fk_1")
   @@map("classes")
@@ -329,7 +329,7 @@ model Session {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
   class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  Module    Module[]
+  module    Module[]
 
   @@index([classId], map: "sessions_fk_1")
   @@map("sessions")
@@ -404,7 +404,7 @@ model Assignment {
   createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamp(0)
   module           Module?      @relation
-  Submission       Submission[]
+  submission       Submission[]
 
   @@index([moduleId], map: "assignments_fk_1")
   @@map("assignments")
@@ -468,7 +468,7 @@ model Transaction {
   updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
   class         Class             @relation(fields: [classId], references: [id], onDelete: NoAction)
   user          User              @relation(fields: [userId], references: [id], onDelete: NoAction)
-  Enrollment    Enrollment[]
+  enrollment    Enrollment[]
 
   @@unique([uniqueCode], map: "transactions_unique_pk_1")
   @@index([classId], map: "transactions_fk_1")

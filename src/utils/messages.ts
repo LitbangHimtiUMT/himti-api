@@ -286,6 +286,11 @@ export const MESSAGES = {
       GET: "Success to fetch mentor",
       DELETE: "Success to delete mentor",
       UPDATE: "Success to update mentor",
-    }
+    },
+    CATEGORY: {
+      GET: "Success to fetch category",
+      DELETE: "Success to delete category",
+      UPDATE: "Success to update category",
+    },
   },
 };
