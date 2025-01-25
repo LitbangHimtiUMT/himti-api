@@ -16,7 +16,7 @@ import { lmsRoute } from "../app/lms/lms.route";
 import meetingRoute from "../app/meetings/meetings.route";
 import anggotaRoute from "../app/members/members.route";
 import notificationRoute from "../app/notification/notification.route";
-import { testingCronjob } from "../app/playground/testing-cronjob";
+import { schedulingNotification } from "../app/scheduling/scheduling-meeting";
 import pointsRoute from "../app/point/points.route";
 import profileRoute from "../app/profile/profile.route";
 import strukturalRoute from "../app/struktural/struktural.route";
@@ -48,7 +48,7 @@ route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
 
-route.use("/testing-cronjob", testingCronjob);
+route.use("/scheduling-notification-meeting", schedulingNotification);
 
 registerFont(path.join(__dirname, "../../public/times-new-roman.ttf"), {
   family: "Times New Roman",

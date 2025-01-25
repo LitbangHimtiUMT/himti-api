@@ -212,3 +212,18 @@ export const deleteMeeting = async (meetingId: string) => {
     },
   });
 };
+
+export const getMeetingToday = async () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
+  return await prisma.meeting.findFirst({
+    where: {
+      startTime: {
+        gte: today,
+        lt: tomorrow,
+      },
+    },
+  });
+};
