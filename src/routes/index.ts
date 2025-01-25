@@ -141,6 +141,10 @@ route.get("/generate", async (req: Request, res: Response) => {
   }
 });
 
+route.get("/", (req: Request, res: Response) => {
+  return res.json({ message: "Hello World 🚀" });
+});
+
 route.use("*", (req: Request, res: Response) => {
   return res.status(404).json({
     status: 404,
