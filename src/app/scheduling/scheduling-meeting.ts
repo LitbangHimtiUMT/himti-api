@@ -40,8 +40,8 @@ export const schedulingNotification = async (req: Request, res: Response) => {
       const unique = fcmUnique();
       await createManyNotification(
         unique.map((item) => ({
-          body: meetingToday.description ?? "",
-          title: meetingToday.name,
+          body: `Hai, Sobat HIMTI! 🚀 Jangan lupa untuk melakukan absensi online pada rapat ${meetingToday.name} dengan agenda ${meetingToday.EventMeeting.name} pada ${formatTime(meetingToday.startTime)} - ${formatTime(meetingToday.endTime)}. Absensi dapat dilakukan melalui aplikasi. Terima kasih atas partisipasinya! 💪🔥`,
+          title: `Rapat ${meetingToday.name}`,
           meetingId: meetingToday.id,
           userId: item.userId,
         }))
