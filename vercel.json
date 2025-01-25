@@ -22,6 +22,10 @@
     {
       "path": "/testing-cronjob",
       "schedule": "12 21 * * *"
+    },
+    {
+      "path": "/",
+      "schedule": "12 21 * * *"
     }
   ]
 }

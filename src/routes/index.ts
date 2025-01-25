@@ -156,6 +156,7 @@ route.get("/generate", async (req: Request, res: Response) => {
 });
 
 route.get("/", (req: Request, res: Response) => {
+  console.log('HELLO WORLD')
   return res.json({ message: "Hello World 🚀" });
 });
 
