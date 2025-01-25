@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createEventMeetingController,
@@ -19,30 +19,30 @@ const route = Router();
 
 route.post(
   "/",
-  VerifyToken,
+  verifyToken(),
   validateRequest(createEventMeetingSchema),
   CatchWrapper(createEventMeetingController)
 );
 route.put(
   "/:eventMeetingId",
-  VerifyToken,
+  verifyToken(),
   validateRequest(updateEventMeetingSchema),
   CatchWrapper(updateEventMeetingController)
 );
-route.get("/", VerifyToken, CatchWrapper(getEventMeetingsController));
+route.get("/", verifyToken(), CatchWrapper(getEventMeetingsController));
 route.get(
   "/meeting",
-  VerifyToken,
+  verifyToken(),
   CatchWrapper(getEventMeetingWithMeetingController)
 );
 route.get(
   "/:eventMeetingId",
-  VerifyToken,
+  verifyToken(),
   CatchWrapper(getEventMeetingByIdController)
 );
 route.delete(
   "/:eventMeetingId",
-  VerifyToken,
+  verifyToken(),
   CatchWrapper(deleteEventMeetingController)
 );
 

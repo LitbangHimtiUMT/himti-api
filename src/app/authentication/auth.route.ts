@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   checkToken,
@@ -54,6 +54,6 @@ route.put(
   CatchWrapper(forgotPasswordController)
 );
 route.get("/logout", VerifyTokenWithoutExp, CatchWrapper(logoutController));
-route.get("/token", VerifyToken, CatchWrapper(checkToken));
+route.get("/token", verifyToken(), CatchWrapper(checkToken));
 
 export default route;

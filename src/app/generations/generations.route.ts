@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createAngkatanController,
@@ -15,13 +15,13 @@ const route = Router();
 
 route.post(
   "/",
-  VerifyToken,
+  verifyToken(),
   validateRequest(createAngkatanSchema),
   CatchWrapper(createAngkatanController)
 );
-route.get("/", VerifyToken, CatchWrapper(getAngkatanController));
-route.get("/:id", VerifyToken, CatchWrapper(getAngkatanByIdController));
-route.delete("/:id", VerifyToken, CatchWrapper(deleteAngkatanController));
-route.put("/:id", VerifyToken, CatchWrapper(updateAngkatanController));
+route.get("/", verifyToken(), CatchWrapper(getAngkatanController));
+route.get("/:id", verifyToken(), CatchWrapper(getAngkatanByIdController));
+route.delete("/:id", verifyToken(), CatchWrapper(deleteAngkatanController));
+route.put("/:id", verifyToken(), CatchWrapper(updateAngkatanController));
 
 export default route;

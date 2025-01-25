@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import { upload as UploadFile } from "../../utils/upload-file-to-storage";
 import {
@@ -13,20 +13,20 @@ import { updatePasswordSchema } from "./profile.request";
 
 const route = Router();
 
-route.get("/", VerifyToken, CatchWrapper(getProfileController));
+route.get("/", verifyToken(), CatchWrapper(getProfileController));
 route.put(
   "/",
-  VerifyToken,
+  verifyToken(),
   //   validateRequest(updateProfileSchema),
   CatchWrapper(UploadFile.single("photo")),
   CatchWrapper(updateProfileController)
 );
 route.put(
   "/password",
-  VerifyToken,
+  verifyToken(),
   validateRequest(updatePasswordSchema),
   CatchWrapper(updatePasswordController)
 );
-route.delete("/", VerifyToken, CatchWrapper(deletePhotoProfileController));
+route.delete("/", verifyToken(), CatchWrapper(deletePhotoProfileController));
 
 export default route;

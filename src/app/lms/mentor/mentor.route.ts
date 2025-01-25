@@ -4,10 +4,10 @@ import {
   createMentorController,
   getMentorsController,
 } from "./mentor.controller";
-import { VerifyToken } from "../../../middleware/verify-token";
+import { verifyToken } from "../../../middleware/verify-token";
 
 export const mentorsRoute = Router();
 
 mentorsRoute
-  .post("/:userId", VerifyToken, CatchWrapper(createMentorController))
-  .get("/", VerifyToken, CatchWrapper(getMentorsController));
+  .post("/:userId", verifyToken(), CatchWrapper(createMentorController))
+  .get("/", verifyToken(), CatchWrapper(getMentorsController));

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import { imageSchema } from "../global/image-request";
 import { upload } from "./business.config";
@@ -18,7 +18,7 @@ const route = Router();
 route.get("/merchandise", CatchWrapper(getMerchandiseController));
 route.post(
   "/merchandise",
-  VerifyToken,
+  verifyToken(),
   upload.single("image"),
   validateRequest(createBusinessSchema, imageSchema),
   CatchWrapper(createMerchandiseController)
@@ -28,7 +28,7 @@ route.post(
 route.get("/service", CatchWrapper(getServiceController));
 route.post(
   "/service",
-  VerifyToken,
+  verifyToken(),
   upload.single("image"),
   validateRequest(createBusinessSchema, imageSchema),
   CatchWrapper(createServiceController)

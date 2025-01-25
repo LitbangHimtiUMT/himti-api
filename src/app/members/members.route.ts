@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createMemberController,
@@ -15,12 +15,12 @@ const route = Router();
 
 route.post(
   "/",
-  VerifyToken,
+  verifyToken(),
   validateRequest(createMemberSchema),
   CatchWrapper(createMemberController)
 );
-route.get("/", VerifyToken, CatchWrapper(getMemberController));
-route.get("/:id", VerifyToken, CatchWrapper(getMemberByIdController));
+route.get("/", verifyToken(), CatchWrapper(getMemberController));
+route.get("/:id", verifyToken(), CatchWrapper(getMemberByIdController));
 route.delete("/:id", CatchWrapper(deleteMemberController));
 route.put("/:id", CatchWrapper(updateMemberController));
 

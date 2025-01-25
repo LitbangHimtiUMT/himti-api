@@ -12,7 +12,7 @@ model User {
   name                String                @db.VarChar(255)
   email               String                @unique @db.VarChar(110)
   password            String                @db.VarChar(110)
-  role                Role?                 @default(ADMIN)
+  role                Role                 @default(ADMIN)
   nim                 String?               @db.VarChar(20)
   memberId            String?               @unique @map("member_id") @db.VarChar(110)
   Attendance          Attendance[]

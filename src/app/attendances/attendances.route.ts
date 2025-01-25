@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { VerifyAdmin } from "../../middleware/verify-admin";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createAttendanceController,
@@ -14,16 +14,16 @@ const route = Router();
 
 route.post(
   "/",
-  VerifyToken,
+  verifyToken(),
   CatchWrapper(upload.single("image")),
   CatchWrapper(createAttendanceController)
 );
-route.get("/", VerifyToken, CatchWrapper(getAttendanceController));
+route.get("/", verifyToken(), CatchWrapper(getAttendanceController));
 route.get(
   "/meeting/:meetingId",
   VerifyAdmin,
   CatchWrapper(getAttendancesController)
 );
-route.get("/:id", VerifyToken, CatchWrapper(getAttendanceByIdController));
+route.get("/:id", verifyToken(), CatchWrapper(getAttendanceByIdController));
 
 export default route;

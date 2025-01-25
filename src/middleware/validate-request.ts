@@ -24,7 +24,7 @@ export const validateRequest = (
     }
     console.log(console.log(errors));
     if (errors.length) {
-      return HandleResponse(res, 400, MESSAGE_CODE.BAD_REQUEST, errors[0]);
+      return HandleResponse(res, 400, MESSAGE_CODE.BAD_REQUEST, errors?.[0]);
     }
 
     next();

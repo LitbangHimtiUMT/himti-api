@@ -126,6 +126,9 @@ export const MESSAGES = {
       RECOGNIZED: "Token not recognized",
       ADMIN: "Admin can't access this app",
     },
+    FORBIDDEN: {
+      ROLE: "You are not allowed to access this resource",
+    },
     REQUIRED: {
       EMAIL: "Email is required",
       PASSWORD: "Password is required",

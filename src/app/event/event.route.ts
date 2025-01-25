@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import { upload as UploadFile } from "../../utils/upload-file-to-storage";
 import {
@@ -14,15 +14,15 @@ const route = Router();
 
 route.post(
   "/",
-  VerifyToken,
+  verifyToken(),
   CatchWrapper(UploadFile.single("image")),
   CatchWrapper(createEventController)
 );
 route.get("/", CatchWrapper(getEventController));
-route.delete("/:id", VerifyToken, CatchWrapper(deleteEventController));
+route.delete("/:id", verifyToken(), CatchWrapper(deleteEventController));
 route.put(
   "/:id",
-  VerifyToken,
+  verifyToken(),
   CatchWrapper(UploadFile.single("image")),
   CatchWrapper(updateEventController)
 );

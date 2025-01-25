@@ -11,7 +11,7 @@ import {
   updateUserController,
 } from "./user.controller";
 import { createUserSchema, updateUserSchema } from "./user.request";
-import { VerifyToken } from "../../middleware/verify-token";
+import { verifyToken } from "../../middleware/verify-token";
 
 const route = Router();
 
@@ -29,6 +29,6 @@ route.put(
   validateRequest(updateUserSchema),
   CatchWrapper(updateUserController)
 );
-route.delete("/", VerifyToken, CatchWrapper(deleteUserController));
+route.delete("/", verifyToken(), CatchWrapper(deleteUserController));
 
 export default route;
