@@ -225,5 +225,8 @@ export const getMeetingToday = async () => {
         lt: tomorrow,
       },
     },
+    include: {
+      EventMeeting: true,
+    },
   });
 };

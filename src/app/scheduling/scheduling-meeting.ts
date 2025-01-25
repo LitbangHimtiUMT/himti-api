@@ -29,8 +29,8 @@ export const schedulingNotification = async (req: Request, res: Response) => {
     if (fcm.length) {
       for (const item of fcm) {
         const message = NotificationMessage(
-          `Pengingat Rapat: ${meetingToday.name}`,
-          `Hallo sobat informatika, hari ini kami akan mengadakan rapat ${meetingToday.name} yang akan dilaksanakan pada ${formatTime(meetingToday.startTime)} - ${formatTime(meetingToday.endTime)}. Kehadiranmu sangat dinantikan :)`,
+          `Rapat ${meetingToday.name}`,
+          `Hai, Sobat HIMTI! 🚀 Jangan lupa untuk melakukan absensi online pada rapat ${meetingToday.name} dengan agenda ${meetingToday.EventMeeting.name} pada ${formatTime(meetingToday.startTime)} - ${formatTime(meetingToday.endTime)}. Absensi dapat dilakukan melalui aplikasi. Terima kasih atas partisipasinya! 💪🔥`,
           item.fcmToken
         );
 
