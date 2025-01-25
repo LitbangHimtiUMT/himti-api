@@ -21,7 +21,7 @@
   "crons": [
     {
       "path": "/testing-cronjob",
-      "schedule": "* * * * *"
+      "schedule": "35 20 * * *"
     }
   ]
 }

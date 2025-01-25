@@ -50,7 +50,8 @@ route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
 
-route.get("/testing-cronjob", async () => {
+route.get("/testing-cronjob", async (req, res) => {
+  req.query;
   const fcm = await getUserFCMByNIM("2255201237");
   for (const item of fcm) {
     await SendFirebaseNotification(
@@ -58,6 +59,9 @@ route.get("/testing-cronjob", async () => {
     );
   }
   console.log("running a task every 30 seconds");
+  res.json({
+    message: "success",
+  });
 });
 
 registerFont(path.join(__dirname, "../../public/times-new-roman.ttf"), {
