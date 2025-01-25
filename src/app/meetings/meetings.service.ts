@@ -243,13 +243,13 @@ export const deleteMeetingService = async (meetingId: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  if (meeting.Attendance.length > 0) {
-    return new ErrorApp(
-      MESSAGES.ERROR.RELATION.MEETING,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
-  }
+  // if (meeting.Attendance.length > 0) {
+  //   return new ErrorApp(
+  //     MESSAGES.ERROR.RELATION.MEETING,
+  //     400,
+  //     MESSAGE_CODE.BAD_REQUEST
+  //   );
+  // }
   const data = await deleteMeeting(meetingId);
   return data;
 };
