@@ -24,7 +24,9 @@ import notificationRoute from "../app/notification/notification.route";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { MESSAGES } from "../utils/messages";
 import { lmsRoute } from "../app/lms/lms.route";
-
+import { getUserFCMByNIM } from "../app/user-fcm/user-fcm.repository";
+import { SendFirebaseNotification } from "../utils/firebase-config";
+import { NotificationMessage } from "../utils/notification-message";
 
 const route = Router();
 
@@ -47,6 +49,16 @@ route.use("/user-fcm", userFcmRoute);
 route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
+
+route.get("/", async () => {
+  const fcm = await getUserFCMByNIM("2255201237");
+  for (const item of fcm) {
+    await SendFirebaseNotification(
+      NotificationMessage("ABAIKAN INI", "TESTING", item.fcmToken)
+    );
+  }
+  console.log("running a task every 30 seconds");
+});
 
 registerFont(path.join(__dirname, "../../public/times-new-roman.ttf"), {
   family: "Times New Roman",

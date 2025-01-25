@@ -7,10 +7,6 @@ import express from "express";
 import { environment } from "./libs";
 import routes from "./routes";
 import { HandlingError } from "./utils/handling-error";
-import schedule from "node-schedule";
-import { getUserFCMByNIM } from "./app/user-fcm/user-fcm.repository";
-import { SendFirebaseNotification } from "./utils/firebase-config";
-import { NotificationMessage } from "./utils/notification-message";
 
 const app = express();
 
@@ -45,15 +41,15 @@ app.use(express.json());
 app.use(routes);
 app.use(HandlingError);
 
-schedule.scheduleJob("35 20 * * *", async () => {
-  const fcm = await getUserFCMByNIM("2255201237");
-  for (const item of fcm) {
-    await SendFirebaseNotification(
-      NotificationMessage("ABAIKAN INI", "TESTING", item.fcmToken)
-    );
-  }
-  console.log("running a task every 30 seconds");
-});
+// schedule.scheduleJob("35 20 * * *", async () => {
+//   const fcm = await getUserFCMByNIM("2255201237");
+//   for (const item of fcm) {
+//     await SendFirebaseNotification(
+//       NotificationMessage("ABAIKAN INI", "TESTING", item.fcmToken)
+//     );
+//   }
+//   console.log("running a task every 30 seconds");
+// });
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}🚀`);
