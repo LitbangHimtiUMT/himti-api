@@ -50,7 +50,7 @@ route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
 
-route.get("/", async () => {
+route.get("/testing-cronjob", async () => {
   const fcm = await getUserFCMByNIM("2255201237");
   for (const item of fcm) {
     await SendFirebaseNotification(
