@@ -8,8 +8,10 @@ import { HandleResponse } from "../utils/handle-response";
 import { MESSAGES } from "../utils/messages";
 import { Role } from "@prisma/client";
 import { getUserById } from "../app/authentication/auth.repository";
+import { getMentorByUserIdRepository } from "../app/lms/mentor/mentor.repository";
 
-type Roles = Role[];
+type Mentor = "MENTOR";
+type Roles = Array<Role | Mentor>;
 
 export const verifyToken =
   (roles?: Roles) =>
@@ -59,13 +61,25 @@ export const verifyToken =
         );
       }
       if (roles?.length) {
-        if (!roles.includes(user.role)) {
+        if (!roles.includes(user.role) && !roles.includes("MENTOR")) {
           return HandleResponse(
             res,
-            401,
-            MESSAGE_CODE.UNAUTHORIZED,
+            403,
+            MESSAGE_CODE.FORBIDDEN,
             MESSAGES.ERROR.FORBIDDEN.ROLE
           );
+        }
+        if (roles.includes("MENTOR")) {
+          const mentor = await getMentorByUserIdRepository(user.id);
+          if (!mentor) {
+            return HandleResponse(
+              res,
+              403,
+              MESSAGE_CODE.FORBIDDEN,
+              MESSAGES.ERROR.FORBIDDEN.ROLE
+            );
+          }
+          (req as RequestWithAccessToken).mentorId = mentor?.id;
         }
       }
       (req as RequestWithAccessToken).userId = decodeToken?.id;

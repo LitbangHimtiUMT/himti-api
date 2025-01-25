@@ -1,5 +1,6 @@
 import { Request } from "express";
 
 export interface RequestWithAccessToken extends Request {
-    userId?: string
+  userId?: string;
+  mentorId?: string;
 }
