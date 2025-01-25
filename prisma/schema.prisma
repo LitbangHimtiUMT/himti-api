@@ -276,16 +276,29 @@ model Mentor {
   @@map("mentors")
 }
 
+model Category {
+  id        String   @id @unique @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  Class     Class[]
+
+  @@map("categories")
+}
+
 model Class {
   id               String             @id @unique @default(uuid())
   createdBy        String             @map("created_by") @db.VarChar(110)
   name             String             @db.VarChar(255)
   description      String?            @db.Text
   thumbnail        String?            @db.VarChar(255)
+  level            Level              @default(BEGINNER)
+  categoryId       String             @map("category_id") @db.VarChar(110)
   price            Decimal            @db.Decimal()
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamp(0)
   user             User               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  category         Category           @relation(fields: [categoryId], onDelete: Cascade, onUpdate: NoAction, references: [id])
   Session          Session[]
   ClassParticipant ClassParticipant[]
   CompletedClass   CompletedClass[]
@@ -516,4 +529,10 @@ enum SubmissionStatus {
   REVIEWED
   APPROVED
   REJECTED
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  EXPERT
 }
