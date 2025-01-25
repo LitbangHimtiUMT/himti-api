@@ -69,7 +69,7 @@ export const verifyToken =
             MESSAGES.ERROR.FORBIDDEN.ROLE
           );
         }
-        if (roles.includes("MENTOR")) {
+        if (roles.includes("MENTOR") && !roles.includes(user.role)) {
           const mentor = await getMentorByUserIdRepository(user.id);
           if (!mentor) {
             return HandleResponse(
