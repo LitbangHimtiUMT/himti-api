@@ -78,6 +78,7 @@ export const sendNotificationService = async (
       await SendFirebaseNotification(message);
     })
   );
+  
 
   const unique = fcmUnique();
   for (const item of unique) {
