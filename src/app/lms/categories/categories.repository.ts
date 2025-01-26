@@ -3,6 +3,18 @@ import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../achievements/achievements.repository";
 import { CreateCategoryDAO } from "./categories.dao";
 
+export const getCategoryById = async (CategoryId: string) => {
+  return await prisma.category.findUnique({
+    where: {
+      id: CategoryId,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+};
+
 export const createCategoryRepository = async (data: CreateCategoryDAO) => {
   return await prisma.category.create({
     data: {
