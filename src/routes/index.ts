@@ -23,6 +23,7 @@ import strukturalRoute from "../app/struktural/struktural.route";
 import userFcmRoute from "../app/user-fcm/user-fcm.route";
 import userRoute from "../app/user/user.route";
 import versionRoute from "../app/version/version.route";
+import classRoute from "../app/classes/classes.route";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { MESSAGES } from "../utils/messages";
 
@@ -47,6 +48,7 @@ route.use("/user-fcm", userFcmRoute);
 route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
+route.use("/class", classRoute);
 
 route.use("/scheduling-notification-meeting", schedulingNotification);
 
@@ -63,7 +65,7 @@ route.get("/generate", async (req: Request, res: Response) => {
   // Load template sertifikat
   const templatePath = path.join(
     __dirname,
-    "../../public/Sertifikat-Template.png"
+    "../../public/Sertifikat-Template.png",
   );
   const canvas = createCanvas(800, 600); // Ukuran sesuai dengan template
   const ctx = canvas.getContext("2d");
@@ -94,7 +96,7 @@ route.get("/generate", async (req: Request, res: Response) => {
     // Generate QR code
     const qrCodeUrl = await QRCode.toDataURL(
       JSON.stringify({ id }),
-      qrCodeOptions as QRCodeToDataURLOptions
+      qrCodeOptions as QRCodeToDataURLOptions,
     );
 
     // Load QR code image
@@ -107,14 +109,14 @@ route.get("/generate", async (req: Request, res: Response) => {
       canvas.width - qrCodeSize - 60,
       canvas.height - qrCodeSize - 20,
       qrCodeSize,
-      qrCodeSize
+      qrCodeSize,
     );
 
     // Set header respons sebagai PDF
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      'attachment; filename="certificate.pdf"'
+      'attachment; filename="certificate.pdf"',
     );
 
     // Stream gambar ke respons

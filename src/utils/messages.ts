@@ -18,6 +18,7 @@ export const MESSAGES = {
     MEETING: "Meeting created successfully",
     MENTOR: "Mentor created successfully",
     CATEGORY: "Category created successfully",
+    CLASS: "Class created successfully",
   },
   ERROR: {
     NOT_FOUND: {
