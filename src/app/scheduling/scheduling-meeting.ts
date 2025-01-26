@@ -5,15 +5,16 @@ import { formatTime } from "../../utils/format-time";
 import { NotificationMessage } from "../../utils/notification-message";
 import { getMeetingToday } from "../meetings/meetings.repository";
 import { createManyNotification } from "../notification/notification.repository";
-import { getAllMemberFCMUser } from "../user-fcm/user-fcm.repository";
+import { getUserFCMByNIM } from "../user-fcm/user-fcm.repository";
 
 export const schedulingNotification = async (req: Request, res: Response) => {
   const meetingToday = await getMeetingToday();
   if (meetingToday) {
-    const fcm = await getAllMemberFCMUser({
-      page: "1",
-      perPage: "99999",
-    });
+    // const fcm = await getAllMemberFCMUser({
+    //   page: "1",
+    //   perPage: "99999",
+    // });
+    const fcm = await getUserFCMByNIM("2255201237");
 
     const fcmUnique = () => {
       const map = new Map();

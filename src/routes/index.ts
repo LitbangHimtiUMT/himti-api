@@ -16,9 +16,9 @@ import { lmsRoute } from "../app/lms/lms.route";
 import meetingRoute from "../app/meetings/meetings.route";
 import anggotaRoute from "../app/members/members.route";
 import notificationRoute from "../app/notification/notification.route";
-import { schedulingNotification } from "../app/scheduling/scheduling-meeting";
 import pointsRoute from "../app/point/points.route";
 import profileRoute from "../app/profile/profile.route";
+import { schedulingNotification } from "../app/scheduling/scheduling-meeting";
 import strukturalRoute from "../app/struktural/struktural.route";
 import userFcmRoute from "../app/user-fcm/user-fcm.route";
 import userRoute from "../app/user/user.route";
@@ -141,7 +141,7 @@ route.get("/generate", async (req: Request, res: Response) => {
   }
 });
 
-route.get("/", (req: Request, res: Response) => {
+route.get("/", async (req: Request, res: Response) => {
   return res.json({ message: "Hello World 🚀" });
 });
 
