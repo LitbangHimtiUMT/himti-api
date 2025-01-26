@@ -6,13 +6,16 @@ export const createClassSchema = Joi.object({
     "any.required": MESSAGES.ERROR.REQUIRED.NAME,
   }),
   description: Joi.string().optional().allow(null),
-  thumbnail: Joi.string().optional().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.START_TIME,
+  thumbnail: Joi.any().required().messages({
+    "any.required": MESSAGES.ERROR.REQUIRED.IMAGE,
   }),
   price: Joi.number().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.END_TIME,
+    "any.required": MESSAGES.ERROR.REQUIRED.PRICE,
   }),
-  createdBy: Joi.string().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.EVENT_MEETING_ID,
+  level: Joi.string().required().messages({
+    "any.required": MESSAGES.ERROR.REQUIRED.LEVEL,
+  }),
+  categoryId: Joi.string().required().messages({
+    "any.required": MESSAGES.ERROR.REQUIRED.CATEGORY_ID,
   }),
 });

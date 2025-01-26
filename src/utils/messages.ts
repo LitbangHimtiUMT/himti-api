@@ -48,6 +48,7 @@ export const MESSAGES = {
       VERSION: "Version not found",
       EVENT_MEETING: "Event Meeting not found",
       MEETING: "Meeting not found",
+      CATEGORY: "Category not found",
     },
     ALREADY: {
       GLOBAL: {
@@ -119,6 +120,7 @@ export const MESSAGES = {
       START_TIME: "Start Time must be date time",
       END_TIME: "End Time must be date",
       NAME_MEMBER: "The name entered must match the registered NIM",
+      LEVEL: "Level is invalid (BEGINNER, INTERMEDIATE, EXPERT)",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -154,6 +156,7 @@ export const MESSAGES = {
       DESCRIPTION: "Description is required",
       PRICE: "Price is required",
       ACARA_ID: "Acara Id is required",
+      CATEGORY_ID: "Category Id is required",
       SUB_ACARA_ID: "Sub Acara Id is required",
       OTP_KEY: "OTP Key is required",
       OTP: "OTP is required",
@@ -162,6 +165,7 @@ export const MESSAGES = {
       END_TIME: "End Time is required",
       EVENT_MEETING_ID: "Event Meeting Id is required",
       BODY: "Body is required",
+      LEVEL: "Level is required",
     },
     FAILED: {
       EVENT_MEETING: "Failed To Delete Event Meeting",

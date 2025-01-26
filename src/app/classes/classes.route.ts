@@ -1,14 +1,15 @@
 import { Router } from "express";
-import { validateRequest } from "../../middleware/validate-request";
+import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
+import { upload } from "../../utils/upload-file-to-storage";
 import { createClassController } from "./classes.controller";
-import { createClassSchema } from "./classes.request";
 
 const route = Router();
 
 route.post(
   "/",
-  validateRequest(createClassSchema),
+  verifyToken(),
+  CatchWrapper(upload.single("thumbnail")),
   CatchWrapper(createClassController),
 );
 

@@ -1,7 +1,10 @@
+import { Level } from "@prisma/client";
+
 export interface CreateClassBodyRequest {
-  createdBy: string;
-  name: string;
-  description: string;
-  thumbnail: string;
-  price: number;
+  name?: string;
+  description?: string;
+  thumbnail?: Express.Multer.File | string;
+  level?: Level;
+  categoryId?: string;
+  price?: number;
 }
