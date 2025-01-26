@@ -25,6 +25,7 @@ export const BUCKET_FOLDER = {
   business: "business",
   user: "user",
   structural: "struktural",
+  class: "class",
 };
 
 export const FileType: Record<string, string> = {
@@ -42,7 +43,7 @@ export const storage = multer.memoryStorage();
 export const MulterFileFilter = (
   request: Request,
   file: Express.Multer.File,
-  callBack: FileFilterCallback
+  callBack: FileFilterCallback,
 ): void => {
   console.log(file);
   if (file.mimetype && FileType[file.mimetype]) {
@@ -53,8 +54,8 @@ export const MulterFileFilter = (
       new ErrorApp(
         "Tipe file tidak mendukung, tipe file harus berjenis: png, jpg, dan jpeg",
         400,
-        MESSAGE_CODE.BAD_REQUEST
-      )
+        MESSAGE_CODE.BAD_REQUEST,
+      ),
     );
   }
 };
