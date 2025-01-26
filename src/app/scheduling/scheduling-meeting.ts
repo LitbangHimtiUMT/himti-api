@@ -29,7 +29,7 @@ export const schedulingNotification = async (req: Request, res: Response) => {
     if (fcm.length) {
       for (const item of fcm) {
         const message = NotificationMessage(
-          `Rapat ${meetingToday.name}`,
+          `${meetingToday.name}`,
           `Hai, Sobat HIMTI! 🚀 Jangan lupa untuk melakukan absensi online pada rapat ${meetingToday.name} dengan agenda ${meetingToday.EventMeeting.name} pada ${formatTime(meetingToday.startTime)} - ${formatTime(meetingToday.endTime)}. Absensi dapat dilakukan melalui aplikasi. Terima kasih atas partisipasinya! 💪🔥`,
           item.fcmToken
         );
@@ -41,7 +41,7 @@ export const schedulingNotification = async (req: Request, res: Response) => {
       await createManyNotification(
         unique.map((item) => ({
           body: `Hai, Sobat HIMTI! 🚀 Jangan lupa untuk melakukan absensi online pada rapat ${meetingToday.name} dengan agenda ${meetingToday.EventMeeting.name} pada ${formatTime(meetingToday.startTime)} - ${formatTime(meetingToday.endTime)}. Absensi dapat dilakukan melalui aplikasi. Terima kasih atas partisipasinya! 💪🔥`,
-          title: `Rapat ${meetingToday.name}`,
+          title: `${meetingToday.name}`,
           meetingId: meetingToday.id,
           userId: item.userId,
         }))
