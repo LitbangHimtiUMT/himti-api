@@ -1,8 +1,8 @@
-import { getCategoryById } from "../lms/categories/categories.repository";
-import { MESSAGE_CODE } from "../../utils/error-code";
-import { ErrorApp } from "../../utils/http-error";
-import { MESSAGES } from "../../utils/messages";
-import { getUserById } from "../authentication/auth.repository";
+import { getCategoryById } from "../categories/categories.repository";
+import { MESSAGE_CODE } from "../../../utils/error-code";
+import { ErrorApp } from "../../../utils/http-error";
+import { MESSAGES } from "../../../utils/messages";
+import { getUserById } from "../../authentication/auth.repository";
 import { CreateClassBodyRequest } from "./classes.dto";
 
 export const createClassValidate = async (

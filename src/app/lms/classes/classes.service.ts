@@ -1,18 +1,18 @@
-import { ErrorApp } from "../../utils/http-error";
+import { ErrorApp } from "../../../utils/http-error";
 import { CreateClassBodyRequest } from "./classes.dto";
 import { createClassRepository } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
-import { getCategoryById } from "../lms/categories/categories.repository";
-import { MESSAGE_CODE } from "../../utils/error-code";
+import { getCategoryById } from "../categories/categories.repository";
+import { MESSAGE_CODE } from "../../../utils/error-code";
 import {
   BUCKET_FOLDER,
   FileType,
   GetFileFromStorage,
   RemoveFileFromStorage,
   UploadFileToStorage,
-} from "../../utils/upload-file-to-storage";
+} from "../../../utils/upload-file-to-storage";
 import sharp from "sharp";
-import { environment } from "../../libs";
+import { environment } from "../../../libs";
 
 export const createClassService = async (
   {

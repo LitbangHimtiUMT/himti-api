@@ -1,5 +1,5 @@
 import { Level } from "@prisma/client";
-import { prisma } from "../../config";
+import { prisma } from "../../../config";
 import { type CreateClassBodyRequest } from "./classes.dto";
 
 export const createClassRepository = async (
