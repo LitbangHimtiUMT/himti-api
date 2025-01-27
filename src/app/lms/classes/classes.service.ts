@@ -64,11 +64,6 @@ export const createClassService = async (
       ACL: "public-read",
     });
 
-    console.log({
-      name,
-      fileName,
-    });
-
     const createClass = await createClassRepository(
       {
         name,

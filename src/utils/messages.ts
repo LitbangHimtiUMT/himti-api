@@ -178,7 +178,7 @@ export const MESSAGES = {
       INTERNAL_SERVER_ERROR: "Internal server error",
     },
     UNDER_MAINTENANCE: {
-      FEATURES: "Features are under maintenance",
+      FEATURES: "features are under maintenance",
     },
   },
   SUCCESS: {

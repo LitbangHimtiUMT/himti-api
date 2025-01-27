@@ -21,11 +21,6 @@ export const createClassController = async (
     thumbnail: file,
   };
 
-  console.log({
-    combine,
-    userId,
-  });
-
   const validate = createClassSchema.validate(combine);
   if (validate.error) {
     next(

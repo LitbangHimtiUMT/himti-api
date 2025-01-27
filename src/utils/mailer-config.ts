@@ -17,14 +17,6 @@ export const transporter = nodemailer.createTransport({
         pass: environment.SMTP_PASSWORD
     }
 } as TransportOptions);
-// export const transporter = nodemailer.createTransport({
-//     service: 'gmail',
-//     host: 'smtp.gmail.com',
-//     auth: {
-//         user: 'muhfikriantoaji@gmail.com',
-//         pass: 'qvzs ugvq unss wbwq'
-//     }
-// });
 
 export const SendEmail = async (to: string, name: string, otp: number) => {
 
