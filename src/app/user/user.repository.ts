@@ -6,6 +6,8 @@ import {
   UpdateUserBodyRequest,
   UserRequestBodyDTO,
 } from "./user.dto";
+import { Query } from "../../interface/Query";
+import { queryPagination } from "../achievements/achievements.repository";
 
 export const getUsers = async ({
   page,
@@ -169,6 +171,33 @@ export const deleteUser = async (userId: string) => {
   return await prisma.user.delete({
     where: {
       id: userId,
+    },
+  });
+};
+
+export const getUserWithoutMentorRepository = async (query: Query) => {
+  const { search } = query;
+  return await prisma.user.findMany({
+    where: {
+      mentor: null,
+      name: {
+        contains: search,
+        mode: "insensitive",
+      },
+    },
+    ...queryPagination(query),
+  });
+};
+
+export const getUserWithoutMentorCountRepository = async (query: Query) => {
+  const { search } = query;
+  return await prisma.user.count({
+    where: {
+      mentor: null,
+      name: {
+        contains: search,
+        mode: "insensitive",
+      },
     },
   });
 };

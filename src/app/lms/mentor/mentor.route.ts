@@ -10,4 +10,8 @@ export const mentorsRoute = Router();
 
 mentorsRoute
   .post("/:userId", verifyToken(), CatchWrapper(createMentorController))
-  .get("/", verifyToken(), CatchWrapper(getMentorsController));
+  .get(
+    "/",
+    verifyToken(["SUPER_ADMIN", "ADMIN"]),
+    CatchWrapper(getMentorsController)
+  );

@@ -8,3 +8,11 @@ export const userDTOMapper = (user: User): UserDTO => {
         email: user.email,
     }
 }
+
+export const getUsersDTOMapper = (user: User[]): UserDTO[] => {
+    return user.map(item => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+    }))
+}

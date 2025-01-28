@@ -1,5 +1,6 @@
 import { Role } from "@prisma/client";
 import { NextFunction, type Request, type Response } from "express";
+import { RequestWithAccessToken } from "../../interface/Request";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { HandleResponse } from "../../utils/handle-response";
 import { ErrorApp } from "../../utils/http-error";
@@ -9,9 +10,9 @@ import {
   deleteUserService,
   getUserService,
   getUsersService,
+  getUserWithoutMentorService,
   updateUserService,
 } from "./user.service";
-import { RequestWithAccessToken } from "../../interface/Request";
 
 export const getUsersController = async (
   req: Request,
@@ -112,5 +113,26 @@ export const deleteUserController = async (
     200,
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.USER_DATA.DELETE
+  );
+};
+
+export const getUserWithoutMentorController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { query } = req;
+  const result = await getUserWithoutMentorService(query);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.USER_DATA.GET,
+    result?.data,
+    result?.meta
   );
 };

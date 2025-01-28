@@ -8,6 +8,7 @@ import {
   deleteUserController,
   getUserController,
   getUsersController,
+  getUserWithoutMentorController,
   updateUserController,
 } from "./user.controller";
 import { createUserSchema, updateUserSchema } from "./user.request";
@@ -16,6 +17,11 @@ import { verifyToken } from "../../middleware/verify-token";
 const route = Router();
 
 route.get("/", VerifyAdmin, CatchWrapper(getUsersController));
+route.get(
+  "/without-mentor",
+  verifyToken(["ADMIN", "SUPER_ADMIN"]),
+  CatchWrapper(getUserWithoutMentorController)
+);
 route.get("/:userId", VerifyAdmin, CatchWrapper(getUserController));
 route.get(
   "/admin",
@@ -29,6 +35,7 @@ route.put(
   validateRequest(updateUserSchema),
   CatchWrapper(updateUserController)
 );
+
 route.delete("/", verifyToken(), CatchWrapper(deleteUserController));
 
 export default route;
