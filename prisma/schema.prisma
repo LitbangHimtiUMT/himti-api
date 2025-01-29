@@ -8,30 +8,31 @@ datasource db {
 }
 
 model User {
-  id                  String                @id @default(uuid()) @db.VarChar(110)
-  name                String                @db.VarChar(255)
-  email               String                @unique @db.VarChar(110)
-  password            String                @db.VarChar(110)
-  role                Role                 @default(ADMIN)
-  nim                 String?               @db.VarChar(20)
-  memberId            String?               @unique @map("member_id") @db.VarChar(110)
-  Attendance          Attendance[]
-  createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt           DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
-  isLogin             Boolean               @default(false) @map("is_login")
-  photo               String?               @db.VarChar(255)
-  Member              Member?               @relation(fields: [memberId], references: [id], onDelete: NoAction)
-  mentor              Mentor?               @relation
-  Point               Point[]
-  UserFCM             UserFCM[]
-  NotificationHistory NotificationHistory[]
-  Classes             Class[]
-  ClassParticipant    ClassParticipant[]
-  CompletedModule     CompletedModule[]
-  CompletedClass      CompletedClass[]
-  Certificate         Certificate[]
-  Submission          Submission[]
-  Transaction         Transaction[]
+  id                    String                @id @default(uuid()) @db.VarChar(110)
+  name                  String                @db.VarChar(255)
+  email                 String                @unique @db.VarChar(110)
+  password              String                @db.VarChar(110)
+  role                  Role                  @default(ADMIN)
+  nim                   String?               @db.VarChar(20)
+  memberId              String?               @unique @map("member_id") @db.VarChar(110)
+  Attendance            Attendance[]
+  createdAt             DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt             DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
+  isLogin               Boolean               @default(false) @map("is_login")
+  photo                 String?               @db.VarChar(255)
+  Member                Member?               @relation(fields: [memberId], references: [id], onDelete: NoAction)
+  mentor                Mentor?               @relation
+  Point                 Point[]
+  UserFCM               UserFCM[]
+  NotificationHistory   NotificationHistory[]
+  Classes               Class[]
+  ClassParticipant      ClassParticipant[]
+  CompletedModule       CompletedModule[]
+  CompletedClass        CompletedClass[]
+  Certificate           Certificate[]
+  submissionParticipant Submission[]          @relation("submission_participant")
+  submissionMentor      Submission[]          @relation("submission_mentor")
+  Transaction           Transaction[]
 
   @@index([memberId], map: "user_fk_1")
   @@index([email], map: "user_fk_2")
@@ -268,7 +269,6 @@ model Mentor {
   createdAt                DateTime                   @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt                DateTime                   @updatedAt @map("updated_at") @db.Timestamp(0)
   user                     User?                      @relation(fields: [userId], references: [id])
-  submission               Submission[]
   mentorTransactionHistory MentorTransactionHistory[]
   withDrawApproval         WithDrawApproval[]
 
@@ -325,6 +325,7 @@ model ClassParticipant {
 
 model Session {
   id        String   @id @unique @default(uuid())
+  name      String   @db.VarChar(110)
   classId   String   @map("class_id") @db.VarChar(110)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
@@ -419,8 +420,8 @@ model Submission {
   actionBy     String?          @map("action_by") @db.VarChar(110)
   createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt    DateTime         @updatedAt @map("updated_at") @db.Timestamp(0)
-  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mentor       Mentor?          @relation(fields: [actionBy], references: [id], onDelete: Cascade)
+  participant  User             @relation("submission_participant", fields: [userId], references: [id], onDelete: Cascade)
+  mentor       User?            @relation("submission_mentor", fields: [actionBy], references: [id], onDelete: Cascade)
   assignment   Assignment       @relation(fields: [assignmentId], references: [id])
 
   @@index([assignmentId], map: "submissions_fk_1")
@@ -529,6 +530,12 @@ enum SubmissionStatus {
   REVIEWED
   APPROVED
   REJECTED
+}
+
+enum MentorStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
 }
 
 enum Level {

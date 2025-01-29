@@ -4,4 +4,5 @@ export interface Query {
     search?: string
     isOpen?:string
     eventMeetingId?:string
+    status?: string
 }

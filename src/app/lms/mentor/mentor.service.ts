@@ -7,6 +7,8 @@ import { getUserById } from "../../authentication/auth.repository";
 import { getMentorsDTOMapper } from "./mentor.mapper";
 import {
   createMentorRepository,
+  deleteMentorRepository,
+  getMentorByIdRepository,
   getMentorByUserIdRepository,
   getMentorsCountRepository,
   getMentorsRepository,
@@ -49,4 +51,17 @@ export const getMentorsService = async (query: Query) => {
     data,
     meta,
   };
+};
+
+export const deleteMentorService = async (mentorId: string) => {
+  const mentor = await getMentorByIdRepository(mentorId);
+  if (!mentor) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.MENTOR,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  return await deleteMentorRepository(mentorId);
 };

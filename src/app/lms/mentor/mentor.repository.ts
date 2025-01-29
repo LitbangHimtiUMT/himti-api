@@ -24,10 +24,12 @@ export const getMentorsRepository = async (query: Query) => {
   return await prisma.mentor.findMany({
     where: {
       user: {
-        name: {
-          contains: search,
-          mode: "insensitive",
-        },
+        ...(search && {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        }),
       },
     },
     include: {
@@ -42,11 +44,29 @@ export const getMentorsCountRepository = async (query: Query) => {
   return await prisma.mentor.count({
     where: {
       user: {
-        name: {
-          contains: search,
-          mode: "insensitive",
-        },
+        ...(search && {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        }),
       },
+    },
+  });
+};
+
+export const getMentorByIdRepository = async (mentorId: string) => {
+  return await prisma.mentor.findUnique({
+    where: {
+      id: mentorId,
+    },
+  });
+};
+
+export const deleteMentorRepository = async (mentorId: string) => {
+  return await prisma.mentor.delete({
+    where: {
+      id: mentorId,
     },
   });
 };

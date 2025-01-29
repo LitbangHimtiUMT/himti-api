@@ -49,6 +49,7 @@ export const MESSAGES = {
       EVENT_MEETING: "Event Meeting not found",
       MEETING: "Meeting not found",
       CATEGORY: "Category not found",
+      MENTOR: "Mentor not found",
     },
     ALREADY: {
       GLOBAL: {
