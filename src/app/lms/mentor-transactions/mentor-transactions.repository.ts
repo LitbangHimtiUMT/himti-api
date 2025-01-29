@@ -15,6 +15,9 @@ export const getMentorTransactionsByMentorIdRepository = async (
         type: transactionType as MentorTransactionType,
       }),
     },
+    include: {
+      withDraw: true,
+    },
     ...(query && queryPagination(query)),
   });
 };
