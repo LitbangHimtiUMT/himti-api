@@ -1,4 +1,4 @@
-import { Mentor, User } from "@prisma/client";
+import { Mentor, MentorTransactionHistory, User } from "@prisma/client";
 import { MentorDTO } from "./mentor.dto";
 
 export interface MentorData extends Mentor {
@@ -12,4 +12,22 @@ export const getMentorsDTOMapper = (data: MentorData[]): MentorDTO[] => {
     email: item?.user?.email ?? "",
     balance: Number(item?.balance),
   }));
+};
+
+export const getDetailMentorDTOMapper = (
+  data: MentorData,
+  mentorTransaction: MentorTransactionHistory[]
+) => {
+  return {
+    id: data.id,
+    name: data?.user?.name ?? "",
+    email: data?.user?.email ?? "",
+    balance: Number(data?.balance),
+    totalExpend: mentorTransaction
+      .filter((item) => item.type === "EXPEND")
+      .reduce((a, b) => Number(a) + Number(b.amount), 0),
+    totalIncome: mentorTransaction
+      .filter((item) => item.type === "EXPEND")
+      .reduce((a, b) => Number(a) + Number(b.amount), 0),
+  };
 };

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import {
   createMentorService,
   deleteMentorService,
+  getMentorByIdService,
   getMentorsService,
 } from "./mentor.service";
 import { ErrorApp } from "../../../utils/http-error";
@@ -62,5 +63,26 @@ export const deleteMentorController = async (
     200,
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.MENTOR.DELETE
+  );
+};
+
+export const getMentorByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { mentorId } = req.params;
+  const result = await getMentorByIdService(mentorId);
+
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.MENTOR.GET,
+    result
   );
 };

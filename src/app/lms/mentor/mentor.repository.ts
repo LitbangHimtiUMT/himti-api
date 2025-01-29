@@ -60,6 +60,9 @@ export const getMentorByIdRepository = async (mentorId: string) => {
     where: {
       id: mentorId,
     },
+    include: {
+      user: true,
+    },
   });
 };
 

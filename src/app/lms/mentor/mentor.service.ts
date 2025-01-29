@@ -4,7 +4,8 @@ import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
 import { getUserById } from "../../authentication/auth.repository";
-import { getMentorsDTOMapper } from "./mentor.mapper";
+import { getMentorTransactionsByMentorIdRepository } from "../mentor-transactions/mentor-transactions.repository";
+import { getDetailMentorDTOMapper, getMentorsDTOMapper } from "./mentor.mapper";
 import {
   createMentorRepository,
   deleteMentorRepository,
@@ -64,4 +65,21 @@ export const deleteMentorService = async (mentorId: string) => {
   }
 
   return await deleteMentorRepository(mentorId);
+};
+
+export const getMentorByIdService = async (mentorId: string) => {
+  const mentor = await getMentorByIdRepository(mentorId);
+  if (!mentor) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.MENTOR,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const mentorTransactions = await getMentorTransactionsByMentorIdRepository(
+    mentor.id
+  );
+
+  return getDetailMentorDTOMapper(mentor, mentorTransactions);
 };

@@ -5,4 +5,5 @@ export interface Query {
     isOpen?:string
     eventMeetingId?:string
     status?: string
+    transactionType?: string
 }

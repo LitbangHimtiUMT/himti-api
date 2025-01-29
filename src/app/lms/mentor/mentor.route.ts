@@ -3,6 +3,7 @@ import { CatchWrapper } from "../../../utils/catch-wrapper";
 import {
   createMentorController,
   deleteMentorController,
+  getMentorByIdController,
   getMentorsController,
 } from "./mentor.controller";
 import { verifyToken } from "../../../middleware/verify-token";
@@ -19,6 +20,11 @@ mentorsRoute
     "/",
     verifyToken(["SUPER_ADMIN", "ADMIN"]),
     CatchWrapper(getMentorsController)
+  )
+  .get(
+    "/:mentorId",
+    verifyToken(["SUPER_ADMIN", "ADMIN"]),
+    CatchWrapper(getMentorByIdController)
   )
   .delete(
     "/:mentorId",

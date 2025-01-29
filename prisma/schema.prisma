@@ -430,27 +430,34 @@ model Submission {
 }
 
 model MentorTransactionHistory {
-  id        String                @id @unique @default(uuid())
-  mentorId  String                @map("mentor_id") @db.VarChar(110)
-  amount    Decimal               @db.Decimal()
-  type      MentorTransactionType
-  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
-  mentor    Mentor                @relation(fields: [mentorId], references: [id], onDelete: NoAction)
+  id         String                @id @unique @default(uuid())
+  mentorId   String                @map("mentor_id") @db.VarChar(110)
+  amount     Decimal               @db.Decimal()
+  type       MentorTransactionType
+  withDrawId String?               @unique @map("with_draw_id")
+  createdAt  DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
+  withDraw   WithDrawApproval?     @relation(fields: [withDrawId], references: [id], onDelete: Cascade)
+  mentor     Mentor                @relation(fields: [mentorId], references: [id], onDelete: Cascade)
 
-  @@index([mentorId], map: "mentor_transactions_history_fk_2")
+  @@index([mentorId], map: "mentor_transactions_history_fk_1")
+  @@index([withDrawId], map: "mentor_transactions_history_fk_2")
   @@map("mentor_transactions_history")
 }
 
 model WithDrawApproval {
-  id        String                 @id @unique @default(uuid())
-  mentorId  String                 @map("mentor_id") @db.VarChar(110)
-  status    WithDrawApprovalStatus @default(WAITING)
-  amount    Decimal
-  evidence  String?                @db.VarChar(255)
-  createdAt DateTime               @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime               @updatedAt @map("updated_at") @db.Timestamp(0)
-  mentor    Mentor                 @relation(fields: [mentorId], references: [id], onDelete: NoAction)
+  id                       String                    @id @unique @default(uuid())
+  mentorId                 String                    @map("mentor_id") @db.VarChar(110)
+  status                   WithDrawApprovalStatus    @default(WAITING)
+  amount                   Decimal
+  notes                    String?
+  accountNumber            Int?                      @map("account_number") @db.Integer
+  paymentMethod            String?                   @map("payment_method") @db.VarChar(110)
+  evidence                 String?                   @db.VarChar(255)
+  createdAt                DateTime                  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt                DateTime                  @updatedAt @map("updated_at") @db.Timestamp(0)
+  mentor                   Mentor                    @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  MentorTransactionHistory MentorTransactionHistory? @relation
 
   @@index([mentorId], map: "with_draw_approval_fk_1")
   @@map("with_draw_approval")
