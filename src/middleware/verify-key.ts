@@ -9,7 +9,7 @@ export const verifyKey = async (
   res: Response,
   next: NextFunction
 ) => {
-  const key = req.headers[environment.HEADER_KEY];
+  const key = req.headers[environment.HEADER_KEY] as string;
   if (!key) {
     return HandleResponse(
       res,
@@ -19,7 +19,7 @@ export const verifyKey = async (
     );
   }
 
-  if (key !== environment.SECRET_KEY) {
+  if (atob(key) !== environment.SECRET_KEY) {
     return HandleResponse(
       res,
       403,
