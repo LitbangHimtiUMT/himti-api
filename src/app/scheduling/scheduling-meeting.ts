@@ -6,6 +6,7 @@ import { NotificationMessage } from "../../utils/notification-message";
 import { getMeetingToday } from "../meetings/meetings.repository";
 import { createManyNotification } from "../notification/notification.repository";
 import { getUserFCMByNIM } from "../user-fcm/user-fcm.repository";
+import cron from "node-cron";
 
 export const schedulingNotification = async (req: Request, res: Response) => {
   const meetingToday = await getMeetingToday();
@@ -53,4 +54,23 @@ export const schedulingNotification = async (req: Request, res: Response) => {
   return res.json({
     message: "success",
   });
+};
+
+export const cronSchedulingNotification = () => {
+  cron.schedule(
+    "47 13 * * *",
+    async () => {
+      const fcm = await getUserFCMByNIM("2255201237");
+      for (const item of fcm) {
+        await SendFirebaseNotification(
+          NotificationMessage("ABAIKAN INI", "TESTING", item.fcmToken)
+        );
+      }
+      console.log("running a task every 30 seconds");
+    },
+    {
+      scheduled: true,
+      timezone: "Asia/Jakarta",
+    }
+  );
 };

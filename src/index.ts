@@ -7,7 +7,7 @@ import express from "express";
 import { environment } from "./libs";
 import routes from "./routes";
 import { HandlingError } from "./utils/handling-error";
-import { scheduleJob } from "node-schedule";
+import { cronSchedulingNotification } from "./app/scheduling/scheduling-meeting";
 
 const app = express();
 
@@ -53,9 +53,7 @@ app.use(HandlingError);
 // });
 
 app.listen(port, () => {
-  scheduleJob("36 13 * * *", () => {
-    console.log("running a task every 30 seconds");
-  });
+  cronSchedulingNotification();
   console.log(`Server running on port ${port}🚀`);
 });
 
