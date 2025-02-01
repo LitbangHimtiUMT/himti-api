@@ -19,6 +19,8 @@ export const environment = {
   SMTP_HOST: env.SMTP_HOST,
   SMTP_PORT: env.SMTP_PORT,
   SMTP_LOGIN: env.SMTP_LOGIN,
+  SECRET_KEY: env.SECRET_KEY,
+  HEADER_KEY: env.HEADER_KEY ?? "",
   EMAIL_SENDER: env.EMAIL_SENDER,
   CRON_EXPRESSION: env.CRON_EXPRESSION ?? "",
   FIREBASE: {

@@ -7,6 +7,7 @@ import {
   getMentorsController,
 } from "./mentor.controller";
 import { verifyToken } from "../../../middleware/verify-token";
+import { verifyKey } from "../../../middleware/verify-key";
 
 export const mentorsRoute = Router();
 
@@ -16,11 +17,7 @@ mentorsRoute
     verifyToken(["ADMIN", "SUPER_ADMIN"]),
     CatchWrapper(createMentorController)
   )
-  .get(
-    "/",
-    verifyToken(["SUPER_ADMIN", "ADMIN"]),
-    CatchWrapper(getMentorsController)
-  )
+  .get("/", verifyKey, CatchWrapper(getMentorsController))
   .get(
     "/:mentorId",
     verifyToken(["SUPER_ADMIN", "ADMIN"]),

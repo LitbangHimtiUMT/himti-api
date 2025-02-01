@@ -129,6 +129,7 @@ export const MESSAGES = {
       EXPIRED: "Token Expired, please log in again",
       RECOGNIZED: "Token not recognized",
       ADMIN: "Admin can't access this app",
+      ACCESS: "You don't have permission to access this resource",
     },
     FORBIDDEN: {
       ROLE: "You are not allowed to access this resource",
@@ -302,6 +303,6 @@ export const MESSAGES = {
       GET: "Success to fetch mentor transaction",
       DELETE: "Success to delete mentor transaction",
       UPDATE: "Success to update mentor transaction",
-    }
+    },
   },
 };

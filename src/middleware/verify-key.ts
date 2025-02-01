@@ -1,0 +1,31 @@
+import { NextFunction, Request, Response } from "express";
+import { HandleResponse } from "../utils/handle-response";
+import { MESSAGE_CODE } from "../utils/error-code";
+import { MESSAGES } from "../utils/messages";
+import { environment } from "../libs";
+
+export const verifyKey = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const key = req.headers[environment.HEADER_KEY];
+  if (!key) {
+    return HandleResponse(
+      res,
+      403,
+      MESSAGE_CODE.FORBIDDEN,
+      MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
+    );
+  }
+
+  if (key !== environment.SECRET_KEY) {
+    return HandleResponse(
+      res,
+      403,
+      MESSAGE_CODE.FORBIDDEN,
+      MESSAGES.ERROR.UNAUTHORIZED.ACCESS
+    );
+  }
+  next();
+};
