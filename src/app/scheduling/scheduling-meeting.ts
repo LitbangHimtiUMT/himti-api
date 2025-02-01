@@ -7,6 +7,7 @@ import { getMeetingToday } from "../meetings/meetings.repository";
 import { createManyNotification } from "../notification/notification.repository";
 import { getUserFCMByNIM } from "../user-fcm/user-fcm.repository";
 import cron from "node-cron";
+import { environment } from "../../libs";
 
 export const schedulingNotification = async (req: Request, res: Response) => {
   const meetingToday = await getMeetingToday();
@@ -58,7 +59,7 @@ export const schedulingNotification = async (req: Request, res: Response) => {
 
 export const cronSchedulingNotification = () => {
   cron.schedule(
-    "47 13 * * *",
+    environment.CRON_EXPRESSION,
     async () => {
       const fcm = await getUserFCMByNIM("2255201237");
       for (const item of fcm) {
