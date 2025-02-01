@@ -74,4 +74,5 @@ export const cronSchedulingNotification = () => {
       timezone: "Asia/Jakarta",
     }
   );
+  return true;
 };
