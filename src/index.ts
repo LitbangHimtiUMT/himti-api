@@ -52,7 +52,6 @@ app.use(HandlingError);
 // });
 
 app.listen(port, () => {
-  // cronSchedulingNotification();
   console.log(`Server running on port ${port}🚀`);
 });
 
