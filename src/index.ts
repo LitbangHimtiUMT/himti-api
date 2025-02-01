@@ -7,7 +7,6 @@ import express from "express";
 import { environment } from "./libs";
 import routes from "./routes";
 import { HandlingError } from "./utils/handling-error";
-import { cronSchedulingNotification } from "./app/scheduling/scheduling-meeting";
 
 const app = express();
 
@@ -53,7 +52,7 @@ app.use(HandlingError);
 // });
 
 app.listen(port, () => {
-  cronSchedulingNotification();
+  // cronSchedulingNotification();
   console.log(`Server running on port ${port}🚀`);
 });
 

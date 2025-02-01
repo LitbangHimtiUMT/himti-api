@@ -1,12 +1,20 @@
 import { prisma } from "../../../config";
 import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../achievements/achievements.repository";
+import { CreateMentorDAO } from "./mentor.dao";
 
-export const createMentorRepository = async (userId: string) => {
+export const createMentorRepository = async (
+  userId: string,
+  data?: CreateMentorDAO
+) => {
   return await prisma.mentor.create({
     data: {
       balance: 0,
       userId,
+      facebook: data?.facebook,
+      instagram: data?.instagram,
+      linkedin: data?.linkedin,
+      twitter: data?.twitter,
     },
   });
 };

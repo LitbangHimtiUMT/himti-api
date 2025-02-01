@@ -16,7 +16,7 @@ export const createMentorController = async (
   next: NextFunction
 ) => {
   const { userId } = req.params;
-  const result = await createMentorService(userId);
+  const result = await createMentorService(userId, req.body);
 
   if (result instanceof ErrorApp) {
     next(result);

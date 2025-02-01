@@ -5,6 +5,7 @@ import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
 import { getUserById } from "../../authentication/auth.repository";
 import { getMentorTransactionsByMentorIdRepository } from "../mentor-transactions/mentor-transactions.repository";
+import { CreateMentorDAO } from "./mentor.dao";
 import { getDetailMentorDTOMapper, getMentorsDTOMapper } from "./mentor.mapper";
 import {
   createMentorRepository,
@@ -15,7 +16,10 @@ import {
   getMentorsRepository,
 } from "./mentor.repository";
 
-export const createMentorService = async (userId: string) => {
+export const createMentorService = async (
+  userId: string,
+  data?: CreateMentorDAO
+) => {
   const user = await getUserById(userId);
   if (!user) {
     return new ErrorApp(
@@ -33,7 +37,7 @@ export const createMentorService = async (userId: string) => {
       MESSAGE_CODE.BAD_REQUEST
     );
   }
-  const mentor = await createMentorRepository(user.id);
+  const mentor = await createMentorRepository(user.id, data);
 
   return mentor;
 };
