@@ -9,13 +9,13 @@ export const verifyKey = async (
   res: Response,
   next: NextFunction
 ) => {
-  const key = req.headers[environment.HEADER_KEY] as string;
+  const key = req.header(environment.HEADER_KEY) as string;
   if (!key) {
     return HandleResponse(
       res,
       403,
       MESSAGE_CODE.FORBIDDEN,
-      MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
+      MESSAGES.ERROR.UNAUTHORIZED.ACCESS
     );
   }
 

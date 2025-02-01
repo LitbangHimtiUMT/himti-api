@@ -29,6 +29,7 @@ app.use(
       "Content-Type",
       "Date",
       "X-Api-Version",
+      environment.HEADER_KEY,
     ],
     credentials: true,
     preflightContinue: false,
