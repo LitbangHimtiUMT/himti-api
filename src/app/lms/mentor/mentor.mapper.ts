@@ -11,6 +11,10 @@ export const getMentorsDTOMapper = (data: MentorData[]): MentorDTO[] => {
     name: item?.user?.name ?? "",
     email: item?.user?.email ?? "",
     balance: Number(item?.balance),
+    facebook: item?.facebook ?? null,
+    instagram: item?.instagram ?? null,
+    linkedin: item?.linkedin ?? null,
+    twitter: item?.twitter ?? null,
   }));
 };
 
