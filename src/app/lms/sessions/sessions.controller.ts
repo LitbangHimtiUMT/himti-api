@@ -37,5 +37,5 @@ export const createSessionController = async (
     return;
   }
 
-  HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.CLASS);
+  HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.SESSION);
 };

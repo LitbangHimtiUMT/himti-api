@@ -3,7 +3,7 @@ import { CreateSessionBodyRequest } from "./sessions.dto";
 import { createSessionRepository } from "./sessions.repository";
 import { createSessionValidate } from "./sessions.validate";
 import { MESSAGE_CODE } from "../../../utils/error-code";
-import { MESSAGES } from "utils/messages";
+import { MESSAGES } from "../../../utils/messages";
 
 export const createSessionService = async ({
   name,
