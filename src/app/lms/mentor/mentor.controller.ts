@@ -31,7 +31,6 @@ export const getMentorsController = async (
   next: NextFunction
 ) => {
   const { query } = req;
-  console.log("HAHAHAH");
   const result = await getMentorsService(query);
   if (result instanceof ErrorApp) {
     next(result);
