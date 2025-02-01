@@ -342,6 +342,7 @@ model Session {
 
 model Module {
   id         String      @id @unique @default(uuid())
+  name       String      @db.VarChar(155)
   sessionId  String      @map("session_id") @db.VarChar(110)
   textModule String?     @map("text_module") @db.Text
   videoUrl   String?     @map("video_url") @db.VarChar(255)
