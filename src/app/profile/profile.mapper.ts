@@ -15,7 +15,7 @@ export const ProfileDTOMapper = (data: ProfileData): ProfileDTO => {
     email: data.email,
     name: data.name,
     nim: data.nim as string,
-    role: data.role as Role,
+    role: data.memberId ? Role.ANGGOTA : data.role,
     photo: data.photo
       ? data.photo.includes("https")
         ? data.photo

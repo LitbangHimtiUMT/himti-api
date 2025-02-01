@@ -180,13 +180,13 @@ export const loginService = async (data: LoginAuthBodyDTO) => {
     );
   }
 
-  if (user.role === "ADMIN") {
-    return new ErrorApp(
-      MESSAGES.ERROR.UNAUTHORIZED.ADMIN,
-      401,
-      MESSAGE_CODE.UNAUTHORIZED
-    );
-  }
+  // if (user.role === "ADMIN") {
+  //   return new ErrorApp(
+  //     MESSAGES.ERROR.UNAUTHORIZED.ADMIN,
+  //     401,
+  //     MESSAGE_CODE.UNAUTHORIZED
+  //   );
+  // }
 
   // const fcm = await getUserFCMByUserId(user.id)
   // if (user.UserFCM.length > 0) {
