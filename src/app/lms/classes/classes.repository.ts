@@ -2,6 +2,18 @@ import { Level } from "@prisma/client";
 import { prisma } from "../../../config";
 import { type CreateClassBodyRequest } from "./classes.dto";
 
+export const getClassById = async (classId: string) => {
+  return await prisma.class.findUnique({
+    where: {
+      id: classId,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+};
+
 export const createClassRepository = async (
   data: CreateClassBodyRequest,
   userId: string,

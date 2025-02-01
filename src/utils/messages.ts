@@ -49,6 +49,7 @@ export const MESSAGES = {
       EVENT_MEETING: "Event Meeting not found",
       MEETING: "Meeting not found",
       CATEGORY: "Category not found",
+      CLASS: "Class not found",
       MENTOR: "Mentor not found",
     },
     ALREADY: {
@@ -159,6 +160,7 @@ export const MESSAGES = {
       PRICE: "Price is required",
       ACARA_ID: "Acara Id is required",
       CATEGORY_ID: "Category Id is required",
+      CLASS_ID: "Class Id is required",
       SUB_ACARA_ID: "Sub Acara Id is required",
       OTP_KEY: "OTP Key is required",
       OTP: "OTP is required",
