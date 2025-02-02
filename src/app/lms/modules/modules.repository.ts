@@ -18,11 +18,11 @@ export const createModuleRepository = async (data: CreateModuleBodyRequest) => {
 
   return await prisma.module.create({
     data: {
-      name: name as string,
-      sessionId: sessionId as string,
-      textModule: textModule as string,
-      videoUrl: videoUrl as string,
-      fileModule: fileModule as string,
+      name,
+      sessionId,
+      textModule,
+      videoUrl,
+      fileModule,
     },
   });
 };

@@ -10,9 +10,7 @@ export const createModuleService = async ({
   videoUrl,
   fileModule,
 }: CreateModuleBodyRequest) => {
-  const validate = await createModuleValidate({
-    sessionId,
-  });
+  const validate = await createModuleValidate(sessionId);
 
   if (validate instanceof ErrorApp) {
     return validate;
@@ -20,7 +18,7 @@ export const createModuleService = async ({
 
   const moduleService = await createModuleRepository({
     name,
-    sessionId,
+    sessionId: validate.id,
     textModule,
     videoUrl,
     fileModule,

@@ -341,17 +341,16 @@ model Session {
 }
 
 model Module {
-  id         String      @id @unique @default(uuid())
-  name       String      @db.VarChar(155)
-  sessionId  String      @map("session_id") @db.VarChar(110)
-  textModule String?     @map("text_module") @db.Text
-  videoUrl   String?     @map("video_url") @db.VarChar(255)
-  fileModule String?     @map("file_module") @db.VarChar(255)
-  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamp(0)
-  session    Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  assignment Assignment? @relation(fields: [id], references: [moduleId], onDelete: Cascade)
-
+  id              String            @id @unique @default(uuid())
+  name            String            @db.VarChar(155)
+  sessionId       String            @map("session_id") @db.VarChar(110)
+  textModule      String?           @map("text_module") @db.Text
+  videoUrl        String?           @map("video_url") @db.VarChar(255)
+  fileModule      String?           @map("file_module") @db.VarChar(255)
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
+  session         Session           @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  assignment      Assignment?       @relation
   CompletedModule CompletedModule[]
 
   @@index([sessionId], map: "modules_fk_1")
@@ -409,7 +408,7 @@ model Assignment {
   isFinalAssigment Boolean?     @default(false) @map("is_final_assignment") @db.Boolean
   createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamp(0)
-  module           Module?      @relation
+  module           Module?      @relation(fields: [moduleId], references: [id])
   submission       Submission[]
 
   @@index([moduleId], map: "assignments_fk_1")
