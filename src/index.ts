@@ -17,19 +17,20 @@ app.use(
   cors({
     origin: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    // allowedHeaders: [
-    //   "Content-Type",
-    //   "Authorization",
-    //   "X-CSRF-Token",
-    //   "X-Requested-With",
-    //   "Accept",
-    //   "Accept-Version",
-    //   "Content-Length",
-    //   "Content-MD5",
-    //   "Content-Type",
-    //   "Date",
-    //   "X-Api-Version",
-    // ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-CSRF-Token",
+      "X-Requested-With",
+      "Accept",
+      "Accept-Version",
+      "Content-Length",
+      "Content-MD5",
+      "Content-Type",
+      "Date",
+      "X-Api-Version",
+      "X-Api-Key"
+    ],
     credentials: true,
     preflightContinue: false,
   })
