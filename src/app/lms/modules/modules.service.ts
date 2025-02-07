@@ -1,6 +1,13 @@
+import { Query } from "../../../interface/Query";
 import { ErrorApp } from "../../../utils/http-error";
+import { Meta } from "../../../utils/meta";
 import { CreateModuleBodyRequest } from "./modules.dto";
-import { createModuleRepository } from "./modules.repository";
+import { getModulesMapper } from "./modules.mapper";
+import {
+  createModuleRepository,
+  getModulesCountRepository,
+  getModulesRepository,
+} from "./modules.repository";
 import { createModuleValidate } from "./modules.validate";
 
 export const createModuleService = async ({
@@ -25,4 +32,18 @@ export const createModuleService = async ({
   });
 
   return moduleService;
+};
+
+export const getModulesService = async (query: Query) => {
+  const { page = "1", perPage = "10" } = query;
+  const [modules, totalData] = await Promise.all([
+    getModulesRepository(query),
+    getModulesCountRepository(query),
+  ]);
+
+  const data = getModulesMapper(modules);
+  return {
+    data,
+    meta: Meta(Number(page), Number(perPage), totalData),
+  };
 };

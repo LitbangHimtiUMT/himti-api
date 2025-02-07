@@ -1,4 +1,6 @@
 import { prisma } from "../../../config";
+import { Query } from "../../../interface/Query";
+import { queryPagination } from "../../achievements/achievements.repository";
 import { type CreateModuleBodyRequest } from "./modules.dto";
 
 export const getModuleById = async (moduleId: string) => {
@@ -23,6 +25,25 @@ export const createModuleRepository = async (data: CreateModuleBodyRequest) => {
       textModule,
       videoUrl,
       fileModule,
+    },
+  });
+};
+
+export const getModulesRepository = async (query: Query) => {
+  const { sessionId } = query;
+  return await prisma.module.findMany({
+    where: {
+      sessionId,
+    },
+    ...queryPagination(query),
+  });
+};
+
+export const getModulesCountRepository = async (query: Query) => {
+  const { sessionId } = query;
+  return await prisma.module.count({
+    where: {
+      sessionId,
     },
   });
 };

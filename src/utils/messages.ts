@@ -310,5 +310,10 @@ export const MESSAGES = {
       DELETE: "Success to delete mentor transaction",
       UPDATE: "Success to update mentor transaction",
     },
+    MODULES: {
+      GET: "Success to fetch modules",
+      DELETE: "Success to delete modules",
+      UPDATE: "Success to update modules",
+    },
   },
 };
