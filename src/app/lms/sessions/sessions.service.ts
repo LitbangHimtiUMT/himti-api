@@ -1,34 +1,50 @@
+import { Query } from "../../../interface/Query";
 import { ErrorApp } from "../../../utils/http-error";
+import { Meta } from "../../../utils/meta";
 import { CreateSessionBodyRequest } from "./sessions.dto";
-import { createSessionRepository } from "./sessions.repository";
+import { getSessionsMapper } from "./sessions.mapper";
+import {
+  createSessionRepository,
+  getSessionsCountRepository,
+  getSessionsRepository,
+} from "./sessions.repository";
 import { createSessionValidate } from "./sessions.validate";
-import { MESSAGE_CODE } from "../../../utils/error-code";
-import { MESSAGES } from "../../../utils/messages";
 
 export const createSessionService = async ({
   name,
   classId,
 }: CreateSessionBodyRequest) => {
-  try {
-    const validate = await createSessionValidate({
-      classId,
-    });
+  const validate = await createSessionValidate({
+    classId,
+  });
 
-    if (validate instanceof ErrorApp) {
-      return validate;
-    }
-
-    const session = await createSessionRepository({
-      name,
-      classId,
-    });
-
-    return session;
-  } catch (error) {
-    throw new ErrorApp(
-      MESSAGES.ERROR.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-      500,
-      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
-    );
+  if (validate instanceof ErrorApp) {
+    return validate;
   }
+
+  const session = await createSessionRepository({
+    name,
+    classId,
+  });
+
+  return session;
+};
+
+export const getSessionsByClassService = async (query: Query) => {
+  const {page = '1', perPage = '10'} = query
+  const [sessions, totalData] = await Promise.all([
+    getSessionsRepository(query),
+    getSessionsCountRepository(query),
+  ]);
+
+  const data = getSessionsMapper(sessions)
+
+  return {
+    data,
+    meta: Meta(
+      Number(page), 
+      Number(perPage), 
+      totalData
+    ),
+  };
 };

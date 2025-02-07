@@ -1,4 +1,6 @@
 import { prisma } from "../../../config";
+import { Query } from "../../../interface/Query";
+import { queryPagination } from "../../achievements/achievements.repository";
 import { type CreateSessionBodyRequest } from "./sessions.dto";
 
 export const getSessionById = async (sessionId: string) => {
@@ -14,7 +16,7 @@ export const getSessionById = async (sessionId: string) => {
 };
 
 export const createSessionRepository = async (
-  data: CreateSessionBodyRequest,
+  data: CreateSessionBodyRequest
 ) => {
   const { name, classId } = data;
 
@@ -22,6 +24,37 @@ export const createSessionRepository = async (
     data: {
       name: name as string,
       classId: classId as string,
+    },
+  });
+};
+
+export const getSessionsRepository = async (query: Query) => {
+  const { classId, search } = query;
+  return await prisma.session.findMany({
+    where: {
+      classId,
+      ...(search && {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      }),
+    },
+    ...queryPagination(query),
+  });
+};
+
+export const getSessionsCountRepository = async (query: Query) => {
+  const { classId, search } = query;
+  return await prisma.session.count({
+    where: {
+      classId,
+      ...(search && {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      }),
     },
   });
 };

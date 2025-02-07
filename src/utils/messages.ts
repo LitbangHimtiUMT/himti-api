@@ -315,5 +315,10 @@ export const MESSAGES = {
       DELETE: "Success to delete modules",
       UPDATE: "Success to update modules",
     },
+    SESSIONS: {
+      GET: "Success to fetch sessions",
+      DELETE: "Success to delete sessions",
+      UPDATE: "Success to update sessions",
+    }
   },
 };

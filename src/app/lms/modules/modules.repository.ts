@@ -30,20 +30,30 @@ export const createModuleRepository = async (data: CreateModuleBodyRequest) => {
 };
 
 export const getModulesRepository = async (query: Query) => {
-  const { sessionId } = query;
+  const { sessionId, search } = query;
   return await prisma.module.findMany({
     where: {
       sessionId,
+      ...(search && {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      }),
     },
     ...queryPagination(query),
   });
 };
 
 export const getModulesCountRepository = async (query: Query) => {
-  const { sessionId } = query;
+  const { sessionId, search } = query;
   return await prisma.module.count({
     where: {
       sessionId,
+      name: {
+        contains: search,
+        mode: "insensitive",
+      },
     },
   });
 };
