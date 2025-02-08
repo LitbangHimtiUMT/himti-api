@@ -21,7 +21,10 @@ export const registerController = async (
 ) => {
   const { name, email, password, nim, code } = req.body;
 
-  const register = await registerService({ name, email, password, nim, code });
+  const register = await registerService(
+    { name, email, password, nim, code },
+    req.query
+  );
 
   if (register instanceof ErrorApp) {
     next(register);

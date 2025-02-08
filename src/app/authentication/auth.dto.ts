@@ -4,7 +4,7 @@ export interface RegisterAuthBodyDTO {
     email: string
     password: string
     name: string
-    nim: string,
+    nim?: string,
     role?: Role
     code?: string
     memberId?: string

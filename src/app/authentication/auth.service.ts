@@ -36,13 +36,11 @@ import { Query } from "../../interface/Query";
 
 dotenv.config();
 
-export const registerService = async ({
-  email,
-  name,
-  password,
-  nim,
-  code,
-}: RegisterAuthBodyDTO) => {
+export const registerService = async (
+  { email, name, password, nim, code }: RegisterAuthBodyDTO,
+  query: Query
+) => {
+  const { authType = "app" } = query;
   const user = await getUserByEmail(email);
   if (user) {
     return new ErrorApp(
@@ -59,98 +57,106 @@ export const registerService = async ({
     );
   }
   const hashPassword = await bcrypt.hash(password, 10);
-  let role: Role = "USER";
-  let memberId = null;
+  if (authType === "app") {
+    let role: Role = "USER";
+    let memberId = null;
 
-  const isAnggota = await getMemberByNIM(nim);
-  const alreadyUser = await getUserByNIM(nim);
+    const isAnggota = await getMemberByNIM(nim ?? "");
+    const alreadyUser = await getUserByNIM(nim ?? "");
 
-  if (isAnggota && !code) {
-    return new ErrorApp(
-      MESSAGES.ERROR.REQUIRED.CODE_ANGGOTA,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
-  }
-
-  if (isAnggota && code && code !== environment.ANGGOTA_CODE) {
-    return new ErrorApp(
-      MESSAGES.ERROR.INVALID.CODE_ANGGOTA,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
-  }
-  let isContains = false;
-  const splitName = name?.split(" ");
-
-  splitName.forEach((item) => {
-    if (isAnggota?.name.toLowerCase().includes(item.toLowerCase())) {
-      isContains = true;
-    }
-  });
-  console.log(isContains);
-  console.log(isAnggota);
-  console.log(!isAnggota?.name.includes(name) && !isContains);
-  if (
-    isAnggota &&
-    code &&
-    code === environment.ANGGOTA_CODE &&
-    !isAnggota.name.includes(name) &&
-    !isContains
-  ) {
-    return new ErrorApp(
-      MESSAGES.ERROR.INVALID.NAME_MEMBER,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
-  }
-
-  if (!isAnggota && code) {
-    return new ErrorApp(
-      MESSAGES.ERROR.INVALID.CODE_USER,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
-  }
-
-  if (nim) {
-    if (nim === alreadyUser?.nim) {
+    if (isAnggota && !code) {
       return new ErrorApp(
-        MESSAGES.ERROR.ALREADY.GLOBAL.NIM,
+        MESSAGES.ERROR.REQUIRED.CODE_ANGGOTA,
         400,
         MESSAGE_CODE.BAD_REQUEST
       );
     }
-  }
 
-  if (email) {
-    // if (email === isAnggota?.email) {
-    //   return new ErrorApp(
-    //     MESSAGES.ERROR.ALREADY.GLOBAL.EMAIL,
-    //     400,
-    //     MESSAGE_CODE.BAD_REQUEST
-    //   );
-    // }
-    if (email === alreadyUser?.email) {
+    if (isAnggota && code && code !== environment.ANGGOTA_CODE) {
       return new ErrorApp(
-        MESSAGES.ERROR.ALREADY.GLOBAL.EMAIL,
+        MESSAGES.ERROR.INVALID.CODE_ANGGOTA,
         400,
         MESSAGE_CODE.BAD_REQUEST
       );
     }
-  }
+    let isContains = false;
+    const splitName = name?.split(" ");
 
-  if (isAnggota && code === environment.ANGGOTA_CODE) {
-    role = "ANGGOTA";
-    memberId = isAnggota.id;
+    splitName.forEach((item) => {
+      if (isAnggota?.name.toLowerCase().includes(item.toLowerCase())) {
+        isContains = true;
+      }
+    });
+    if (
+      isAnggota &&
+      code &&
+      code === environment.ANGGOTA_CODE &&
+      !isAnggota.name.includes(name) &&
+      !isContains
+    ) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.NAME_MEMBER,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
+    if (!isAnggota && code) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.CODE_USER,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
+    if (nim) {
+      if (nim === alreadyUser?.nim) {
+        return new ErrorApp(
+          MESSAGES.ERROR.ALREADY.GLOBAL.NIM,
+          400,
+          MESSAGE_CODE.BAD_REQUEST
+        );
+      }
+    }
+
+    if (email) {
+      // if (email === isAnggota?.email) {
+      //   return new ErrorApp(
+      //     MESSAGES.ERROR.ALREADY.GLOBAL.EMAIL,
+      //     400,
+      //     MESSAGE_CODE.BAD_REQUEST
+      //   );
+      // }
+      if (email === alreadyUser?.email) {
+        return new ErrorApp(
+          MESSAGES.ERROR.ALREADY.GLOBAL.EMAIL,
+          400,
+          MESSAGE_CODE.BAD_REQUEST
+        );
+      }
+    }
+
+    if (isAnggota && code === environment.ANGGOTA_CODE) {
+      role = "ANGGOTA";
+      memberId = isAnggota.id;
+    }
+    const response = await createUser({
+      email,
+      name,
+      password: hashPassword,
+      role,
+      nim,
+      memberId: memberId as string,
+    });
+    return response;
   }
   const response = await createUser({
     email,
     name,
     password: hashPassword,
-    role,
-    nim,
-    memberId: memberId as string,
+    role: "USER",
+    nim: undefined,
+    memberId: undefined,
   });
   return response;
 };
