@@ -21,6 +21,7 @@ export const MESSAGES = {
     CLASS: "Class created successfully",
     SESSION: "Session created successfully",
     MODULE: "Module created successfully",
+    CLASS_PARTICIPANT: "Class Participant created successfully",
   },
   ERROR: {
     NOT_FOUND: {
@@ -324,6 +325,6 @@ export const MESSAGES = {
       GET: "Success to fetch class",
       DELETE: "Success to delete class",
       UPDATE: "Success to update class",
-    }
+    },
   },
 };
