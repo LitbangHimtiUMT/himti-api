@@ -64,6 +64,14 @@ export const registerService = async (
     const isAnggota = await getMemberByNIM(nim ?? "");
     const alreadyUser = await getUserByNIM(nim ?? "");
 
+    if (!nim) {
+      return new ErrorApp(
+        MESSAGES.ERROR.REQUIRED.NIM,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
     if (isAnggota && !code) {
       return new ErrorApp(
         MESSAGES.ERROR.REQUIRED.CODE_ANGGOTA,
