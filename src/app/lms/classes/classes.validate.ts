@@ -6,14 +6,14 @@ import { getUserById } from "../../authentication/auth.repository";
 import { CreateClassBodyRequest } from "./classes.dto";
 
 export const createClassValidate = async (
-  { categoryId, level, thumbnail }: CreateClassBodyRequest,
-  userId: string,
+  { categoryId, level, thumbnail }: Omit<CreateClassBodyRequest, "session">,
+  userId: string
 ) => {
   if (level !== "BEGINNER" && level !== "INTERMEDIATE" && level !== "EXPERT") {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.LEVEL,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -22,7 +22,7 @@ export const createClassValidate = async (
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.CATEGORY,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 
@@ -30,7 +30,7 @@ export const createClassValidate = async (
     return new ErrorApp(
       MESSAGES.ERROR.REQUIRED.IMAGE,
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
 
@@ -39,7 +39,7 @@ export const createClassValidate = async (
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 };

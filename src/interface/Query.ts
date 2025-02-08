@@ -6,7 +6,8 @@ export interface Query {
   eventMeetingId?: string;
   status?: string;
   transactionType?: string;
+  categoryId?: string;
   classId?: string;
   sessionId?: string;
-  authType?: 'lms' | 'app'
+  authType?: "lms" | "app";
 }

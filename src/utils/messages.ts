@@ -319,6 +319,11 @@ export const MESSAGES = {
       GET: "Success to fetch sessions",
       DELETE: "Success to delete sessions",
       UPDATE: "Success to update sessions",
+    },
+    CLASS: {
+      GET: "Success to fetch class",
+      DELETE: "Success to delete class",
+      UPDATE: "Success to update class",
     }
   },
 };

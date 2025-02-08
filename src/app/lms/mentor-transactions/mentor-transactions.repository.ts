@@ -1,7 +1,7 @@
 import { MentorTransactionType } from "@prisma/client";
 import { prisma } from "../../../config";
 import { Query } from "../../../interface/Query";
-import { queryPagination } from "../../achievements/achievements.repository";
+import { queryPagination } from "../../../utils/pagination";
 
 export const getMentorTransactionsByMentorIdRepository = async (
   mentorId: string,

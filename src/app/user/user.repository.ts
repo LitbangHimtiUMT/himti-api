@@ -7,7 +7,7 @@ import {
   UserRequestBodyDTO,
 } from "./user.dto";
 import { Query } from "../../interface/Query";
-import { queryPagination } from "../achievements/achievements.repository";
+import { queryPagination } from "../../utils/pagination";
 
 export const getUsers = async ({
   page,

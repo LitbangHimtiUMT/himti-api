@@ -295,6 +295,7 @@ model Class {
   createdBy        String             @map("created_by") @db.VarChar(110)
   name             String             @db.VarChar(255)
   description      String?            @db.Text
+  status           ClassStatus        @default(DRAFT)
   thumbnail        String?            @db.VarChar(255)
   level            Level              @default(BEGINNER)
   categoryId       String             @map("category_id") @db.VarChar(110)
@@ -303,7 +304,7 @@ model Class {
   updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamp(0)
   user             User               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   category         Category           @relation(fields: [categoryId], onDelete: Cascade, onUpdate: NoAction, references: [id])
-  Session          Session[]
+  session          Session[]
   classParticipant ClassParticipant[]
   completedClass   CompletedClass[]
   certificate      Certificate[]
@@ -553,4 +554,9 @@ enum Level {
   BEGINNER
   INTERMEDIATE
   EXPERT
+}
+
+enum ClassStatus {
+  DRAFT
+  PUBLISH
 }

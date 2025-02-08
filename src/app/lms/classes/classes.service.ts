@@ -1,6 +1,10 @@
 import { ErrorApp } from "../../../utils/http-error";
 import { CreateClassBodyRequest } from "./classes.dto";
-import { createClassRepository } from "./classes.repository";
+import {
+  createClassRepository,
+  getClassCountRepository,
+  getClassRepository,
+} from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
 import { getCategoryById } from "../categories/categories.repository";
 import { MESSAGE_CODE } from "../../../utils/error-code";
@@ -13,6 +17,9 @@ import {
 } from "../../../utils/upload-file-to-storage";
 import sharp from "sharp";
 import { environment } from "../../../libs";
+import { Query } from "../../../interface/Query";
+import { Meta } from "../../../utils/meta";
+import { getClassMapper } from "./classes.mapper";
 
 export const createClassService = async (
   {
@@ -23,7 +30,7 @@ export const createClassService = async (
     categoryId,
     price,
   }: CreateClassBodyRequest,
-  userId: string,
+  userId: string
 ) => {
   let fileName;
 
@@ -33,8 +40,11 @@ export const createClassService = async (
         categoryId,
         level,
         thumbnail,
+        name,
+        price,
+        description,
       },
-      userId,
+      userId
     );
 
     if (validate instanceof ErrorApp) {
@@ -73,7 +83,7 @@ export const createClassService = async (
         categoryId,
         price,
       },
-      userId,
+      userId
     );
 
     return createClass;
@@ -82,17 +92,32 @@ export const createClassService = async (
       error,
     });
     const exist = await GetFileFromStorage(
-      `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`,
+      `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`
     );
     if (exist.exists) {
       await RemoveFileFromStorage(
-        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`,
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`
       );
     }
     return new ErrorApp(
       "Error when create class data or upload file to storage",
       400,
-      MESSAGE_CODE.BAD_REQUEST,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
+};
+
+export const getClassService = async (query: Query, userId?: string) => {
+  const { page = "1", perPage = "10" } = query;
+  const [classess, totalData] = await Promise.all([
+    getClassRepository(query, userId),
+    getClassCountRepository(query, userId),
+  ]);
+
+  const meta = Meta(Number(page), Number(perPage), totalData);
+
+  return {
+    data: getClassMapper(classess),
+    meta,
+  };
 };

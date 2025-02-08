@@ -1,21 +1,13 @@
+import { Level } from "@prisma/client";
 import Joi from "joi";
-import { MESSAGES } from "../../../utils/messages";
 
 export const createClassSchema = Joi.object({
-  name: Joi.string().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.NAME,
-  }),
+  name: Joi.string().required(),
   description: Joi.string().optional().allow(null),
-  thumbnail: Joi.any().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.IMAGE,
-  }),
-  price: Joi.number().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.PRICE,
-  }),
-  level: Joi.string().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.LEVEL,
-  }),
-  categoryId: Joi.string().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.CATEGORY_ID,
-  }),
+  thumbnail: Joi.any().required(),
+  price: Joi.number().required(),
+  level: Joi.string()
+    .valid(...Object.keys(Level))
+    .required(),
+  categoryId: Joi.string().required(),
 });

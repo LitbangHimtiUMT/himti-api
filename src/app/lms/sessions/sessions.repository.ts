@@ -1,6 +1,6 @@
 import { prisma } from "../../../config";
 import { Query } from "../../../interface/Query";
-import { queryPagination } from "../../achievements/achievements.repository";
+import { queryPagination } from "../../../utils/pagination";
 import { type CreateSessionBodyRequest } from "./sessions.dto";
 
 export const getSessionById = async (sessionId: string) => {

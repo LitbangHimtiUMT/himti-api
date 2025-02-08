@@ -1,6 +1,6 @@
 import { prisma } from "../../../config";
 import { Query } from "../../../interface/Query";
-import { queryPagination } from "../../achievements/achievements.repository";
+import { queryPagination } from "../../../utils/pagination";
 import { CreateCategoryDAO } from "./categories.dao";
 
 export const getCategoryById = async (CategoryId: string) => {
