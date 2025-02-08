@@ -32,6 +32,7 @@ import {
   userLogin,
   verifiedOtp,
 } from "./auth.repository";
+import { Query } from "../../interface/Query";
 
 dotenv.config();
 
@@ -154,8 +155,9 @@ export const registerService = async ({
   return response;
 };
 
-export const loginService = async (data: LoginAuthBodyDTO) => {
+export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
   const { email, password, fcmToken } = data;
+  const { authType = "app" } = query;
   const user = await getUserByEmail(email);
   if (!user) {
     return new ErrorApp(
@@ -180,13 +182,13 @@ export const loginService = async (data: LoginAuthBodyDTO) => {
     );
   }
 
-  // if (user.role === "ADMIN") {
-  //   return new ErrorApp(
-  //     MESSAGES.ERROR.UNAUTHORIZED.ADMIN,
-  //     401,
-  //     MESSAGE_CODE.UNAUTHORIZED
-  //   );
-  // }
+  if (user.role === "ADMIN" && !user.memberId) {
+    return new ErrorApp(
+      MESSAGES.ERROR.UNAUTHORIZED.ADMIN,
+      401,
+      MESSAGE_CODE.UNAUTHORIZED
+    );
+  }
 
   // const fcm = await getUserFCMByUserId(user.id)
   // if (user.UserFCM.length > 0) {
@@ -196,11 +198,6 @@ export const loginService = async (data: LoginAuthBodyDTO) => {
   //     MESSAGE_CODE.UNAUTHORIZED
   //   );
   // }
-  if (fcmToken) {
-    await createUserFCM(user.id, fcmToken as string);
-  }
-  await userLogin(user.id, true);
-
   const token = jwt.sign(
     {
       id: user.id,
@@ -209,13 +206,23 @@ export const loginService = async (data: LoginAuthBodyDTO) => {
     { expiresIn: environment.JWT_EXPIRES }
   );
 
-  const userInfo = {
-    name: user.name,
-    nim: user.nim,
-    role: user.role,
-  };
+  if (authType === "app") {
+    if (fcmToken) {
+      await createUserFCM(user.id, fcmToken as string);
+    }
+    await userLogin(user.id, true);
 
-  return { access_token: token, user: userInfo };
+    const userInfo = {
+      name: user.name,
+      nim: user.nim,
+      role: user.role,
+    };
+
+    return { access_token: token, user: userInfo };
+  }
+  return {
+    accessToken: token,
+  };
 };
 
 export const loginAdminService = async ({

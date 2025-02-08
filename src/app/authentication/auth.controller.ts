@@ -36,9 +36,9 @@ export const loginController = async (
   next: NextFunction
 ) => {
   // const { email, password } = req.body
-  const { body } = req;
+  const { body, query } = req;
 
-  const login = await loginService(body);
+  const login = await loginService(body, query);
   if (login instanceof ErrorApp) {
     next(login);
     return;

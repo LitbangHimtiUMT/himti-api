@@ -8,4 +8,5 @@ export interface Query {
   transactionType?: string;
   classId?: string;
   sessionId?: string;
+  authType?: 'lms' | 'app'
 }
