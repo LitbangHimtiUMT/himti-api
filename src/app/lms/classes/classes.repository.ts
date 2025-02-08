@@ -36,7 +36,7 @@ export const createClassRepository = async (
 };
 
 export const getClassRepository = async (query: Query, userId?: string) => {
-  const { search, categoryId } = query;
+  const { search, categoryId, orderBy } = query;
   return await prisma.class.findMany({
     where: {
       ...(search && {
@@ -51,11 +51,25 @@ export const getClassRepository = async (query: Query, userId?: string) => {
       ...(userId && {
         createdBy: userId,
       }),
+      status: "PUBLISH",
     },
     include: {
       user: true,
       category: true,
+      classParticipant: {
+        select: {
+          id: true,
+          userId: true,
+        },
+      },
     },
+    ...(orderBy && {
+      orderBy: {
+        classParticipant: {
+          _count: orderBy,
+        },
+      },
+    }),
     ...queryPagination(query),
   });
 };
@@ -79,6 +93,7 @@ export const getClassCountRepository = async (
       ...(userId && {
         createdBy: userId,
       }),
+      status: "PUBLISH",
     },
   });
 };

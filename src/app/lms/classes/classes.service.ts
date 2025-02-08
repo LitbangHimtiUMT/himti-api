@@ -20,6 +20,8 @@ import { environment } from "../../../libs";
 import { Query } from "../../../interface/Query";
 import { Meta } from "../../../utils/meta";
 import { getClassMapper } from "./classes.mapper";
+import { orderByData } from "../../../utils/query-utils";
+import { MESSAGES } from "../../../utils/messages";
 
 export const createClassService = async (
   {
@@ -108,7 +110,16 @@ export const createClassService = async (
 };
 
 export const getClassService = async (query: Query, userId?: string) => {
-  const { page = "1", perPage = "10" } = query;
+  const { page = "1", perPage = "10", orderBy } = query;
+
+  if (orderBy && !orderByData.includes(orderBy)) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ORDER_BY,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+
   const [classess, totalData] = await Promise.all([
     getClassRepository(query, userId),
     getClassCountRepository(query, userId),

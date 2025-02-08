@@ -126,6 +126,7 @@ export const MESSAGES = {
       END_TIME: "End Time must be date",
       NAME_MEMBER: "The name entered must match the registered NIM",
       LEVEL: "Level is invalid (BEGINNER, INTERMEDIATE, EXPERT)",
+      ORDER_BY: 'Order by must be "asc" or "desc"',
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -324,6 +325,6 @@ export const MESSAGES = {
       GET: "Success to fetch class",
       DELETE: "Success to delete class",
       UPDATE: "Success to update class",
-    }
+    },
   },
 };
