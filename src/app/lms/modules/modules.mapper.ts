@@ -1,8 +1,12 @@
-import { Module } from "@prisma/client";
+import { Assignment, Module } from "@prisma/client";
 import { ModulesDTO } from "./modules.dto";
 import { youtubeID } from "../../../utils/youtbe-url";
 
-export const getModulesMapper = (data: Module[]): ModulesDTO[] => {
+export interface ModuleData extends Module {
+  assignment: Assignment | null;
+}
+
+export const getModulesMapper = (data: ModuleData[]): ModulesDTO[] => {
   return data.map((item) => ({
     id: item.id,
     name: item.name,
@@ -12,6 +16,15 @@ export const getModulesMapper = (data: Module[]): ModulesDTO[] => {
     youtubeId: item.videoUrl ? youtubeID(item.videoUrl) : null,
     thumbnailUrl: item.videoUrl
       ? `https://i.ytimg.com/vi/${youtubeID(item.videoUrl)}/hqdefault.jpg`
+      : null,
+    assignment: item.assignment
+      ? {
+          id: item.assignment?.id,
+          title: item.assignment?.title,
+          name: item.assignment?.isFinalAssigment,
+          description: item.assignment?.description,
+          dueDate: item.assignment?.dueDate,
+        }
       : null,
   }));
 };

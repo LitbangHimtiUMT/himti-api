@@ -41,6 +41,9 @@ export const getModulesRepository = async (query: Query) => {
         },
       }),
     },
+    include: {
+      assignment: true,
+    },
     ...queryPagination(query),
   });
 };

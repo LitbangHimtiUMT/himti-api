@@ -40,6 +40,13 @@ export const getSessionsRepository = async (query: Query) => {
         },
       }),
     },
+    include: {
+      module: {
+        include: {
+          assignment: true,
+        },
+      },
+    },
     ...queryPagination(query),
   });
 };
