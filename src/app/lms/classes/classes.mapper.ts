@@ -1,4 +1,10 @@
-import { Category, Class, ClassParticipant, User } from "@prisma/client";
+import {
+  Category,
+  Class,
+  ClassParticipant,
+  CompletedClass,
+  User,
+} from "@prisma/client";
 import { ClassDTO } from "./classes.dto";
 import { ImagePath } from "../../../utils/image-path";
 import { BUCKET_FOLDER } from "../../../utils/upload-file-to-storage";
@@ -7,6 +13,11 @@ interface ClassData extends Class {
   user: User;
   category: Category;
   classParticipant: Pick<ClassParticipant, "id" | "userId">[];
+  completedClass?: CompletedClass[];
+}
+
+export interface ClassParticipantData extends ClassParticipant {
+  class: ClassData;
 }
 
 export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
@@ -31,5 +42,17 @@ export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
         ? ImagePath(`${BUCKET_FOLDER.user}/${item.user.photo}`)
         : null,
     },
+  }));
+};
+
+export const getClassAccessMapper = (data: ClassParticipantData[]) => {
+  return data.map((item) => ({
+    id: item.class.id,
+    name: item.class.name,
+    description: item.class.description,
+    status: item.class.status,
+    thumbnail: ImagePath(`${BUCKET_FOLDER.class}/${item.class.thumbnail}`),
+    level: item.class.level,
+    price: Number(item.class.price),
   }));
 };

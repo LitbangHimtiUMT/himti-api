@@ -12,6 +12,8 @@ export const getClassById = async (classId: string) => {
     select: {
       id: true,
       name: true,
+      price: true,
+      status: true,
     },
   });
 };

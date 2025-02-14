@@ -128,6 +128,8 @@ export const MESSAGES = {
       NAME_MEMBER: "The name entered must match the registered NIM",
       LEVEL: "Level is invalid (BEGINNER, INTERMEDIATE, EXPERT)",
       ORDER_BY: 'Order by must be "asc" or "desc"',
+      NOT_ENOUGH_POINT: "You don't have enough point",
+      ONLY_PUBLISH_CLASS: "Only publish class you can joined",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -326,6 +328,7 @@ export const MESSAGES = {
       GET: "Success to fetch class",
       DELETE: "Success to delete class",
       UPDATE: "Success to update class",
+      JOIN: "Success to join class",
     },
   },
 };

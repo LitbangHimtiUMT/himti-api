@@ -1,13 +1,11 @@
-import { ErrorApp } from "../../../utils/http-error";
-import { CreateClassBodyRequest } from "./classes.dto";
-import {
-  createClassRepository,
-  getClassCountRepository,
-  getClassRepository,
-} from "./classes.repository";
-import { createClassValidate } from "./classes.validate";
-import { getCategoryById } from "../categories/categories.repository";
+import sharp from "sharp";
+import { Query } from "../../../interface/Query";
+import { environment } from "../../../libs";
 import { MESSAGE_CODE } from "../../../utils/error-code";
+import { ErrorApp } from "../../../utils/http-error";
+import { MESSAGES } from "../../../utils/messages";
+import { Meta } from "../../../utils/meta";
+import { orderByData } from "../../../utils/query-utils";
 import {
   BUCKET_FOLDER,
   FileType,
@@ -15,17 +13,26 @@ import {
   RemoveFileFromStorage,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
-import sharp from "sharp";
-import { environment } from "../../../libs";
-import { Query } from "../../../interface/Query";
-import { Meta } from "../../../utils/meta";
-import { getClassMapper } from "./classes.mapper";
-import { orderByData } from "../../../utils/query-utils";
-import { MESSAGES } from "../../../utils/messages";
+import { getPointByUserId } from "../../point/point.repository";
+import { getCategoryById } from "../categories/categories.repository";
 import {
+  createClassParticipantRepository,
   getClassParticipantByUserIdCountRepository,
   getClassParticipantByUserIdRepository,
 } from "../class-participants/class-participants.repository";
+import { CreateClassBodyRequest } from "./classes.dto";
+import {
+  ClassParticipantData,
+  getClassAccessMapper,
+  getClassMapper,
+} from "./classes.mapper";
+import {
+  createClassRepository,
+  getClassById,
+  getClassCountRepository,
+  getClassRepository,
+} from "./classes.repository";
+import { createClassValidate } from "./classes.validate";
 
 export const createClassService = async (
   {
@@ -147,7 +154,42 @@ export const getClassUserService = async (userId: string, query: Query) => {
   const meta = Meta(Number(page), Number(perPage), totalData);
 
   return {
-    data: classes,
+    data: getClassAccessMapper(classes as ClassParticipantData[]),
     meta,
   };
+};
+
+export const userJoinClassService = async (userId: string, classId: string) => {
+  const classess = await getClassById(classId);
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  if (classess.status !== "PUBLISH") {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ONLY_PUBLISH_CLASS,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  if (Number(classess.price)) {
+    const point = await getPointByUserId(userId);
+    if (Number(point._sum.point) < 300) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.NOT_ENOUGH_POINT,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+  }
+  const result = await createClassParticipantRepository(
+    {
+      classId: classess.id,
+    },
+    userId
+  );
+  return result;
 };

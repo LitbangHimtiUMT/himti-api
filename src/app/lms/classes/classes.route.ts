@@ -6,6 +6,7 @@ import {
   createClassController,
   getClassController,
   getClassUserController,
+  userJoinClassController,
 } from "./classes.controller";
 
 export const classRoute = Router();
@@ -22,4 +23,9 @@ classRoute
     "/user",
     verifyToken(["USER", "ANGGOTA", "MENTOR"]),
     CatchWrapper(getClassUserController)
+  )
+  .patch(
+    "/join/:classId",
+    verifyToken(["USER", "ANGGOTA", "MENTOR"]),
+    CatchWrapper(userJoinClassController)
   );
