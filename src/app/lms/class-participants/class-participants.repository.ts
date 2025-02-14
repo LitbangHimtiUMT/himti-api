@@ -77,3 +77,76 @@ export const getClassParticipantByUserIdCountRepository = async (
     },
   });
 };
+
+export const getClassParticipantByClassIdRepository = async (
+  classId: string,
+  query: Query
+) => {
+  const { search, orderBy } = query;
+  return await prisma.classParticipant.findMany({
+    where: {
+      classId,
+      ...(search && {
+        OR: [
+          {
+            user: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            class: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      }),
+    },
+    ...(orderBy && {
+      orderBy: {
+        createdAt: orderBy,
+      },
+    }),
+    include: {
+      user: true,
+    },
+    ...queryPagination(query),
+  });
+};
+
+export const getClassParticipantByClassIdCountRepository = async (
+  classId: string,
+  query: Query
+) => {
+  const { search } = query;
+  return await prisma.classParticipant.count({
+    where: {
+      classId,
+      ...(search && {
+        OR: [
+          {
+            user: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+          {
+            class: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      }),
+    },
+  });
+};

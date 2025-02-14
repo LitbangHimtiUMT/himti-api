@@ -330,5 +330,10 @@ export const MESSAGES = {
       UPDATE: "Success to update class",
       JOIN: "Success to join class",
     },
+    CLASS_PARTICIPANT: {
+      GET: "Success to fetch class participant",
+      DELETE: "Success to delete class participant",
+      UPDATE: "Success to update class participant",
+    },
   },
 };
