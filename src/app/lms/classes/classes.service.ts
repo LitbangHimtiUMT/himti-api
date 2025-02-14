@@ -22,6 +22,10 @@ import { Meta } from "../../../utils/meta";
 import { getClassMapper } from "./classes.mapper";
 import { orderByData } from "../../../utils/query-utils";
 import { MESSAGES } from "../../../utils/messages";
+import {
+  getClassParticipantByUserIdCountRepository,
+  getClassParticipantByUserIdRepository,
+} from "../class-participants/class-participants.repository";
 
 export const createClassService = async (
   {
@@ -129,6 +133,21 @@ export const getClassService = async (query: Query, userId?: string) => {
 
   return {
     data: getClassMapper(classess),
+    meta,
+  };
+};
+
+export const getClassUserService = async (userId: string, query: Query) => {
+  const { page = "1", perPage = "10" } = query;
+  const [classes, totalData] = await Promise.all([
+    getClassParticipantByUserIdRepository(userId, query),
+    getClassParticipantByUserIdCountRepository(userId, query),
+  ]);
+
+  const meta = Meta(Number(page), Number(perPage), totalData);
+
+  return {
+    data: classes,
     meta,
   };
 };

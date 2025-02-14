@@ -3,7 +3,11 @@ import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
-import { createClassService, getClassService } from "./classes.service";
+import {
+  createClassService,
+  getClassService,
+  getClassUserService,
+} from "./classes.service";
 import { RequestWithAccessToken } from "../../../interface/Request";
 import { createClassSchema } from "./classes.request";
 
@@ -64,4 +68,25 @@ export const getClassController = async (
     result?.data,
     result?.meta
   );
+};
+
+export const getClassUserController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { query, userId } = req;
+  const result = await getClassUserService(userId ?? "", query);
+  if(result instanceof ErrorApp) {
+    next(result)
+    return
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.GET,
+    result?.data,
+    result?.meta
+  )
 };

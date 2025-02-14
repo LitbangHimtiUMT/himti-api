@@ -5,6 +5,7 @@ import { upload } from "../../../utils/upload-file-to-storage";
 import {
   createClassController,
   getClassController,
+  getClassUserController,
 } from "./classes.controller";
 
 export const classRoute = Router();
@@ -16,4 +17,9 @@ classRoute
     CatchWrapper(upload.single("thumbnail")),
     CatchWrapper(createClassController)
   )
-  .get("/", CatchWrapper(getClassController));
+  .get("/", CatchWrapper(getClassController))
+  .get(
+    "/user",
+    verifyToken(["USER", "ANGGOTA", "MENTOR"]),
+    CatchWrapper(getClassUserController)
+  );
