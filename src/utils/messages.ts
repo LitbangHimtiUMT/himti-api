@@ -22,6 +22,8 @@ export const MESSAGES = {
     SESSION: "Session created successfully",
     MODULE: "Module created successfully",
     CLASS_PARTICIPANT: "Class Participant created successfully",
+    COMPLETED_MODULE: "Completed Module created successfully",
+    COMPLETED_CLASS: "Completed Class created successfully",
   },
   ERROR: {
     NOT_FOUND: {
@@ -53,6 +55,7 @@ export const MESSAGES = {
       MEETING: "Meeting not found",
       CATEGORY: "Category not found",
       CLASS: "Class not found",
+      MODULE: "Module not found",
       SESSION: "Session not found",
       MENTOR: "Mentor not found",
     },
@@ -169,6 +172,7 @@ export const MESSAGES = {
       ACARA_ID: "Acara Id is required",
       CATEGORY_ID: "Category Id is required",
       CLASS_ID: "Class Id is required",
+      MODULE_ID: "Module Id is required",
       SESSION_ID: "Session Id is required",
       SUB_ACARA_ID: "Sub Acara Id is required",
       OTP_KEY: "OTP Key is required",
