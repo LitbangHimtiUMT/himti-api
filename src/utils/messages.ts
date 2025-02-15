@@ -336,5 +336,8 @@ export const MESSAGES = {
       DELETE: "Success to delete class participant",
       UPDATE: "Success to update class participant",
     },
+    TRANSACTION: {
+      CALLBACK: "Success to callback transaction",
+    }
   },
 };

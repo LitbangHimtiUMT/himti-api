@@ -13,6 +13,8 @@ import {
   RemoveFileFromStorage,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
+import { getUserById } from "../../authentication/auth.repository";
+import { createMidtransTransaction } from "../../midtrans/midtrans.service";
 import { getPointByUserId } from "../../point/point.repository";
 import { getCategoryById } from "../categories/categories.repository";
 import {
@@ -21,6 +23,9 @@ import {
   getClassParticipantByUserIdRepository,
   getExistingClassParticipantRepository,
 } from "../class-participants/class-participants.repository";
+import {
+  createTransactionRepository
+} from "../transactions/transactions.repository";
 import { CreateClassBodyRequest } from "./classes.dto";
 import {
   ClassParticipantData,
@@ -34,9 +39,6 @@ import {
   getClassRepository,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
-import { createMidtransTransaction } from "../../midtrans/midtrans.service";
-import { getUserById } from "../../authentication/auth.repository";
-import { createTransactionRepository } from "../transactions/transactions.repository";
 
 export const createClassService = async (
   {

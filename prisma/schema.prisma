@@ -475,6 +475,7 @@ model Transaction {
   userId        String            @map("user_id") @db.VarChar(110)
   status        TransactionStatus @default(PENDING)
   amount        Decimal           @db.Decimal()
+  signatureKey  String?           @map("signature_key")
   paymentMethod String?           @map("payment_method") @db.VarChar(255)
   paymentTime   DateTime?         @map("payment_time")
   createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamp(0)

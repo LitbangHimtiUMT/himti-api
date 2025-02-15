@@ -5,3 +5,4 @@ export interface CreateTransactionDTO {
   userId: string;
   paymentMethod?: string;
 }
+
