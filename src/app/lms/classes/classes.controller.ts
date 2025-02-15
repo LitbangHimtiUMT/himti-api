@@ -104,5 +104,11 @@ export const userJoinClassController = async (
     next(result);
     return;
   }
-  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.CLASS.JOIN);
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.JOIN,
+    result
+  );
 };

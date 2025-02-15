@@ -47,7 +47,7 @@ export const getUserById = async (id: string) => {
                     userId: true,
                     fcmToken: true
                 }
-            }
+            },
         },
     })
 }

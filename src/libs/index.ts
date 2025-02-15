@@ -45,4 +45,9 @@ export const environment = {
     SECRET_KEY: env.AWS_STORAGE_SECRET_KEY ?? "",
     BUCKET_FOLDER: env.AWS_STORAGE_BUCKET_FOLDER ?? "",
   },
+  MIDTRANS: {
+    SERVER_KEY: env.MIDTRANS_SERVER_KEY ?? "",
+    CLIENT_KEY: env.MIDTRANS_CLIENT_KEY ?? "",
+    SNAP_URL: env.MIDTRANS_SNAP_URL ?? "",
+  },
 };

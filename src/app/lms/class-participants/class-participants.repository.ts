@@ -150,3 +150,15 @@ export const getClassParticipantByClassIdCountRepository = async (
     },
   });
 };
+
+export const getExistingClassParticipantRepository = async (
+  classId: string,
+  userId: string
+) => {
+  return await prisma.classParticipant.findFirst({
+    where: {
+      classId,
+      userId,
+    },
+  });
+};

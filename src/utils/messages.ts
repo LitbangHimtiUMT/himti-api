@@ -130,6 +130,7 @@ export const MESSAGES = {
       ORDER_BY: 'Order by must be "asc" or "desc"',
       NOT_ENOUGH_POINT: "You don't have enough point",
       ONLY_PUBLISH_CLASS: "Only publish class you can joined",
+      ALREADY_JOIN_CLASS: "You already join this class",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",

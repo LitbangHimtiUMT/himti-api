@@ -31,7 +31,7 @@ export const getPointByUserId = async (userId: string) => {
         },
         where: {
             userId
-        }
+        },
     })
     return point
 }

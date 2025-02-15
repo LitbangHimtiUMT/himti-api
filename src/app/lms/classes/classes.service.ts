@@ -19,6 +19,7 @@ import {
   createClassParticipantRepository,
   getClassParticipantByUserIdCountRepository,
   getClassParticipantByUserIdRepository,
+  getExistingClassParticipantRepository,
 } from "../class-participants/class-participants.repository";
 import { CreateClassBodyRequest } from "./classes.dto";
 import {
@@ -33,6 +34,9 @@ import {
   getClassRepository,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
+import { createMidtransTransaction } from "../../midtrans/midtrans.service";
+import { getUserById } from "../../authentication/auth.repository";
+import { createTransactionRepository } from "../transactions/transactions.repository";
 
 export const createClassService = async (
   {
@@ -175,21 +179,80 @@ export const userJoinClassService = async (userId: string, classId: string) => {
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+
+  const alreadyJoin = await getExistingClassParticipantRepository(
+    classId,
+    userId
+  );
+
+  if (alreadyJoin) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ALREADY_JOIN_CLASS,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+
   if (Number(classess.price)) {
-    const point = await getPointByUserId(userId);
-    if (Number(point._sum.point) < 300) {
+    const [point, user] = await Promise.all([
+      getPointByUserId(userId),
+      getUserById(userId),
+    ]);
+
+    if (!user) {
       return new ErrorApp(
-        MESSAGES.ERROR.INVALID.NOT_ENOUGH_POINT,
-        400,
-        MESSAGE_CODE.BAD_REQUEST
+        MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+        404,
+        MESSAGE_CODE.NOT_FOUND
       );
     }
+
+    if (Number(point._sum.point) < 300) {
+      const transactionId = `TRX-${+new Date()}`;
+      const midtransTransaction = await createMidtransTransaction({
+        customer_details: {
+          email: user.email,
+          name: user.name,
+        },
+        item_details: [
+          {
+            name: classess.name,
+            quantity: 1,
+            price: Number(classess.price),
+          },
+        ],
+        transaction_details: {
+          order_id: transactionId,
+          gross_amount: Number(classess.price),
+        },
+      });
+      if (midtransTransaction instanceof ErrorApp) {
+        return midtransTransaction;
+      }
+      await createTransactionRepository({
+        amount: Number(classess.price),
+        classId: classess.id,
+        uniqueCode: transactionId,
+        userId: user.id,
+      });
+      return {
+        ...midtransTransaction.data,
+      };
+    }
+    await createClassParticipantRepository(
+      {
+        classId: classess.id,
+      },
+      userId
+    );
+    return undefined;
   }
-  const result = await createClassParticipantRepository(
+
+  await createClassParticipantRepository(
     {
       classId: classess.id,
     },
     userId
   );
-  return result;
+  return undefined;
 };
