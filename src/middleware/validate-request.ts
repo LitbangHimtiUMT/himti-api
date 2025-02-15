@@ -22,7 +22,7 @@ export const validateRequest = (
     if (bv.error) {
       errors.push(...bv.error.details.map((i) => i.message.replace(/"/g, "")));
     }
-    console.log(console.log(errors));
+    console.log(errors);
     if (errors.length) {
       return HandleResponse(res, 400, MESSAGE_CODE.BAD_REQUEST, errors?.[0]);
     }

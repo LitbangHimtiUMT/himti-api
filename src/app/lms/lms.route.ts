@@ -9,6 +9,7 @@ import { mentorTransactionRoute } from "./mentor-transactions/mentor-transaction
 import { transactionRoute } from "./transactions/transactions.route";
 import { completedModuleRoute } from "./completed-modules/completed-modules.route";
 import { completedClassRoute } from "./completed-classes/completed-classes.route";
+import { assignmentRoute } from "./assignment/assignment.route";
 
 export const lmsRoute = Router();
 
@@ -20,5 +21,6 @@ lmsRoute.use("/sessions", sessionRoute);
 lmsRoute.use("/modules", moduleRoute);
 lmsRoute.use("/class-participants", classParticipantRoute);
 lmsRoute.use("/transactions", transactionRoute);
+lmsRoute.use("/assignment", assignmentRoute);
 lmsRoute.use("/completed-modules", completedModuleRoute);
 lmsRoute.use("/completed-classes", completedClassRoute);

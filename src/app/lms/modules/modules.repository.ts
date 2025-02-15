@@ -11,6 +11,15 @@ export const getModuleById = async (moduleId: string) => {
     select: {
       id: true,
       name: true,
+      session: {
+        select: {
+          class: {
+            select: {
+              createdBy: true,
+            },
+          },
+        },
+      },
     },
   });
 };

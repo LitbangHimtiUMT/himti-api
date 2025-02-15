@@ -14,7 +14,6 @@ export const updateStatusAfterTransaction = async (
   );
 
   if (!transaction) {
-    // return new AppError(ERROR_CODE.NOT_FOUND.code, 'Transaction not found')
     return;
   }
   console.log("Updating transaction status:", status, data);

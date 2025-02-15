@@ -24,6 +24,7 @@ export const MESSAGES = {
     CLASS_PARTICIPANT: "Class Participant created successfully",
     COMPLETED_MODULE: "Completed Module created successfully",
     COMPLETED_CLASS: "Completed Class created successfully",
+    ASSIGNMENT: "Assignment created successfully",
   },
   ERROR: {
     NOT_FOUND: {
@@ -134,6 +135,7 @@ export const MESSAGES = {
       NOT_ENOUGH_POINT: "You don't have enough point",
       ONLY_PUBLISH_CLASS: "Only publish class you can joined",
       ALREADY_JOIN_CLASS: "You already join this class",
+      DUE_DATE: 'Due date must be greater than today',
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -145,6 +147,7 @@ export const MESSAGES = {
     },
     FORBIDDEN: {
       ROLE: "You are not allowed to access this resource",
+      ASSIGNMENT: 'Only creator class can create assignment',
     },
     REQUIRED: {
       EMAIL: "Email is required",

@@ -43,6 +43,17 @@ export const updateTransactionWithCreateClassParticipant = async (
         paymentTime: new Date(settlementTime),
         signatureKey,
       },
+      include: {
+        class: {
+          include: {
+            user: {
+              include: {
+                mentor: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     const existing = await tx.classParticipant.findFirst({
@@ -59,6 +70,15 @@ export const updateTransactionWithCreateClassParticipant = async (
           userId: trx.userId,
         },
       });
+      if (trx.class.user.mentor?.id) {
+        await tx.mentorTransactionHistory.create({
+          data: {
+            amount: Number(trx.amount),
+            type: "INCOME",
+            mentorId: trx.class.user.mentor.id,
+          },
+        });
+      }
     }
 
     return trx;
