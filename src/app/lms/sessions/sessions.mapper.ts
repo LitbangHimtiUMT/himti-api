@@ -2,7 +2,7 @@ import { Session } from "@prisma/client";
 import { getModulesMapper, ModuleData } from "../modules/modules.mapper";
 import { SessionDTO } from "./sessions.dto";
 
-interface SessionData extends Session {
+export interface SessionData extends Session {
   module: ModuleData[];
 }
 

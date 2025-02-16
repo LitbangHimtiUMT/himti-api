@@ -352,7 +352,7 @@ model Module {
   updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
   session         Session           @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   assignment      Assignment?       @relation
-  CompletedModule CompletedModule[]
+  completedModule CompletedModule[]
 
   @@index([sessionId], map: "modules_fk_1")
   @@map("modules")

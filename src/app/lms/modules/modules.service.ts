@@ -2,7 +2,7 @@ import { Query } from "../../../interface/Query";
 import { ErrorApp } from "../../../utils/http-error";
 import { Meta } from "../../../utils/meta";
 import { CreateModuleBodyRequest } from "./modules.dto";
-import { getModulesMapper } from "./modules.mapper";
+import { getModulesMapper, ModuleData } from "./modules.mapper";
 import {
   createModuleRepository,
   getModulesCountRepository,
@@ -41,7 +41,7 @@ export const getModulesService = async (query: Query) => {
     getModulesCountRepository(query),
   ]);
 
-  const data = getModulesMapper(modules);
+  const data = getModulesMapper(modules as ModuleData[]);
   return {
     data,
     meta: Meta(Number(page), Number(perPage), totalData),

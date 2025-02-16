@@ -2,7 +2,7 @@ import { Query } from "../../../interface/Query";
 import { ErrorApp } from "../../../utils/http-error";
 import { Meta } from "../../../utils/meta";
 import { CreateSessionBodyRequest } from "./sessions.dto";
-import { getSessionsMapper } from "./sessions.mapper";
+import { getSessionsMapper, SessionData } from "./sessions.mapper";
 import {
   createSessionRepository,
   getSessionsCountRepository,
@@ -31,20 +31,16 @@ export const createSessionService = async ({
 };
 
 export const getSessionsByClassService = async (query: Query) => {
-  const {page = '1', perPage = '10'} = query
+  const { page = "1", perPage = "10" } = query;
   const [sessions, totalData] = await Promise.all([
     getSessionsRepository(query),
     getSessionsCountRepository(query),
   ]);
 
-  const data = getSessionsMapper(sessions)
+  const data = getSessionsMapper(sessions as SessionData[]);
 
   return {
     data,
-    meta: Meta(
-      Number(page), 
-      Number(perPage), 
-      totalData
-    ),
+    meta: Meta(Number(page), Number(perPage), totalData),
   };
 };

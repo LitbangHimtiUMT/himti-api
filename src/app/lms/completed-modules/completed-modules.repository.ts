@@ -28,9 +28,8 @@ export const getAlreadyCompletedModule = async (
 
 export const createCompletedModuleRepository = async (
   data: CreateCompletedModuleBodyRequest,
-  userId: string,
 ) => {
-  const { moduleId } = data;
+  const { moduleId,userId } = data;
 
   return await prisma.completedModule.create({
     data: {

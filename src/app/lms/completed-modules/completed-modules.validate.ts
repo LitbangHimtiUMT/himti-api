@@ -5,16 +5,16 @@ import { MESSAGES } from "../../../utils/messages";
 import { getUserById } from "../../authentication/auth.repository";
 import { CreateCompletedModuleBodyRequest } from "./completed-modules.dto";
 
-export const createCompletedModuleValidate = async (
-  { moduleId }: CreateCompletedModuleBodyRequest,
-  userId: string,
-) => {
+export const createCompletedModuleValidate = async ({
+  moduleId,
+  userId,
+}: CreateCompletedModuleBodyRequest) => {
   const getModuleId = await getModuleById(moduleId as string);
   if (!getModuleId) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.MODULE,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 
@@ -23,7 +23,7 @@ export const createCompletedModuleValidate = async (
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
       404,
-      MESSAGE_CODE.NOT_FOUND,
+      MESSAGE_CODE.NOT_FOUND
     );
   }
 };

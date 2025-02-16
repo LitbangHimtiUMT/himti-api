@@ -49,8 +49,39 @@ export const getClassParticipantByUserIdRepository = async (
     },
     include: {
       class: {
-        include: {
-          completedClass: true,
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          level: true,
+          thumbnail: true,
+          session: {
+            select: {
+              id: true,
+              name: true,
+              module: {
+                select: {
+                  _count: {
+                    select: {
+                      completedModule: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },

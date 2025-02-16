@@ -9,15 +9,15 @@ import { createCompletedModuleService } from "./completed-modules.service";
 export const createCompletedModuleController = async (
   req: RequestWithAccessToken,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
-  const { userId } = req;
-  const { body } = req;
+  const { userId, params } = req;
+  const { moduleId } = params;
 
-  const completedModule = await createCompletedModuleService(
-    body,
-    userId as string,
-  );
+  const completedModule = await createCompletedModuleService({
+    moduleId,
+    userId: userId ?? "",
+  });
 
   if (completedModule instanceof ErrorApp) {
     next(completedModule);
@@ -28,6 +28,6 @@ export const createCompletedModuleController = async (
     res,
     201,
     MESSAGE_CODE.SUCCESS,
-    MESSAGES.CREATED.COMPLETED_MODULE,
+    MESSAGES.CREATED.COMPLETED_MODULE
   );
 };

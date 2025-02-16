@@ -1,9 +1,13 @@
-import { Assignment, Module } from "@prisma/client";
+import { Assignment, CompletedModule, Module } from "@prisma/client";
 import { ModulesDTO } from "./modules.dto";
 import { youtubeID } from "../../../utils/youtbe-url";
 
 export interface ModuleData extends Module {
   assignment: Assignment | null;
+  completedModule: CompletedModule[];
+  _count?: {
+    completedModule?: 0;
+  };
 }
 
 export const getModulesMapper = (data: ModuleData[]): ModulesDTO[] => {

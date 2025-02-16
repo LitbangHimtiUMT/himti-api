@@ -23,11 +23,10 @@ import {
   getClassParticipantByUserIdRepository,
   getExistingClassParticipantRepository,
 } from "../class-participants/class-participants.repository";
-import {
-  createTransactionRepository
-} from "../transactions/transactions.repository";
+import { createTransactionRepository } from "../transactions/transactions.repository";
 import { CreateClassBodyRequest } from "./classes.dto";
 import {
+  ClassData,
   ClassParticipantData,
   getClassAccessMapper,
   getClassMapper,
@@ -145,7 +144,7 @@ export const getClassService = async (query: Query, userId?: string) => {
   const meta = Meta(Number(page), Number(perPage), totalData);
 
   return {
-    data: getClassMapper(classess),
+    data: getClassMapper(classess as ClassData[]),
     meta,
   };
 };
@@ -160,7 +159,7 @@ export const getClassUserService = async (userId: string, query: Query) => {
   const meta = Meta(Number(page), Number(perPage), totalData);
 
   return {
-    data: getClassAccessMapper(classes as ClassParticipantData[]),
+    data: getClassAccessMapper(classes as unknown as ClassParticipantData[]),
     meta,
   };
 };
