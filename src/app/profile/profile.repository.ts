@@ -12,6 +12,7 @@ export const getProfile = async (id: string) => {
       nim: true,
       role: true,
       photo: true,
+      memberId: true,
       Member: {
         select: {
           id: true,
