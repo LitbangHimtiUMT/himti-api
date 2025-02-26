@@ -46,17 +46,25 @@ export const getStructural = async ({
   page,
   perPage,
   angkatan,
+  jabatan,
 }: IFilterStructural) => {
   return await prisma.structural.findMany({
     where: {
-      jabatan: search as Jabatan,
-      Member: {
-        Generation: {
-          year: {
-            contains: angkatan,
+      ...(jabatan && {
+        jabatan,
+      }),
+      ...(angkatan && {
+        year: Number(angkatan),
+      }),
+      ...(search && {
+        Member: {
+          name: {
+            contains: search,
+            mode: "insensitive",
           },
         },
-      },
+      }),
+      isActive: true,
     },
     include: {
       Member: {
@@ -88,17 +96,25 @@ export const getStructural = async ({
 export const getStructuralCount = async ({
   search,
   angkatan,
+  jabatan
 }: IFilterStructural) => {
   return await prisma.structural.count({
     where: {
-      jabatan: search as Jabatan,
-      Member: {
-        Generation: {
-          year: {
-            contains: angkatan,
+      ...(jabatan && {
+        jabatan,
+      }),
+      ...(angkatan && {
+        year: Number(angkatan),
+      }),
+      ...(search && {
+        Member: {
+          name: {
+            contains: search,
+            mode: "insensitive",
           },
         },
-      },
+      }),
+      isActive: true,
     },
   });
 };
