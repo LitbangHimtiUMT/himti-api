@@ -29,7 +29,9 @@ app.use(
       "Content-Type",
       "Date",
       "X-Api-Version",
-      "X-Api-Key"
+      "X-Api-Key",
+      "X-Encrypted-Data",
+      "X-Encryption-IV",
     ],
     credentials: true,
     preflightContinue: false,

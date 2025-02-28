@@ -7,6 +7,7 @@ import {
   forgotPasswordController,
   loginAdminController,
   loginController,
+  loginWithEncrypt,
   logoutController,
   registerController,
   requestOtpController,
@@ -53,6 +54,7 @@ route.put(
   validateRequest(forgotPasswordSchema),
   CatchWrapper(forgotPasswordController)
 );
+route.post("/biometric", CatchWrapper(loginWithEncrypt));
 route.get("/logout", VerifyTokenWithoutExp, CatchWrapper(logoutController));
 route.get("/token", verifyToken(), CatchWrapper(checkToken));
 

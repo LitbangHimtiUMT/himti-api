@@ -33,6 +33,7 @@ import {
   verifiedOtp,
 } from "./auth.repository";
 import { Query } from "../../interface/Query";
+import { decryptAES } from "../../utils/decrypt";
 
 dotenv.config();
 
@@ -407,13 +408,51 @@ export const logoutService = async (token: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  // const fcm = await getUserFCMByUserId(user.id)
-  // if (!fcm) {
-  //     return new ErrorApp(MESSAGES.ERROR.NOT_FOUND.USER.FCM, 404, MESSAGE_CODE.NOT_FOUND)
-  // }
+
   if (user.UserFCM.length > 0) {
     await deleteManyUserFCM(user.id);
   }
   const response = await userLogin(user.id, false);
   return response;
+};
+
+export const biometricAuthService = async (
+  encryptedEmail: string,
+  ivKey: string
+) => {
+  const email = decryptAES(
+    encryptedEmail,
+    ivKey,
+    environment.CRYPTO_SECRET_KEY
+  );
+  console.log({ email, encryptedEmail, ivKey, environment: environment.CRYPTO_SECRET_KEY });
+  const user = await getUserByEmail(email);
+  if (!user) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  if (user.role === "ADMIN" && !user.memberId) {
+    return new ErrorApp(
+      MESSAGES.ERROR.UNAUTHORIZED.ADMIN,
+      401,
+      MESSAGE_CODE.UNAUTHORIZED
+    );
+  }
+  const token = jwt.sign(
+    {
+      id: user.id,
+    },
+    environment.JWT_SECRET as string,
+    { expiresIn: environment.JWT_EXPIRES }
+  );
+  const userInfo = {
+    name: user.name,
+    nim: user.nim,
+    role: user.role,
+  };
+  return { access_token: token, user: userInfo };
 };
