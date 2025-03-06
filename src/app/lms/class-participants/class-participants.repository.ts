@@ -68,6 +68,9 @@ export const getClassParticipantByUserIdRepository = async (
           level: true,
           thumbnail: true,
           session: {
+            orderBy: {
+              createdAt: "asc",
+            },
             select: {
               id: true,
               name: true,

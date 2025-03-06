@@ -171,7 +171,7 @@ export const loginWithEncrypt = async (
     next(new ErrorApp(`You're not allowed to access`, 403, "FORBIDDEN"));
   }
 
-  const result = await biometricAuthService(encrypted, iv);
+  const result = await biometricAuthService(encrypted, iv, req.body?.fcmToken);
 
   if (result instanceof ErrorApp) {
     next(result);

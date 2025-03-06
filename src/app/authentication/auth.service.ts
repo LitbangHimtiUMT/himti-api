@@ -418,14 +418,14 @@ export const logoutService = async (token: string) => {
 
 export const biometricAuthService = async (
   encryptedEmail: string,
-  ivKey: string
+  ivKey: string,
+  fcmToken?: string
 ) => {
   const email = decryptAES(
     encryptedEmail,
     ivKey,
     environment.CRYPTO_SECRET_KEY
   );
-  console.log({ email, encryptedEmail, ivKey, environment: environment.CRYPTO_SECRET_KEY });
   const user = await getUserByEmail(email);
   if (!user) {
     return new ErrorApp(
@@ -442,6 +442,12 @@ export const biometricAuthService = async (
       MESSAGE_CODE.UNAUTHORIZED
     );
   }
+
+  if (fcmToken) {
+    await createUserFCM(user.id, fcmToken as string);
+  }
+  await userLogin(user.id, true);
+
   const token = jwt.sign(
     {
       id: user.id,
