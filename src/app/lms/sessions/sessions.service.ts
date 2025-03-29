@@ -30,10 +30,13 @@ export const createSessionService = async ({
   return session;
 };
 
-export const getSessionsByClassService = async (query: Query) => {
+export const getSessionsByClassService = async (
+  query: Query,
+  userId: string
+) => {
   const { page = "1", perPage = "10" } = query;
   const [sessions, totalData] = await Promise.all([
-    getSessionsRepository(query),
+    getSessionsRepository(query, userId),
     getSessionsCountRepository(query),
   ]);
 

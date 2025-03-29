@@ -7,6 +7,7 @@ import {
   createSessionService,
   getSessionsByClassService,
 } from "./sessions.service";
+import { RequestWithAccessToken } from "../../../interface/Request";
 
 export const createSessionController = async (
   req: Request,
@@ -26,17 +27,20 @@ export const createSessionController = async (
 };
 
 export const getSessionByClassController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { query, params } = req;
+  const { query, params, userId } = req;
   const { classId } = params;
 
-  const session = await getSessionsByClassService({
-    ...query,
-    classId,
-  });
+  const session = await getSessionsByClassService(
+    {
+      ...query,
+      classId,
+    },
+    userId
+  );
 
   if (session instanceof ErrorApp) {
     next(session);

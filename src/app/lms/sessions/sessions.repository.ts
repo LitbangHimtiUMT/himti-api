@@ -28,7 +28,7 @@ export const createSessionRepository = async (
   });
 };
 
-export const getSessionsRepository = async (query: Query) => {
+export const getSessionsRepository = async (query: Query, userId: string) => {
   const { classId, search } = query;
   return await prisma.session.findMany({
     where: {
@@ -44,8 +44,20 @@ export const getSessionsRepository = async (query: Query) => {
       module: {
         include: {
           assignment: true,
+          _count: {
+            select: {
+              completedModule: {
+                where: {
+                  userId,
+                },
+              },
+            },
+          },
         },
       },
+    },
+    orderBy: {
+      createdAt: "asc",
     },
     ...queryPagination(query),
   });

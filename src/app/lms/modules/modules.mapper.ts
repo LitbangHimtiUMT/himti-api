@@ -6,7 +6,7 @@ export interface ModuleData extends Module {
   assignment: Assignment | null;
   completedModule: CompletedModule[];
   _count?: {
-    completedModule?: 0;
+    completedModule?: number;
   };
 }
 
