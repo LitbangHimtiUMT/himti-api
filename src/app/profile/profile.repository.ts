@@ -22,6 +22,11 @@ export const getProfile = async (id: string) => {
           twitter: true,
         },
       },
+      mentor: {
+        select: {
+          id: true,
+        },
+      },
       Point: {
         select: {
           point: true,

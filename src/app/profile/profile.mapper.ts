@@ -1,4 +1,4 @@
-import { Member, Point, Role, User } from "@prisma/client";
+import { Member, Mentor, Point, Role, User } from "@prisma/client";
 import { ProfileDTO } from "./profile.dto";
 import { ImagePath } from "../../utils/image-path";
 import { BUCKET_FOLDER } from "../../utils/upload-file-to-storage";
@@ -6,6 +6,7 @@ import { BUCKET_FOLDER } from "../../utils/upload-file-to-storage";
 export interface ProfileData extends User {
   Member: Member;
   Point: Point[];
+  mentor: Mentor | null
 }
 
 export const ProfileDTOMapper = (data: ProfileData): ProfileDTO => {
@@ -26,5 +27,6 @@ export const ProfileDTOMapper = (data: ProfileData): ProfileDTO => {
     twitter: data?.Member?.twitter as string,
     linkedin: data?.Member?.linkedin as string,
     totalPoint: point,
+    isMentor: !!data.mentor
   };
 };

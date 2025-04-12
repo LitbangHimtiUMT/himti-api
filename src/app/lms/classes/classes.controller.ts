@@ -1,16 +1,16 @@
-import { NextFunction, Request, type Response } from "express";
+import { NextFunction, type Response } from "express";
+import { RequestWithAccessToken } from "../../../interface/Request";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
+import { createClassSchema } from "./classes.request";
 import {
   createClassService,
   getClassService,
   getClassUserService,
   userJoinClassService,
 } from "./classes.service";
-import { RequestWithAccessToken } from "../../../interface/Request";
-import { createClassSchema } from "./classes.request";
 
 export const createClassController = async (
   req: RequestWithAccessToken,
@@ -49,12 +49,12 @@ export const createClassController = async (
 };
 
 export const getClassController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { query } = req;
-  const result = await getClassService(query);
+  const { query, userId } = req;
+  const result = await getClassService(query, userId);
 
   if (result instanceof ErrorApp) {
     next(result);

@@ -1,9 +1,13 @@
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
+import { isValidYouTubeUrl } from "../../../utils/validate-url";
 import { getSessionById } from "../sessions/sessions.repository";
 
-export const createModuleValidate = async (sessionId: string) => {
+export const createModuleValidate = async (
+  sessionId: string,
+  videoUrl?: string
+) => {
   const session = await getSessionById(sessionId);
   if (!session) {
     return new ErrorApp(
@@ -12,5 +16,17 @@ export const createModuleValidate = async (sessionId: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  return session
+
+  if (videoUrl) {
+    const validUrl = isValidYouTubeUrl(videoUrl);
+    if (!validUrl) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.YOUTUBE_URL,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+  }
+
+  return session;
 };

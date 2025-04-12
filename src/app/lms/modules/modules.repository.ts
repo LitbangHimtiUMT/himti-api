@@ -24,7 +24,9 @@ export const getModuleById = async (moduleId: string) => {
   });
 };
 
-export const createModuleRepository = async (data: CreateModuleBodyRequest) => {
+export const createModuleRepository = async (
+  data: Omit<CreateModuleBodyRequest, "fileModule"> & { fileModule?: string }
+) => {
   const { name, sessionId, textModule, videoUrl, fileModule } = data;
 
   return await prisma.module.create({

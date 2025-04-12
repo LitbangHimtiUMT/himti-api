@@ -11,6 +11,7 @@ export interface ProfileDTO {
     facebook?: string
     twitter?: string
     linkedin?: string,
+    isMentor: boolean
     totalPoint: number
 }
 

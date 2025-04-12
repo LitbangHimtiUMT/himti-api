@@ -3,7 +3,7 @@ export interface CreateModuleBodyRequest {
   sessionId: string;
   textModule?: string;
   videoUrl?: string;
-  fileModule?: string;
+  fileModule?: Express.Multer.File;
 }
 
 export interface ModulesDTO {

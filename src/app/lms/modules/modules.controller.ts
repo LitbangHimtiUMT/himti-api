@@ -5,15 +5,36 @@ import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { createModuleService, getModulesService } from "./modules.service";
+import { createModuleSchema } from "./modules.request";
 
 export const createModuleController = async (
-  req: RequestWithAccessToken,
+  req: RequestWithAccessToken & {
+    files: {
+      file: Express.Multer.File[];
+    };
+  },
   res: Response,
   next: NextFunction
 ) => {
-  const { body } = req;
+  const { body, files } = req;
+  const { file } = files;
 
-  const moduleCtrl = await createModuleService(body);
+  const combineBodyFile = {
+    ...body,
+    fileModule: file?.[0] ?? undefined,
+  };
+  const validate = createModuleSchema.validate(combineBodyFile);
+  if (validate.error) {
+    next(
+      new ErrorApp(
+        validate.error.message.replace(/"/g, ""),
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      )
+    );
+    return;
+  }
+  const moduleCtrl = await createModuleService(combineBodyFile);
 
   if (moduleCtrl instanceof ErrorApp) {
     next(moduleCtrl);

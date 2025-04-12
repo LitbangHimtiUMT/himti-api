@@ -1,6 +1,14 @@
+import sharp from "sharp";
 import { Query } from "../../../interface/Query";
 import { ErrorApp } from "../../../utils/http-error";
 import { Meta } from "../../../utils/meta";
+import {
+  BUCKET_FOLDER,
+  FileType,
+  GetFileFromStorage,
+  RemoveFileFromStorage,
+  UploadFileToStorage,
+} from "../../../utils/upload-file-to-storage";
 import { CreateModuleBodyRequest } from "./modules.dto";
 import { getModulesMapper, ModuleData } from "./modules.mapper";
 import {
@@ -9,6 +17,8 @@ import {
   getModulesRepository,
 } from "./modules.repository";
 import { createModuleValidate } from "./modules.validate";
+import { environment } from "../../../libs";
+import { MESSAGE_CODE } from "../../../utils/error-code";
 
 export const createModuleService = async ({
   name,
@@ -17,21 +27,58 @@ export const createModuleService = async ({
   videoUrl,
   fileModule,
 }: CreateModuleBodyRequest) => {
-  const validate = await createModuleValidate(sessionId);
+  let fileName: string | undefined = undefined;
+  try {
+    const validate = await createModuleValidate(sessionId);
 
-  if (validate instanceof ErrorApp) {
-    return validate;
+    if (validate instanceof ErrorApp) {
+      return validate;
+    }
+    if (fileModule) {
+      fileName = `${fileModule?.originalname.replace(FileType[fileModule.mimetype], "")} - ${+new Date()}${FileType[fileModule.mimetype]}`;
+      const quality = (fileModule?.size as number) > 5 * 1024 * 1024 ? 75 : 100;
+      const compress = await sharp(fileModule.buffer)
+        .webp({ quality })
+        .toBuffer();
+
+      await UploadFileToStorage({
+        Bucket: environment.STORAGE.BUCKET,
+        Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${fileName}`,
+        Body: compress,
+        ContentType: fileModule.mimetype,
+        ACL: "public-read",
+      });
+    }
+
+    const moduleService = await createModuleRepository({
+      name,
+      sessionId: validate.id,
+      textModule,
+      videoUrl,
+      fileModule: fileName,
+    });
+
+    return moduleService;
+  } catch (error) {
+    console.log({
+      error,
+    });
+    if (fileName) {
+      const exist = await GetFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${fileName}`
+      );
+      if (exist.exists) {
+        await RemoveFileFromStorage(
+          `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${fileName}`
+        );
+      }
+    }
+    return new ErrorApp(
+      "Error when create class data or upload file to storage",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
   }
-
-  const moduleService = await createModuleRepository({
-    name,
-    sessionId: validate.id,
-    textModule,
-    videoUrl,
-    fileModule,
-  });
-
-  return moduleService;
 };
 
 export const getModulesService = async (query: Query) => {

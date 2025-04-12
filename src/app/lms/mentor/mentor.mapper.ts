@@ -10,6 +10,7 @@ export interface MentorData extends Mentor {
 export const getMentorsDTOMapper = (data: MentorData[]): MentorDTO[] => {
   return data.map((item) => ({
     id: item.id,
+    userId: item.userId,
     name: item?.user?.name ?? "",
     email: item?.user?.email ?? "",
     balance: Number(item?.balance),

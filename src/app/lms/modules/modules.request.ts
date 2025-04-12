@@ -10,5 +10,5 @@ export const createModuleSchema = Joi.object({
   }),
   textModule: Joi.string().optional().allow(null),
   videoUrl: Joi.string().optional().allow(null),
-  fileModule: Joi.string().optional().allow(null),
+  fileModule: Joi.any().optional().allow(null),
 });

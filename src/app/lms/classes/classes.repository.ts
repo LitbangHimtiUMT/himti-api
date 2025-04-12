@@ -53,7 +53,7 @@ export const getClassRepository = async (query: Query, userId?: string) => {
       ...(userId && {
         createdBy: userId,
       }),
-      status: "PUBLISH",
+      status: userId ? undefined : "PUBLISH",
     },
     include: {
       user: true,
@@ -95,7 +95,7 @@ export const getClassCountRepository = async (
       ...(userId && {
         createdBy: userId,
       }),
-      status: "PUBLISH",
+      status: userId ? undefined : "PUBLISH",
     },
   });
 };

@@ -68,6 +68,7 @@ export const getClassAccessMapper = (data: ClassParticipantData[]) => {
 
     return {
       id: item.class.id,
+      participantId: item.id,
       name: item.class.name,
       description: item.class.description,
       status: item.class.status,

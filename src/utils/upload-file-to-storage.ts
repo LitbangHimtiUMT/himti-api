@@ -26,6 +26,7 @@ export const BUCKET_FOLDER = {
   user: "user",
   structural: "struktural",
   class: "class",
+  modules: "modules",
 };
 
 export const FileType: Record<string, string> = {
@@ -36,6 +37,20 @@ export const FileType: Record<string, string> = {
   "image/webp": ".webp",
   "application/pdf": ".pdf",
   "application/octet-stream": ".jpg",
+
+  // PowerPoint
+  "application/vnd.ms-powerpoint": ".ppt",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+    ".pptx",
+  "application/vnd.oasis.opendocument.presentation": ".odp",
+  "application/x-iwork-keynote-sffkey": ".key",
+
+  // Word Documents
+  "application/msword": ".doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    ".docx",
+  "application/vnd.oasis.opendocument.text": ".odt",
+  "application/x-iwork-pages-sffpages": ".pages", // optional for Apple Pages
 };
 
 export const storage = multer.memoryStorage();
@@ -43,7 +58,7 @@ export const storage = multer.memoryStorage();
 export const MulterFileFilter = (
   request: Request,
   file: Express.Multer.File,
-  callBack: FileFilterCallback,
+  callBack: FileFilterCallback
 ): void => {
   console.log(file);
   if (file.mimetype && FileType[file.mimetype]) {
@@ -54,8 +69,8 @@ export const MulterFileFilter = (
       new ErrorApp(
         "Tipe file tidak mendukung, tipe file harus berjenis: png, jpg, dan jpeg",
         400,
-        MESSAGE_CODE.BAD_REQUEST,
-      ),
+        MESSAGE_CODE.BAD_REQUEST
+      )
     );
   }
 };

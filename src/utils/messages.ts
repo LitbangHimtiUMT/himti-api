@@ -136,6 +136,7 @@ export const MESSAGES = {
       ONLY_PUBLISH_CLASS: "Only publish class you can joined",
       ALREADY_JOIN_CLASS: "You already join this class",
       DUE_DATE: 'Due date must be greater than today',
+      YOUTUBE_URL: "Invalid YouTube URL",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
