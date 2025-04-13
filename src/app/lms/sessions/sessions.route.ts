@@ -12,7 +12,7 @@ export const sessionRoute = Router();
 
 sessionRoute
   .post(
-    "/",
+    "/:classId",
     verifyToken(["MENTOR", "SUPER_ADMIN", "ADMIN"]),
     validateRequest(createSessionSchema),
     CatchWrapper(createSessionController)
