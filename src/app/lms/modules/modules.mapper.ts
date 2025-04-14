@@ -25,8 +25,7 @@ export const getModulesMapper = (data: ModuleData[]): ModulesDTO[] => {
       ? {
           id: item.assignment?.id,
           title: item.assignment?.title,
-          name: item.assignment?.isFinalAssigment,
-          description: item.assignment?.description,
+          isFinalAssigment: item.assignment?.isFinalAssigment,
           dueDate: item.assignment?.dueDate,
         }
       : null,

@@ -14,4 +14,10 @@ export interface ModulesDTO {
   fileModule: string | null;
   youtubeId: string | null;
   thumbnailUrl: string | null;
+  assignment: {
+    id: string;
+    title: string;
+    isFinalAssigment: boolean;
+    dueDate: Date;
+  } | null;
 }

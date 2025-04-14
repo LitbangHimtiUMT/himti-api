@@ -10,19 +10,21 @@ import { createModuleSchema } from "./modules.request";
 export const createModuleController = async (
   req: RequestWithAccessToken & {
     files: {
-      file: Express.Multer.File[];
+      fileModule: Express.Multer.File[];
     };
   },
   res: Response,
   next: NextFunction
 ) => {
-  const { body, files } = req;
-  const { file } = files;
+  const { body, files, params } = req;
+  const { sessionId } = params;
 
   const combineBodyFile = {
     ...body,
-    fileModule: file?.[0] ?? undefined,
+    fileModule: files?.fileModule?.[0] ?? req.file ?? undefined,
+    sessionId,
   };
+  console.log({ combineBodyFile, files, file: req.file });
   const validate = createModuleSchema.validate(combineBodyFile);
   if (validate.error) {
     next(

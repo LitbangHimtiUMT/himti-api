@@ -35,16 +35,22 @@ export const createModuleService = async ({
       return validate;
     }
     if (fileModule) {
+      let buffer = fileModule.buffer;
       fileName = `${fileModule?.originalname.replace(FileType[fileModule.mimetype], "")} - ${+new Date()}${FileType[fileModule.mimetype]}`;
       const quality = (fileModule?.size as number) > 5 * 1024 * 1024 ? 75 : 100;
-      const compress = await sharp(fileModule.buffer)
-        .webp({ quality })
-        .toBuffer();
+      const formatFile = FileType[fileModule.mimetype];
+      if (
+        formatFile === ".jpeg" ||
+        formatFile === ".jpg" ||
+        formatFile === ".png"
+      ) {
+        buffer = await sharp(fileModule.buffer).webp({ quality }).toBuffer();
+      }
 
       await UploadFileToStorage({
         Bucket: environment.STORAGE.BUCKET,
         Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${fileName}`,
-        Body: compress,
+        Body: buffer,
         ContentType: fileModule.mimetype,
         ACL: "public-read",
       });

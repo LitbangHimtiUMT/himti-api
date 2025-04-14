@@ -11,9 +11,9 @@ export const moduleRoute = Router();
 
 moduleRoute
   .post(
-    "/",
+    "/:sessionId",
     verifyToken(["MENTOR", "SUPER_ADMIN", "ADMIN"]),
-    CatchWrapper(upload.single("file")),
+    CatchWrapper(upload.single("fileModule")),
     CatchWrapper(createModuleController)
   )
   .get("/session/:sessionId", CatchWrapper(getModulesController));

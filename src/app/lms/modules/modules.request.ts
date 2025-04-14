@@ -8,7 +8,7 @@ export const createModuleSchema = Joi.object({
   sessionId: Joi.string().required().messages({
     "any.required": MESSAGES.ERROR.REQUIRED.SESSION_ID,
   }),
-  textModule: Joi.string().optional().allow(null),
+  textModule: Joi.string().required().allow(null),
   videoUrl: Joi.string().optional().allow(null),
   fileModule: Joi.any().optional().allow(null),
 });

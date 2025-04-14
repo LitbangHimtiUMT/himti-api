@@ -406,8 +406,8 @@ model Assignment {
   title            String       @db.VarChar(255)
   description      String?      @db.Text
   moduleId         String       @unique @map("module_id") @db.VarChar(110)
-  dueDate          DateTime     @map("due_date")
-  isFinalAssigment Boolean?     @default(false) @map("is_final_assignment") @db.Boolean
+  dueDate          DateTime     @map("due_date") @db.Date
+  isFinalAssigment Boolean      @default(false) @map("is_final_assignment") @db.Boolean
   createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamp(0)
   module           Module?      @relation(fields: [moduleId], references: [id])
