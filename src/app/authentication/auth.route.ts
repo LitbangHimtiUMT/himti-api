@@ -9,6 +9,7 @@ import {
   loginController,
   loginWithEncrypt,
   logoutController,
+  refreshTokenController,
   registerController,
   requestOtpController,
   validateOtpController,
@@ -57,5 +58,6 @@ route.put(
 route.post("/biometric", CatchWrapper(loginWithEncrypt));
 route.get("/logout", VerifyTokenWithoutExp, CatchWrapper(logoutController));
 route.get("/token", verifyToken(), CatchWrapper(checkToken));
+route.post("/refresh-token", CatchWrapper(refreshTokenController));
 
 export default route;

@@ -11,7 +11,10 @@ export interface ModulesDTO {
   name: string;
   textModule: string | null;
   videoUrl: string | null;
-  fileModule: string | null;
+  file: {
+    fileName: string | null;
+    url: string | null;
+  }
   youtubeId: string | null;
   thumbnailUrl: string | null;
   assignment: {

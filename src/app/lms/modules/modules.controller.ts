@@ -4,8 +4,12 @@ import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
-import { createModuleService, getModulesService } from "./modules.service";
 import { createModuleSchema } from "./modules.request";
+import {
+  createModuleService,
+  getDetailModuleService,
+  getModulesService,
+} from "./modules.service";
 
 export const createModuleController = async (
   req: RequestWithAccessToken & {
@@ -68,5 +72,26 @@ export const getModulesController = async (
     MESSAGES.SUCCESS.MODULES.GET,
     result?.data,
     result?.meta
+  );
+};
+
+export const getDetailModuleController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params } = req;
+  const { moduleId } = params;
+  const result = await getDetailModuleService(moduleId);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.MODULES.GET,
+    result
   );
 };

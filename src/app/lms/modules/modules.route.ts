@@ -4,6 +4,7 @@ import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { upload } from "../../../utils/upload-file-to-storage";
 import {
   createModuleController,
+  getDetailModuleController,
   getModulesController,
 } from "./modules.controller";
 
@@ -16,4 +17,5 @@ moduleRoute
     CatchWrapper(upload.single("fileModule")),
     CatchWrapper(createModuleController)
   )
-  .get("/session/:sessionId", CatchWrapper(getModulesController));
+  .get("/session/:sessionId", CatchWrapper(getModulesController))
+  .get("/:moduleId", CatchWrapper(getDetailModuleController));

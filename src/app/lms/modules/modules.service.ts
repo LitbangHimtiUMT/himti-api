@@ -10,15 +10,21 @@ import {
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
 import { CreateModuleBodyRequest } from "./modules.dto";
-import { getModulesMapper, ModuleData } from "./modules.mapper";
+import {
+  getModuleMapper,
+  getModulesMapper,
+  ModuleData,
+} from "./modules.mapper";
 import {
   createModuleRepository,
+  getModuleById,
   getModulesCountRepository,
   getModulesRepository,
 } from "./modules.repository";
 import { createModuleValidate } from "./modules.validate";
 import { environment } from "../../../libs";
 import { MESSAGE_CODE } from "../../../utils/error-code";
+import { MESSAGES } from "../../../utils/messages";
 
 export const createModuleService = async ({
   name,
@@ -99,4 +105,18 @@ export const getModulesService = async (query: Query) => {
     data,
     meta: Meta(Number(page), Number(perPage), totalData),
   };
+};
+
+export const getDetailModuleService = async (moduleId: string) => {
+  const modules = await getModuleById(moduleId);
+  if (!modules) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.MODULE,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const data = getModuleMapper(modules as unknown as ModuleData);
+  return data;
 };

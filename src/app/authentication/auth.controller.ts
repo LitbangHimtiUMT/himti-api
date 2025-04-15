@@ -10,6 +10,7 @@ import {
   loginAdminService,
   loginService,
   logoutService,
+  refreshTokenService,
   registerService,
   requestOtpService,
   validateOtpService,
@@ -178,5 +179,28 @@ export const loginWithEncrypt = async (
     return;
   }
 
-  HandleResponse(res, 200, "SUCCESS", 'Success login', result);
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, "Success login", result);
+};
+
+export const refreshTokenController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const bearerToken = req.headers.authorization?.replace("Bearer ", "") ?? "";
+
+  const result = await refreshTokenService(bearerToken);
+
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.REFRESH_TOKEN.GET,
+    result
+  );
 };

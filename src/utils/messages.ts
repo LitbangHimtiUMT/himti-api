@@ -346,6 +346,9 @@ export const MESSAGES = {
     },
     TRANSACTION: {
       CALLBACK: "Success to callback transaction",
+    },
+    REFRESH_TOKEN: {
+      GET: "Success to fetch refresh token",
     }
   },
 };

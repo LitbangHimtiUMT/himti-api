@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import jwt, { decode } from "jsonwebtoken";
+import jwt, { decode, TokenExpiredError, verify } from "jsonwebtoken";
 import { TokenDecodeInterface } from "../../interface";
 import { environment } from "../../libs";
 import { MESSAGE_CODE } from "../../utils/error-code";
@@ -221,6 +221,14 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
     { expiresIn: environment.JWT_EXPIRES }
   );
 
+  const refreshToken = jwt.sign(
+    {
+      id: user.id,
+    },
+    `${environment.SECRET_KEY}${environment.JWT_SECRET}`,
+    { expiresIn: "7d" }
+  );
+
   if (authType === "app") {
     if (fcmToken) {
       await createUserFCM(user.id, fcmToken as string);
@@ -237,6 +245,7 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
   }
   return {
     accessToken: token,
+    refreshToken,
   };
 };
 
@@ -461,4 +470,61 @@ export const biometricAuthService = async (
     role: user.role,
   };
   return { access_token: token, user: userInfo };
+};
+
+export const refreshTokenService = async (token: string) => {
+  const decodeToken = decode(token) as TokenDecodeInterface;
+  verify(token, environment.JWT_SECRET as string, async (err: unknown) => {
+    if (err) {
+      if (err instanceof TokenExpiredError) {
+        return new ErrorApp(
+          MESSAGES.ERROR.UNAUTHORIZED.EXPIRED,
+          401,
+          MESSAGE_CODE.UNAUTHORIZED
+        );
+      }
+      if (!decodeToken?.id) {
+        return new ErrorApp(
+          MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED,
+          401,
+          MESSAGE_CODE.UNAUTHORIZED
+        );
+      }
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.AUTH,
+        401,
+        MESSAGE_CODE.UNAUTHORIZED
+      );
+    }
+  });
+
+  const user = await getUserById(decodeToken.id);
+  if (!user) {
+    return new ErrorApp(
+      MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED,
+      401,
+      MESSAGE_CODE.UNAUTHORIZED
+    );
+  }
+
+  const accessToken = jwt.sign(
+    {
+      id: user.id,
+    },
+    environment.JWT_SECRET as string,
+    { expiresIn: environment.JWT_EXPIRES }
+  );
+
+  const refreshToken = jwt.sign(
+    {
+      id: user.id,
+    },
+    `${environment.SECRET_KEY}${environment.JWT_SECRET}`,
+    { expiresIn: "7d" }
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
 };

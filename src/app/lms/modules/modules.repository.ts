@@ -11,6 +11,19 @@ export const getModuleById = async (moduleId: string) => {
     select: {
       id: true,
       name: true,
+      fileModule: true,
+      textModule: true,
+      videoUrl: true,
+      assignment: {
+        select: {
+          id: true,
+          title: true,
+          isFinalAssigment: true,
+          dueDate: true,
+          createdAt: true,
+          description: true,
+        }
+      },
       session: {
         select: {
           class: {

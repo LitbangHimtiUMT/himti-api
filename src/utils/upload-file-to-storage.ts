@@ -134,6 +134,10 @@ export const GetFileFromStorage = async (key: string) => {
   }
 };
 
+export const GetPublicURL = (filename: string): string => {
+  return `${environment.STORAGE.ENDPOINT_RESPONSE}/${environment.STORAGE.BUCKET}/${environment.STORAGE.BUCKET_FOLDER}/${filename}`;
+};
+
 export const upload = multer({
   storage,
   limits: {
