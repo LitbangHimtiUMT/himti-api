@@ -11,3 +11,7 @@ export const createClassSchema = Joi.object({
     .required(),
   categoryId: Joi.string().required(),
 });
+
+export const joinInvitationClassSchema = Joi.object({
+  code: Joi.string().required(),
+});

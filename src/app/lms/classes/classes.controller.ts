@@ -9,6 +9,9 @@ import {
   createClassService,
   getClassService,
   getClassUserService,
+  getDetailClassByCodeService,
+  getDetailClassService,
+  joinInvitationClassService,
   userJoinClassService,
 } from "./classes.service";
 
@@ -100,6 +103,68 @@ export const userJoinClassController = async (
   const { params, userId } = req;
   const { classId } = params;
   const result = await userJoinClassService(userId ?? "", classId);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.JOIN,
+    result
+  );
+};
+
+export const getDetailClassController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { classId } = req.params;
+  const result = await getDetailClassService(classId);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.GET,
+    result
+  );
+};
+
+export const getDetailClassByCodeController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { code } = params;
+  const result = await getDetailClassByCodeService(userId ?? "", code);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.GET,
+    result
+  );
+};
+
+export const joinInvitationClassController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId, body } = req;
+
+  const result = await joinInvitationClassService(userId ?? "", body);
   if (result instanceof ErrorApp) {
     next(result);
     return;

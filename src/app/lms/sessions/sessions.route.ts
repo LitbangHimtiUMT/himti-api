@@ -17,4 +17,8 @@ sessionRoute
     validateRequest(createSessionSchema),
     CatchWrapper(createSessionController)
   )
-  .get("/class/:classId", CatchWrapper(getSessionByClassController));
+  .get(
+    "/class/:classId",
+    verifyToken(["MENTOR", "SUPER_ADMIN", "ADMIN", 'ANGGOTA', 'USER']),
+    CatchWrapper(getSessionByClassController)
+  );

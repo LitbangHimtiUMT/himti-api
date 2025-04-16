@@ -9,17 +9,18 @@ export const getClassById = async (classId: string) => {
     where: {
       id: classId,
     },
-    select: {
-      id: true,
-      name: true,
-      price: true,
-      status: true,
+    include: {
+      user: true,
+      category: true,
+      _count: {
+        select: { classParticipant: true },
+      },
     },
   });
 };
 
 export const createClassRepository = async (
-  data: CreateClassBodyRequest,
+  data: CreateClassBodyRequest & { code: string },
   userId: string
 ) => {
   const { name, description, thumbnail, level, categoryId, price } = data;
@@ -33,6 +34,7 @@ export const createClassRepository = async (
       categoryId: categoryId as string,
       createdBy: userId,
       status: "DRAFT",
+      code: data.code,
     },
   });
 };
@@ -58,10 +60,9 @@ export const getClassRepository = async (query: Query, userId?: string) => {
     include: {
       user: true,
       category: true,
-      classParticipant: {
+      _count: {
         select: {
-          id: true,
-          userId: true,
+          classParticipant: true,
         },
       },
     },
@@ -96,6 +97,21 @@ export const getClassCountRepository = async (
         createdBy: userId,
       }),
       status: userId ? undefined : "PUBLISH",
+    },
+  });
+};
+
+export const getClassByCode = async (code: string) => {
+  return await prisma.class.findUnique({
+    where: {
+      code,
+    },
+    include: {
+      user: true,
+      category: true,
+      _count: {
+        select: { classParticipant: true },
+      },
     },
   });
 };

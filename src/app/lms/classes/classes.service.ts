@@ -24,20 +24,23 @@ import {
   getExistingClassParticipantRepository,
 } from "../class-participants/class-participants.repository";
 import { createTransactionRepository } from "../transactions/transactions.repository";
-import { CreateClassBodyRequest } from "./classes.dto";
+import { CreateClassBodyRequest, JoinClassInvitationDTO } from "./classes.dto";
 import {
   ClassData,
   ClassParticipantData,
   getClassAccessMapper,
   getClassMapper,
+  getDetailClassMapper,
 } from "./classes.mapper";
 import {
   createClassRepository,
+  getClassByCode,
   getClassById,
   getClassCountRepository,
   getClassRepository,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
+import { generateBalancedRandomString } from "../../../utils/generate-random-string";
 
 export const createClassService = async (
   {
@@ -91,7 +94,7 @@ export const createClassService = async (
       ContentType: FileType["image/webp"],
       ACL: "public-read",
     });
-
+    const code = generateBalancedRandomString();
     const createClass = await createClassRepository(
       {
         name,
@@ -100,6 +103,7 @@ export const createClassService = async (
         level,
         categoryId,
         price,
+        code,
       },
       userId
     );
@@ -256,4 +260,91 @@ export const userJoinClassService = async (userId: string, classId: string) => {
     userId
   );
   return undefined;
+};
+
+export const getDetailClassService = async (classId: string) => {
+  const classess = await getClassById(classId);
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  return getDetailClassMapper(classess as ClassData);
+};
+
+export const getDetailClassByCodeService = async (
+  userId: string,
+  code: string
+) => {
+  const classess = await getClassByCode(code);
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  const alreadyJoin = await getExistingClassParticipantRepository(
+    classess.id,
+    userId
+  );
+
+  return getDetailClassMapper({
+    ...classess,
+    isAlreadyJoin: !!alreadyJoin,
+  } as ClassData);
+};
+
+export const joinInvitationClassService = async (
+  userId: string,
+  data: JoinClassInvitationDTO
+) => {
+  const classess = await getClassByCode(data.code);
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.INVITATION_CODE,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+
+  if(classess.createdBy === userId) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.MENTOR_JOIN_CLASS,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    )
+  }
+
+  const alreadyJoin = await getExistingClassParticipantRepository(
+    classess.id,
+    userId
+  );
+
+  if (alreadyJoin) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ALREADY_JOIN_CLASS,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+
+  if (classess.status !== "PUBLISH") {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ONLY_PUBLISH_CLASS,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  const result = await createClassParticipantRepository(
+    {
+      classId: classess.id,
+    },
+    userId
+  );
+  return {
+    classId: result.classId,
+  };
 };

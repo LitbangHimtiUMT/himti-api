@@ -24,8 +24,8 @@ export const createClassParticipantRepository = async (
 
   return await prisma.classParticipant.create({
     data: {
-      userId: userId as string,
-      classId: classId as string,
+      userId,
+      classId,
     },
   });
 };
@@ -78,7 +78,11 @@ export const getClassParticipantByUserIdRepository = async (
                 select: {
                   _count: {
                     select: {
-                      completedModule: true,
+                      completedModule: {
+                        where: {
+                          userId,
+                        },
+                      },
                     },
                   },
                 },

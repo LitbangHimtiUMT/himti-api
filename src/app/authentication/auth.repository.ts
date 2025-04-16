@@ -48,6 +48,12 @@ export const getUserById = async (id: string) => {
                     fcmToken: true
                 }
             },
+            mentor: {
+                select: {
+                    id: true,
+                    userId: true
+                }
+            }
         },
     })
 }

@@ -137,6 +137,8 @@ export const MESSAGES = {
       ALREADY_JOIN_CLASS: "You already join this class",
       DUE_DATE: 'Due date must be greater than today',
       YOUTUBE_URL: "Invalid YouTube URL",
+      INVITATION_CODE: "Invitation code is invalid",
+      MENTOR_JOIN_CLASS: "Mentor can't join in class"
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",

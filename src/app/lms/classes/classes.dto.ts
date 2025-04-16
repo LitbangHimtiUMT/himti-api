@@ -14,11 +14,14 @@ export interface ClassDTO {
   name: string;
   description: string | null;
   status: ClassStatus;
+  totalParticipant: number;
+  isAlreadyJoin?: boolean
   level: Level;
   category: {
     id: string;
     name: string;
   };
+  code: string;
   thumbnail: string | null;
   price: number;
   creator: {
@@ -27,4 +30,8 @@ export interface ClassDTO {
     email: string;
     photo: string | null;
   };
+}
+
+export interface JoinClassInvitationDTO {
+  code: string;
 }

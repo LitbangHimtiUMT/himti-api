@@ -299,6 +299,7 @@ model Class {
   status           ClassStatus        @default(DRAFT)
   thumbnail        String?            @db.VarChar(255)
   level            Level              @default(BEGINNER)
+  code             String             @unique @db.Char(10)
   categoryId       String             @map("category_id") @db.VarChar(110)
   price            Decimal            @db.Decimal()
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(0)

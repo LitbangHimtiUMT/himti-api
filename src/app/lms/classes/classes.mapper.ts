@@ -21,6 +21,10 @@ export interface ClassData extends Class {
   category: Category;
   classParticipant: Pick<ClassParticipant, "id" | "userId">[];
   completedClass?: CompletedClass[];
+  _count: {
+    classParticipant: number;
+  }
+  isAlreadyJoin?: boolean
 }
 
 export interface ClassParticipantData extends ClassParticipant {
@@ -34,13 +38,14 @@ export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
     description: item.description,
     status: item.status,
     level: item.level,
+    code: btoa(item.code),
     category: {
       id: item.category.id,
       name: item.category.name,
     },
     thumbnail: item.thumbnail,
     price: Number(item.price),
-    totalParticipant: item.classParticipant.length,
+    totalParticipant: item._count.classParticipant,
     creator: {
       id: item.user.id,
       name: item.user.name,
@@ -50,6 +55,33 @@ export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
         : null,
     },
   }));
+};
+
+export const getDetailClassMapper = (data: ClassData & {isAlreadyJoin?: boolean}): ClassDTO => {
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    status: data.status,
+    level: data.level,
+    code: btoa(data.code),
+    isAlreadyJoin: data.isAlreadyJoin,
+    category: {
+      id: data.category.id,
+      name: data.category.name,
+    },
+    thumbnail: data.thumbnail,
+    price: Number(data.price),
+    totalParticipant: data._count.classParticipant,
+    creator: {
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      photo: data.user.photo
+        ? ImagePath(`${BUCKET_FOLDER.user}/${data.user.photo}`)
+        : null,
+    },
+  }
 };
 
 export const getClassAccessMapper = (data: ClassParticipantData[]) => {
@@ -91,10 +123,10 @@ export const getClassAccessMapper = (data: ClassParticipantData[]) => {
         ...total,
         precentage: (total.completed / total.module) * 100,
       },
-      sessions: item.class.session.map(session => ({
+      sessions: item.class.session.map((session) => ({
         id: session.id,
         name: session.name,
-      }))
+      })),
     };
   });
 };
