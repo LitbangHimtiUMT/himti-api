@@ -106,7 +106,7 @@ export const uploadImageBusinessService = async (
 
 export const getMerchandiseService = async ({
   page = 1,
-  perPage = 10,
+  perPage = 99999,
   search,
 }: IFilterBusiness) => {
   const [merchandise, totalData] = await Promise.all([
