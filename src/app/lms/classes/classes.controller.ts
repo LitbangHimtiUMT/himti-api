@@ -23,7 +23,7 @@ export const createClassController = async (
   const file = req.file as Express.Multer.File;
   const { userId } = req;
   const { body } = req;
-
+  console.log({ file });
   const combine = {
     ...body,
     thumbnail: file,

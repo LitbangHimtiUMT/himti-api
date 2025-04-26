@@ -5,24 +5,35 @@ import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
 import {
   createMerchandiseService,
-  createServiceService,
   getMerchandiseService,
   getServiceService,
 } from "./business.service";
+import { createBusinessSchema } from "./business.request";
 
 export const createMerchandiseController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { title, description, price } = req.body;
-  const file = req.file;
-  const merchandise = await createMerchandiseService({
-    title,
-    description,
-    price,
-    image: file as File & Express.Multer.File,
-  });
+  const { body } = req;
+  const files = req.files as Express.Multer.File[];
+  const combine = {
+    ...body,
+    image: files,
+  };
+  console.log({ combine, files });
+  const validate = createBusinessSchema.validate(combine);
+  if (validate.error) {
+    next(
+      new ErrorApp(
+        validate.error.message.replace(/"/g, ""),
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      )
+    );
+    return;
+  }
+  const merchandise = await createMerchandiseService(combine);
 
   if (merchandise instanceof ErrorApp) {
     next(merchandise);
@@ -31,27 +42,27 @@ export const createMerchandiseController = async (
 
   HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.MERCHANDISE);
 };
-export const createServiceController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { title, description, price } = req.body;
-  const file = req.file;
-  const service = await createServiceService({
-    title,
-    description,
-    price,
-    image: file as File & Express.Multer.File,
-  });
+// export const createServiceController = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   const { title, description, price } = req.body;
+//   const file = req.file;
+//   const service = await createServiceService({
+//     title,
+//     description,
+//     price,
+//     image: file as File & Express.Multer.File,
+//   });
 
-  if (service instanceof ErrorApp) {
-    next(service);
-    return;
-  }
+//   if (service instanceof ErrorApp) {
+//     next(service);
+//     return;
+//   }
 
-  HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.MERCHANDISE);
-};
+//   HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.MERCHANDISE);
+// };
 
 export const getMerchandiseController = async (
   req: Request,

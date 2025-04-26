@@ -3,6 +3,7 @@ import { MESSAGE_CODE } from "./error-code";
 import { HandleResponse } from "./handle-response";
 import { ErrorApp } from "./http-error";
 import { MESSAGES } from "./messages";
+import { MulterError } from "multer";
 
 export const HandlingError = (
   err: ErrorApp | Error,
@@ -17,6 +18,9 @@ export const HandlingError = (
       err,
     });
     return HandleResponse(res, err.statusCode, err.code, err.message);
+  }
+  if (err instanceof MulterError) {
+    return HandleResponse(res, 400, MESSAGE_CODE.BAD_REQUEST, err.message);
   }
   console.log({ err });
   return HandleResponse(

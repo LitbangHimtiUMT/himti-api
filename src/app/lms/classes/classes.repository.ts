@@ -26,8 +26,8 @@ export const createClassRepository = async (
   const { name, description, thumbnail, level, categoryId, price } = data;
   return await prisma.class.create({
     data: {
-      name: name as string,
-      description: description as string,
+      name,
+      description,
       thumbnail: thumbnail as string,
       level: level as Level,
       price: Number(price),

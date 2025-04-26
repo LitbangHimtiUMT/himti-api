@@ -1,12 +1,25 @@
 import { prisma } from "../../config";
 import { BusinessDTO, IFilterBusiness } from "./business.dto";
 
-export const createMerchandise = async (data: BusinessDTO) => {
+export const createMerchandise = async (
+  data: Omit<BusinessDTO, "image"> & {
+    images: string[];
+  }
+) => {
   return await prisma.bussiness.create({
     data: {
-      ...data,
+      price: data.price,
+      title: data.title,
+      description: data.description,
+      contactPerson: data.contactPerson,
       type: "MERCHANDISE",
-      image: data.image?.path as string,
+      businessImage: {
+        createMany: {
+          data: data.images.map((item) => ({
+            image: item,
+          })),
+        },
+      },
     },
   });
 };
@@ -15,7 +28,6 @@ export const createService = async (data: BusinessDTO) => {
     data: {
       ...data,
       type: "SERVICE",
-      image: data.image?.path as string,
     },
   });
 };
@@ -50,6 +62,9 @@ export const getMerchandises = async ({
         contains: search,
         mode: "insensitive",
       },
+    },
+    include: {
+      businessImage: true,
     },
     orderBy: {
       createdAt: "desc",

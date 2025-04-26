@@ -194,16 +194,29 @@ model Achievement {
 }
 
 model Bussiness {
-  id          Int            @id @unique @default(autoincrement())
-  image       String         @db.VarChar(255)
-  title       String         @db.VarChar(110)
-  description String?        @db.Text
-  price       String         @db.VarChar(50)
-  type        BussinessType? @default(MERCHANDISE)
-  createdAt   DateTime?      @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt   DateTime?      @updatedAt @map("updated_at") @db.Timestamp(0)
+  id            Int             @id @unique @default(autoincrement())
+  title         String          @db.VarChar(110)
+  description   String?         @db.Text
+  price         Decimal         @db.Decimal(60, 2)
+  type          BussinessType   @default(MERCHANDISE)
+  contactPerson String?         @map("contact_person") @db.VarChar(20)
+  createdAt     DateTime?       @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt     DateTime?       @updatedAt @map("updated_at") @db.Timestamp(0)
+  businessImage BusinessImage[]
 
   @@map("business")
+}
+
+model BusinessImage {
+  id         Int       @id @unique @default(autoincrement())
+  image      String    @db.VarChar(255)
+  businessId Int       @map("business_id")
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+  business   Bussiness @relation(fields: [businessId], references: [id])
+
+  @@index([businessId], map: "business_image_fk_1")
+  @@map("business_image")
 }
 
 model OTP {

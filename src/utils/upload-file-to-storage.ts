@@ -22,7 +22,10 @@ export interface FileInterface {
 export const BUCKET_FOLDER = {
   attendance: "attendance",
   event: "event",
-  business: "business",
+  business: {
+    service: "business/service",
+    merchandise: "business/merchandise",
+  },
   user: "user",
   structural: "struktural",
   class: "class",
@@ -53,6 +56,13 @@ export const FileType: Record<string, string> = {
   "application/x-iwork-pages-sffpages": ".pages", // optional for Apple Pages
 };
 
+export const ImageType: Record<string, string> = {
+  "image/png": ".png",
+  "image/jpeg": ".jpeg",
+  "image/jpg": ".jpg",
+  "image/webp": ".webp",
+};
+
 export const storage = multer.memoryStorage();
 
 export const MulterFileFilter = (
@@ -60,7 +70,7 @@ export const MulterFileFilter = (
   file: Express.Multer.File,
   callBack: FileFilterCallback
 ): void => {
-  console.log(file);
+  console.log("ur file =>", file);
   if (file.mimetype && FileType[file.mimetype]) {
     callBack(null, true);
   } else {
@@ -140,8 +150,5 @@ export const GetPublicURL = (filename: string): string => {
 
 export const upload = multer({
   storage,
-  limits: {
-    fileSize: 8 * 1024 * 1024,
-  },
   fileFilter: MulterFileFilter,
 });

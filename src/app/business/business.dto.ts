@@ -1,7 +1,8 @@
 export interface BusinessDTO {
     title: string
     description: string
-    image?: File & Express.Multer.File
+    contactPerson: string
+    image?: Express.Multer.File[]
     price: string
 }
 
