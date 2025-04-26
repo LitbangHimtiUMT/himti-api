@@ -197,7 +197,8 @@ model Bussiness {
   id            Int             @id @unique @default(autoincrement())
   title         String          @db.VarChar(110)
   description   String?         @db.Text
-  price         Decimal         @db.Decimal(60, 2)
+  startPrice    Decimal         @db.Decimal(60, 2)
+  endPrice      Decimal         @db.Decimal(60, 2)
   type          BussinessType   @default(MERCHANDISE)
   url           String?         @db.Text
   contactPerson String?         @map("contact_person") @db.VarChar(20)

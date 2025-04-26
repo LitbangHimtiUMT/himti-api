@@ -8,7 +8,8 @@ export const createMerchandise = async (
 ) => {
   return await prisma.bussiness.create({
     data: {
-      price: data.price,
+      startPrice: Number(data.startPrice),
+      endPrice: Number(data.endPrice),
       title: data.title,
       description: data.description,
       url: data.url,

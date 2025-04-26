@@ -4,7 +4,8 @@ export interface BusinessDTO {
   contactPerson: string;
   url?: string;
   image?: Express.Multer.File[];
-  price: string;
+  startPrice: string;
+  endPrice: string;
 }
 
 export interface ImageProps {
