@@ -11,6 +11,7 @@ export const createMerchandise = async (
       price: data.price,
       title: data.title,
       description: data.description,
+      url: data.url,
       contactPerson: data.contactPerson,
       type: "MERCHANDISE",
       businessImage: {

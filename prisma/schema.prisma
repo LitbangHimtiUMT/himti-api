@@ -199,6 +199,7 @@ model Bussiness {
   description   String?         @db.Text
   price         Decimal         @db.Decimal(60, 2)
   type          BussinessType   @default(MERCHANDISE)
+  url           String?         @db.Text
   contactPerson String?         @map("contact_person") @db.VarChar(20)
   createdAt     DateTime?       @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt     DateTime?       @updatedAt @map("updated_at") @db.Timestamp(0)
