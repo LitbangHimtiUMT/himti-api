@@ -59,6 +59,7 @@ export const MESSAGES = {
       MODULE: "Module not found",
       SESSION: "Session not found",
       MENTOR: "Mentor not found",
+      BUSINESS: "Business not found",
     },
     ALREADY: {
       GLOBAL: {
@@ -135,10 +136,10 @@ export const MESSAGES = {
       NOT_ENOUGH_POINT: "You don't have enough point",
       ONLY_PUBLISH_CLASS: "Only publish class you can joined",
       ALREADY_JOIN_CLASS: "You already join this class",
-      DUE_DATE: 'Due date must be greater than today',
+      DUE_DATE: "Due date must be greater than today",
       YOUTUBE_URL: "Invalid YouTube URL",
       INVITATION_CODE: "Invitation code is invalid",
-      MENTOR_JOIN_CLASS: "Mentor can't join in class"
+      MENTOR_JOIN_CLASS: "Mentor can't join in class",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -150,7 +151,7 @@ export const MESSAGES = {
     },
     FORBIDDEN: {
       ROLE: "You are not allowed to access this resource",
-      ASSIGNMENT: 'Only creator class can create assignment',
+      ASSIGNMENT: "Only creator class can create assignment",
     },
     REQUIRED: {
       EMAIL: "Email is required",
@@ -351,6 +352,6 @@ export const MESSAGES = {
     },
     REFRESH_TOKEN: {
       GET: "Success to fetch refresh token",
-    }
+    },
   },
 };

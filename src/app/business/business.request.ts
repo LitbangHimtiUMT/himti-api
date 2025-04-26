@@ -7,5 +7,8 @@ export const createBusinessSchema = Joi.object({
   startPrice: Joi.number().required(),
   endPrice: Joi.number().required(),
   contactPerson: Joi.string().required(),
+});
+
+export const uploadImageBusinessSchema = Joi.object({
   image: Joi.any().required(),
 });

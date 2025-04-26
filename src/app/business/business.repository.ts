@@ -1,11 +1,7 @@
 import { prisma } from "../../config";
 import { BusinessDTO, IFilterBusiness } from "./business.dto";
 
-export const createMerchandise = async (
-  data: Omit<BusinessDTO, "image"> & {
-    images: string[];
-  }
-) => {
+export const createMerchandise = async (data: BusinessDTO) => {
   return await prisma.bussiness.create({
     data: {
       startPrice: Number(data.startPrice),
@@ -15,16 +11,22 @@ export const createMerchandise = async (
       url: data.url,
       contactPerson: data.contactPerson,
       type: "MERCHANDISE",
-      businessImage: {
-        createMany: {
-          data: data.images.map((item) => ({
-            image: item,
-          })),
-        },
-      },
     },
   });
 };
+
+export const createBusinessImage = async (
+  businessId: number,
+  image: string
+) => {
+  return await prisma.businessImage.create({
+    data: {
+      image,
+      businessId: Number(businessId),
+    },
+  });
+};
+
 export const createService = async (data: BusinessDTO) => {
   return await prisma.bussiness.create({
     data: {
@@ -114,6 +116,14 @@ export const getServicesCount = async ({ search }: IFilterBusiness) => {
         contains: search,
         mode: "insensitive",
       },
+    },
+  });
+};
+
+export const getBusinessById = async (businessId: number) => {
+  return await prisma.bussiness.findUnique({
+    where: {
+      id: businessId,
     },
   });
 };

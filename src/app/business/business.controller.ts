@@ -7,8 +7,9 @@ import {
   createMerchandiseService,
   getMerchandiseService,
   getServiceService,
+  uploadImageBusinessService,
 } from "./business.service";
-import { createBusinessSchema } from "./business.request";
+import { uploadImageBusinessSchema } from "./business.request";
 
 export const createMerchandiseController = async (
   req: Request,
@@ -16,13 +17,29 @@ export const createMerchandiseController = async (
   next: NextFunction
 ) => {
   const { body } = req;
-  const files = req.files as Express.Multer.File[];
-  const combine = {
-    ...body,
-    image: files,
+  const merchandise = await createMerchandiseService(body);
+
+  if (merchandise instanceof ErrorApp) {
+    next(merchandise);
+    return;
+  }
+
+  HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.MERCHANDISE);
+};
+
+export const uploadImageBusinessController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params } = req;
+  const { businessId } = params;
+  const body = {
+    image: req.file as Express.Multer.File,
   };
-  console.log({ combine, files });
-  const validate = createBusinessSchema.validate(combine);
+  console.log({ file: req.file, params });
+
+  const validate = uploadImageBusinessSchema.validate(body);
   if (validate.error) {
     next(
       new ErrorApp(
@@ -33,10 +50,11 @@ export const createMerchandiseController = async (
     );
     return;
   }
-  const merchandise = await createMerchandiseService(combine);
 
-  if (merchandise instanceof ErrorApp) {
-    next(merchandise);
+  const business = await uploadImageBusinessService(body, Number(businessId));
+
+  if (business instanceof ErrorApp) {
+    next(business);
     return;
   }
 

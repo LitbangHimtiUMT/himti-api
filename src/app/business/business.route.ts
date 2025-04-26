@@ -1,12 +1,15 @@
 import { Router } from "express";
 import { CatchWrapper } from "../../utils/catch-wrapper";
-import { upload as UploadFile } from "../../utils/upload-file-to-storage";
 
+import { validateRequest } from "../../middleware/validate-request";
 import {
   createMerchandiseController,
   getMerchandiseController,
   getServiceController,
+  uploadImageBusinessController,
 } from "./business.controller";
+import { createBusinessSchema } from "./business.request";
+import { upload } from "../../utils/upload-file-to-storage";
 
 const route = Router();
 
@@ -15,8 +18,14 @@ route.get("/merchandise", CatchWrapper(getMerchandiseController));
 route.post(
   "/merchandise",
   // verifyToken(),
-  UploadFile.array("image"),
+  validateRequest(createBusinessSchema),
   CatchWrapper(createMerchandiseController)
+);
+
+route.post(
+  "/:businessId",
+  upload.single("image"),
+  CatchWrapper(uploadImageBusinessController)
 );
 
 // service

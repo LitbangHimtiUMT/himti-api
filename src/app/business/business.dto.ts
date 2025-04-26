@@ -3,9 +3,12 @@ export interface BusinessDTO {
   description: string;
   contactPerson: string;
   url?: string;
-  image?: Express.Multer.File[];
-  startPrice: string;
-  endPrice: string;
+  startPrice: number;
+  endPrice: number;
+}
+
+export interface UploadFileBussinessDTO {
+  image: Express.Multer.File;
 }
 
 export interface ImageProps {
