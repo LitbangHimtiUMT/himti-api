@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { verifyToken } from "../../../middleware/verify-token";
+import {
+  RolesEnum,
+  verifyRole,
+  verifyToken,
+} from "../../../middleware/verify-token";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { upload } from "../../../utils/upload-file-to-storage";
 import {
@@ -11,9 +15,10 @@ import {
 export const moduleRoute = Router();
 
 moduleRoute
+  .use(verifyToken)
   .post(
     "/:sessionId",
-    verifyToken(["MENTOR", "SUPER_ADMIN", "ADMIN"]),
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     CatchWrapper(upload.single("fileModule")),
     CatchWrapper(createModuleController)
   )

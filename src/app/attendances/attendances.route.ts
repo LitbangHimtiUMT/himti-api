@@ -14,16 +14,16 @@ const route = Router();
 
 route.post(
   "/",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(upload.single("image")),
   CatchWrapper(createAttendanceController)
 );
-route.get("/", verifyToken(), CatchWrapper(getAttendanceController));
+route.get("/", verifyToken, CatchWrapper(getAttendanceController));
 route.get(
   "/meeting/:meetingId",
   VerifyAdmin,
   CatchWrapper(getAttendancesController)
 );
-route.get("/:id", verifyToken(), CatchWrapper(getAttendanceByIdController));
+route.get("/:id", verifyToken, CatchWrapper(getAttendanceByIdController));
 
 export default route;

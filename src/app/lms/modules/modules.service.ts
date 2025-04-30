@@ -25,6 +25,10 @@ import { createModuleValidate } from "./modules.validate";
 import { environment } from "../../../libs";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { MESSAGES } from "../../../utils/messages";
+import {
+  createCompletedModuleRepository,
+  getAlreadyCompletedModule,
+} from "../completed-modules/completed-modules.repository";
 
 export const createModuleService = async ({
   name,
@@ -107,7 +111,10 @@ export const getModulesService = async (query: Query) => {
   };
 };
 
-export const getDetailModuleService = async (moduleId: string) => {
+export const getDetailModuleService = async (
+  moduleId: string,
+  userId: string
+) => {
   const modules = await getModuleById(moduleId);
   if (!modules) {
     return new ErrorApp(
@@ -115,6 +122,13 @@ export const getDetailModuleService = async (moduleId: string) => {
       404,
       MESSAGE_CODE.NOT_FOUND
     );
+  }
+  const getCompletedModule = await getAlreadyCompletedModule(moduleId, userId);
+  if (!getCompletedModule && modules.session.class.createdBy !== userId) {
+    await createCompletedModuleRepository({
+      moduleId,
+      userId,
+    });
   }
 
   const data = getModuleMapper(modules as unknown as ModuleData);

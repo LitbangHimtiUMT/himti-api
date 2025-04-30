@@ -14,12 +14,12 @@ const route = Router();
 
 route.post(
   "/",
-  verifyToken(),
+  verifyToken,
   validateRequest(createDosenSchema),
   CatchWrapper(createLecturerController)
 );
-route.get("/", verifyToken(), CatchWrapper(getLecturerController));
-route.delete("/:id", verifyToken(), CatchWrapper(deleteLecturerController));
-route.put("/:id", verifyToken(), CatchWrapper(updateLecturerController));
+route.get("/", verifyToken, CatchWrapper(getLecturerController));
+route.delete("/:id", verifyToken, CatchWrapper(deleteLecturerController));
+route.put("/:id", verifyToken, CatchWrapper(updateLecturerController));
 
 export default route;

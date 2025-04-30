@@ -15,7 +15,7 @@ import { VerifySuperAdmin } from "../../middleware/verify-super-admin";
 
 const route = Router();
 
-route.get("/", verifyToken(), CatchWrapper(getMeetingsController));
+route.get("/", verifyToken, CatchWrapper(getMeetingsController));
 route.put(
   "/:meetingId",
   VerifySuperAdmin,
@@ -27,10 +27,10 @@ route.post(
   validateRequest(createMeetingSchema),
   CatchWrapper(createMeetingController)
 );
-route.get("/:meetingId", verifyToken(), CatchWrapper(getMeetingByIdController));
+route.get("/:meetingId", verifyToken, CatchWrapper(getMeetingByIdController));
 route.get(
   "/event-meeting/:eventMeetingId",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(getMeetingByEventMeetingIdController)
 );
 route.delete(

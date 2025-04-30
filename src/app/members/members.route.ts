@@ -15,12 +15,12 @@ const route = Router();
 
 route.post(
   "/",
-  verifyToken(),
+  verifyToken,
   validateRequest(createMemberSchema),
   CatchWrapper(createMemberController)
 );
-route.get("/", verifyToken(), CatchWrapper(getMemberController));
-route.get("/:id", verifyToken(), CatchWrapper(getMemberByIdController));
+route.get("/", verifyToken, CatchWrapper(getMemberController));
+route.get("/:id", verifyToken, CatchWrapper(getMemberByIdController));
 route.delete("/:id", CatchWrapper(deleteMemberController));
 route.put("/:id", CatchWrapper(updateMemberController));
 

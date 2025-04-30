@@ -6,25 +6,30 @@ import {
   getMentorByIdController,
   getMentorsController,
 } from "./mentor.controller";
-import { verifyToken } from "../../../middleware/verify-token";
+import {
+  RolesEnum,
+  verifyRole,
+  verifyToken,
+} from "../../../middleware/verify-token";
 import { verifyKey } from "../../../middleware/verify-key";
 
 export const mentorsRoute = Router();
 
 mentorsRoute
+  .use(verifyToken)
   .post(
     "/:userId",
-    verifyToken(["ADMIN", "SUPER_ADMIN"]),
+    verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),
     CatchWrapper(createMentorController)
   )
   .get("/", verifyKey, CatchWrapper(getMentorsController))
   .get(
     "/:mentorId",
-    verifyToken(["SUPER_ADMIN", "ADMIN"]),
+    verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),
     CatchWrapper(getMentorByIdController)
   )
   .delete(
     "/:mentorId",
-    verifyToken(["ADMIN", "SUPER_ADMIN"]),
+    verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),
     CatchWrapper(deleteMentorController)
   );

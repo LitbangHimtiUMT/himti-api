@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { verifyToken } from "../../../middleware/verify-token";
+import {
+  RolesEnum,
+  verifyRole,
+  verifyToken,
+} from "../../../middleware/verify-token";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { upload } from "../../../utils/upload-file-to-storage";
 import {
@@ -17,32 +21,29 @@ import { joinInvitationClassSchema } from "./classes.request";
 export const classRoute = Router();
 
 classRoute
+  .use(verifyToken)
   .post(
     "/",
-    verifyToken(["MENTOR", "SUPER_ADMIN", "ADMIN"]),
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     CatchWrapper(upload.single("thumbnail")),
     CatchWrapper(createClassController)
   )
-  .get("/", verifyToken(), CatchWrapper(getClassController))
+  .get("/", verifyToken, CatchWrapper(getClassController))
   .get(
     "/user",
-    verifyToken(["USER", "ANGGOTA", "MENTOR"]),
+    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     CatchWrapper(getClassUserController)
   )
   .post(
     "/join/invitation",
-    verifyToken(["USER", "ANGGOTA"]),
+    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA]),
     validateRequest(joinInvitationClassSchema),
     CatchWrapper(joinInvitationClassController)
   )
-  .get(
-    "/code/:code",
-    verifyToken(),
-    CatchWrapper(getDetailClassByCodeController)
-  )
+  .get("/code/:code", CatchWrapper(getDetailClassByCodeController))
   .patch(
     "/join/:classId",
-    verifyToken(["USER", "ANGGOTA", "MENTOR"]),
+    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     CatchWrapper(userJoinClassController)
   )
   .get("/:classId", CatchWrapper(getDetailClassController));

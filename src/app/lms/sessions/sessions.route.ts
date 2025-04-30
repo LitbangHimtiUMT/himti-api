@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { verifyToken } from "../../../middleware/verify-token";
+import {
+  RolesEnum,
+  verifyRole,
+  verifyToken,
+} from "../../../middleware/verify-token";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { createSessionSchema } from "./sessions.request";
 import {
@@ -11,14 +15,21 @@ import { validateRequest } from "../../../middleware/validate-request";
 export const sessionRoute = Router();
 
 sessionRoute
+  .use(verifyToken)
   .post(
     "/:classId",
-    verifyToken(["MENTOR", "SUPER_ADMIN", "ADMIN"]),
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     validateRequest(createSessionSchema),
     CatchWrapper(createSessionController)
   )
   .get(
     "/class/:classId",
-    verifyToken(["MENTOR", "SUPER_ADMIN", "ADMIN", 'ANGGOTA', 'USER']),
+    verifyRole([
+      RolesEnum.MENTOR,
+      RolesEnum.SUPER_ADMIN,
+      RolesEnum.ADMIN,
+      RolesEnum.USER,
+      RolesEnum.ANGGOTA,
+    ]),
     CatchWrapper(getSessionByClassController)
   );

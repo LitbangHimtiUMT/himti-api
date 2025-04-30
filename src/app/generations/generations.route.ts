@@ -15,13 +15,13 @@ const route = Router();
 
 route.post(
   "/",
-  verifyToken(),
+  verifyToken,
   validateRequest(createAngkatanSchema),
   CatchWrapper(createAngkatanController)
 );
-route.get("/", verifyToken(), CatchWrapper(getAngkatanController));
-route.get("/:id", verifyToken(), CatchWrapper(getAngkatanByIdController));
-route.delete("/:id", verifyToken(), CatchWrapper(deleteAngkatanController));
-route.put("/:id", verifyToken(), CatchWrapper(updateAngkatanController));
+route.get("/", verifyToken, CatchWrapper(getAngkatanController));
+route.get("/:id", verifyToken, CatchWrapper(getAngkatanByIdController));
+route.delete("/:id", verifyToken, CatchWrapper(deleteAngkatanController));
+route.put("/:id", verifyToken, CatchWrapper(updateAngkatanController));
 
 export default route;

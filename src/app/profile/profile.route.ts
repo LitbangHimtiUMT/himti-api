@@ -13,20 +13,20 @@ import { updatePasswordSchema } from "./profile.request";
 
 const route = Router();
 
-route.get("/", verifyToken(), CatchWrapper(getProfileController));
+route.get("/", verifyToken, CatchWrapper(getProfileController));
 route.put(
   "/",
-  verifyToken(),
+  verifyToken,
   //   validateRequest(updateProfileSchema),
   CatchWrapper(UploadFile.single("photo")),
   CatchWrapper(updateProfileController)
 );
 route.put(
   "/password",
-  verifyToken(),
+  verifyToken,
   validateRequest(updatePasswordSchema),
   CatchWrapper(updatePasswordController)
 );
-route.delete("/", verifyToken(), CatchWrapper(deletePhotoProfileController));
+route.delete("/", verifyToken, CatchWrapper(deletePhotoProfileController));
 
 export default route;

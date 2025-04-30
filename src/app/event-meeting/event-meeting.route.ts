@@ -19,30 +19,30 @@ const route = Router();
 
 route.post(
   "/",
-  verifyToken(),
+  verifyToken,
   validateRequest(createEventMeetingSchema),
   CatchWrapper(createEventMeetingController)
 );
 route.put(
   "/:eventMeetingId",
-  verifyToken(),
+  verifyToken,
   validateRequest(updateEventMeetingSchema),
   CatchWrapper(updateEventMeetingController)
 );
-route.get("/", verifyToken(), CatchWrapper(getEventMeetingsController));
+route.get("/", verifyToken, CatchWrapper(getEventMeetingsController));
 route.get(
   "/meeting",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(getEventMeetingWithMeetingController)
 );
 route.get(
   "/:eventMeetingId",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(getEventMeetingByIdController)
 );
 route.delete(
   "/:eventMeetingId",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(deleteEventMeetingController)
 );
 

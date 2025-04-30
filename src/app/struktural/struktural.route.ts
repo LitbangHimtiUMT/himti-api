@@ -14,20 +14,20 @@ const route = Router();
 
 route.post(
   "/",
-  verifyToken(),
+  verifyToken,
   upload.single("image"),
   CatchWrapper(createStrukturalController)
 );
-route.get("/", verifyToken(), CatchWrapper(getStrukturalController));
+route.get("/", verifyToken, CatchWrapper(getStrukturalController));
 route.get(
   "/:structuralId",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(getStructuralByIdController)
 );
-route.delete("/:id", verifyToken(), CatchWrapper(deleteStrukturalController));
+route.delete("/:id", verifyToken, CatchWrapper(deleteStrukturalController));
 route.put(
   "/:id",
-  verifyToken(),
+  verifyToken,
   upload.single("image"),
   CatchWrapper(updateStrukturalController)
 );

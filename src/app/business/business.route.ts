@@ -17,7 +17,7 @@ const route = Router();
 route.get("/merchandise", CatchWrapper(getMerchandiseController));
 route.post(
   "/merchandise",
-  // verifyToken(),
+  // verifyToken,
   validateRequest(createBusinessSchema),
   CatchWrapper(createMerchandiseController)
 );
@@ -32,7 +32,7 @@ route.post(
 route.get("/service", CatchWrapper(getServiceController));
 // route.post(
 //   "/service",
-//   verifyToken(),
+//   verifyToken,
 //   UploadFile.single("image"),
 //   validateRequest(createBusinessSchema, imageSchema),
 //   CatchWrapper(createServiceController)

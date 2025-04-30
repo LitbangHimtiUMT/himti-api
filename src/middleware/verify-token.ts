@@ -13,7 +13,69 @@ import { getMentorByUserIdRepository } from "../app/lms/mentor/mentor.repository
 type Mentor = "MENTOR";
 type Roles = Array<Role | Mentor>;
 
-export const verifyToken =
+export enum RolesEnum {
+  ADMIN = "ADMIN",
+  SUPER_ADMIN = "SUPER_ADMIN",
+  MENTOR = "MENTOR",
+  ANGGOTA = "ANGGOTA",
+  USER = "USER",
+}
+
+export const verifyToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.headers.authorization) {
+    return HandleResponse(
+      res,
+      401,
+      MESSAGE_CODE.UNAUTHORIZED,
+      MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
+    );
+  }
+  const token = req.headers.authorization.replace("Bearer ", "");
+  const decodeToken = decode(token) as TokenDecodeInterface;
+  verify(token, environment.JWT_SECRET as string, async (err: unknown) => {
+    if (err) {
+      if (err instanceof TokenExpiredError) {
+        return HandleResponse(
+          res,
+          401,
+          MESSAGE_CODE.UNAUTHORIZED,
+          MESSAGES.ERROR.UNAUTHORIZED.EXPIRED
+        );
+      }
+      if (!(decodeToken as TokenDecodeInterface)?.id) {
+        return HandleResponse(
+          res,
+          401,
+          MESSAGE_CODE.UNAUTHORIZED,
+          MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
+        );
+      }
+      return HandleResponse(
+        res,
+        401,
+        MESSAGE_CODE.UNAUTHORIZED,
+        MESSAGES.ERROR.INVALID.AUTH
+      );
+    }
+    const user = await getUserById(decodeToken.id);
+    if (!user) {
+      return HandleResponse(
+        res,
+        401,
+        MESSAGE_CODE.UNAUTHORIZED,
+        MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
+      );
+    }
+    (req as RequestWithAccessToken).userId = decodeToken?.id;
+    next();
+  });
+};
+
+export const verifyRole =
   (roles?: Roles) =>
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers.authorization) {

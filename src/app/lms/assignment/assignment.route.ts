@@ -1,15 +1,15 @@
 import { Router } from "express";
+import { validateRequest } from "../../../middleware/validate-request";
+import { RolesEnum, verifyRole } from "../../../middleware/verify-token";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { createAssignmentController } from "./assignment.controller";
-import { validateRequest } from "../../../middleware/validate-request";
 import { createAssignmentSchema } from "./assignment.request";
-import { verifyToken } from "../../../middleware/verify-token";
 
 export const assignmentRoute = Router();
 
 assignmentRoute.post(
   "/:moduleId",
-  verifyToken(["MENTOR"]),
+  verifyRole([RolesEnum.MENTOR]),
   validateRequest(createAssignmentSchema),
   CatchWrapper(createAssignmentController)
 );

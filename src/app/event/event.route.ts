@@ -14,15 +14,15 @@ const route = Router();
 
 route.post(
   "/",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(UploadFile.single("image")),
   CatchWrapper(createEventController)
 );
 route.get("/", CatchWrapper(getEventController));
-route.delete("/:id", verifyToken(), CatchWrapper(deleteEventController));
+route.delete("/:id", verifyToken, CatchWrapper(deleteEventController));
 route.put(
   "/:id",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(UploadFile.single("image")),
   CatchWrapper(updateEventController)
 );

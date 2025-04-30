@@ -24,10 +24,10 @@ route.post(
   CatchWrapper(sendSingleNotificationController)
 );
 route.post("/fcm/:fcmId", CatchWrapper(sendNotificationByFcmIdController));
-route.get("/", verifyToken(), CatchWrapper(getNotificationController));
+route.get("/", verifyToken, CatchWrapper(getNotificationController));
 route.put(
   "/read/:notificationId",
-  verifyToken(),
+  verifyToken,
   CatchWrapper(readNotificationController)
 );
 

@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
 import { VerifyAdmin } from "../../middleware/verify-admin";
-import { VerifySuperAdmin } from "../../middleware/verify-super-admin";
+import {
+  RolesEnum,
+  verifyRole,
+  verifyToken,
+} from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createUserController,
@@ -12,30 +16,31 @@ import {
   updateUserController,
 } from "./user.controller";
 import { createUserSchema, updateUserSchema } from "./user.request";
-import { verifyToken } from "../../middleware/verify-token";
 
 const route = Router();
 
-route.get("/", VerifyAdmin, CatchWrapper(getUsersController));
-route.get(
-  "/without-mentor",
-  verifyToken(["ADMIN", "SUPER_ADMIN"]),
-  CatchWrapper(getUserWithoutMentorController)
-);
-route.get("/:userId", VerifyAdmin, CatchWrapper(getUserController));
-route.get(
-  "/admin",
-  VerifySuperAdmin,
-  validateRequest(createUserSchema),
-  CatchWrapper(createUserController)
-);
-route.put(
-  "/admin/:userId",
-  VerifySuperAdmin,
-  validateRequest(updateUserSchema),
-  CatchWrapper(updateUserController)
-);
+route
+  .use(verifyToken)
+  .get("/", VerifyAdmin, CatchWrapper(getUsersController))
+  .get(
+    "/without-mentor",
+    verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),
+    CatchWrapper(getUserWithoutMentorController)
+  )
+  .get("/:userId", VerifyAdmin, CatchWrapper(getUserController))
+  .get(
+    "/admin",
+    verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),
+    validateRequest(createUserSchema),
+    CatchWrapper(createUserController)
+  )
+  .put(
+    "/admin/:userId",
+    verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),
+    validateRequest(updateUserSchema),
+    CatchWrapper(updateUserController)
+  )
 
-route.delete("/", verifyToken(), CatchWrapper(deleteUserController));
+  .delete("/", verifyToken, CatchWrapper(deleteUserController));
 
 export default route;
