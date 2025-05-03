@@ -28,7 +28,7 @@ classRoute
     CatchWrapper(upload.single("thumbnail")),
     CatchWrapper(createClassController)
   )
-  .get("/", verifyToken, CatchWrapper(getClassController))
+  .get("/", CatchWrapper(getClassController))
   .get(
     "/user",
     verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
