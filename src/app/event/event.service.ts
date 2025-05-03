@@ -143,8 +143,10 @@ export const deleteEventService = async (id: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-
   const response = await sofDeleteEvent(id as string);
+  await RemoveFileFromStorage(
+    `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.event}/${acara.image}`
+  );
   return response;
 };
 export const updateEventService = async ({

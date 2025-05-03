@@ -61,6 +61,7 @@ export const getEventCount = async (query: Query) => {
         contains: search,
         mode: "insensitive",
       },
+      deletedAt: null,
       isOpen: openValue(isOpen),
     },
   });
