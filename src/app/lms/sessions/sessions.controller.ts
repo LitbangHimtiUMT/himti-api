@@ -14,7 +14,7 @@ export const createSessionController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { body, params } = req;
+  const { body, params, } = req;
   const { classId } = params;
 
   const session = await createSessionService({

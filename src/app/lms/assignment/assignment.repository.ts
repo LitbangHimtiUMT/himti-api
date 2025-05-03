@@ -9,6 +9,8 @@ export const createAssignmentRepository = async (data: CreateAssignmentDTO) => {
       dueDate: new Date(data.dueDate),
       moduleId: data.moduleId,
       isFinalAssigment: data.isFinalAssignment || false,
+      allowedFile: data.allowedFile,
+      type: data.type,
     },
   });
 };

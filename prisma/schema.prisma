@@ -418,15 +418,17 @@ model Certificate {
 }
 
 model Assignment {
-  id               String       @id @unique @default(uuid())
-  title            String       @db.VarChar(255)
-  description      String?      @db.Text
-  moduleId         String       @unique @map("module_id") @db.VarChar(110)
-  dueDate          DateTime     @map("due_date") @db.Date
-  isFinalAssigment Boolean      @default(false) @map("is_final_assignment") @db.Boolean
-  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamp(0)
-  module           Module?      @relation(fields: [moduleId], references: [id])
+  id               String         @id @unique @default(uuid())
+  title            String         @db.VarChar(255)
+  description      String?        @db.Text
+  moduleId         String         @unique @map("module_id") @db.VarChar(110)
+  dueDate          DateTime       @map("due_date") @db.Date
+  allowedFile             String?        @map("allowed_file") @db.VarChar(10)
+  type             AssignmentType @default(FILE)
+  isFinalAssigment Boolean        @default(false) @map("is_final_assignment") @db.Boolean
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamp(0)
+  module           Module?        @relation(fields: [moduleId], references: [id])
   submission       Submission[]
 
   @@index([moduleId], map: "assignments_fk_1")
@@ -438,6 +440,7 @@ model Submission {
   assignmentId String           @map("assignment_id") @db.VarChar(110)
   userId       String           @map("user_id") @db.VarChar(110)
   status       SubmissionStatus @default(REVIEWED)
+  file         String
   feedback     String?          @db.Text
   actionBy     String?          @map("action_by") @db.VarChar(110)
   createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamp(0)
@@ -577,4 +580,9 @@ enum Level {
 enum ClassStatus {
   DRAFT
   PUBLISH
+}
+
+enum AssignmentType {
+  URL
+  FILE
 }

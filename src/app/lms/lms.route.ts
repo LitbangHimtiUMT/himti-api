@@ -21,6 +21,6 @@ lmsRoute.use("/sessions", sessionRoute);
 lmsRoute.use("/modules", moduleRoute);
 lmsRoute.use("/class-participants", classParticipantRoute);
 lmsRoute.use("/transactions", transactionRoute);
-lmsRoute.use("/assignment", assignmentRoute);
+lmsRoute.use("/assignments", assignmentRoute);
 lmsRoute.use("/completed-modules", completedModuleRoute);
 lmsRoute.use("/completed-classes", completedClassRoute);

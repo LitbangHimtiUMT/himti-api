@@ -22,7 +22,7 @@ export const getModuleById = async (moduleId: string) => {
           dueDate: true,
           createdAt: true,
           description: true,
-        }
+        },
       },
       session: {
         select: {
@@ -53,7 +53,7 @@ export const createModuleRepository = async (
   });
 };
 
-export const getModulesRepository = async (query: Query) => {
+export const getModulesRepository = async (query: Query, userId: string) => {
   const { sessionId, search } = query;
   return await prisma.module.findMany({
     where: {
@@ -67,6 +67,14 @@ export const getModulesRepository = async (query: Query) => {
     },
     include: {
       assignment: true,
+      completedModule: {
+        where: {
+          userId,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
     },
     ...queryPagination(query),
   });

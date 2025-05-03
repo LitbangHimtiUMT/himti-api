@@ -41,5 +41,7 @@ export const createAssignmentService = async (
     description: data.description,
     moduleId,
     isFinalAssignment: data.isFinalAssignment,
+    type: data.type,
+    allowedFile: data.allowedFile,
   });
 };

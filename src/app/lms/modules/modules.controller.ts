@@ -55,12 +55,15 @@ export const getModulesController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { query, params } = req;
+  const { query, params, userId } = req;
   const { sessionId } = params;
-  const result = await getModulesService({
-    ...query,
-    sessionId,
-  });
+  const result = await getModulesService(
+    {
+      ...query,
+      sessionId,
+    },
+    userId
+  );
   if (result instanceof ErrorApp) {
     next(result);
     return;

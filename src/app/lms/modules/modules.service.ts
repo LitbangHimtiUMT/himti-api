@@ -1,6 +1,9 @@
 import sharp from "sharp";
 import { Query } from "../../../interface/Query";
+import { environment } from "../../../libs";
+import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
+import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
 import {
   BUCKET_FOLDER,
@@ -9,6 +12,11 @@ import {
   RemoveFileFromStorage,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
+import {
+  createCompletedModuleRepository,
+  getAlreadyCompletedModule,
+} from "../completed-modules/completed-modules.repository";
+import { getSessionById } from "../sessions/sessions.repository";
 import { CreateModuleBodyRequest } from "./modules.dto";
 import {
   getModuleMapper,
@@ -22,13 +30,6 @@ import {
   getModulesRepository,
 } from "./modules.repository";
 import { createModuleValidate } from "./modules.validate";
-import { environment } from "../../../libs";
-import { MESSAGE_CODE } from "../../../utils/error-code";
-import { MESSAGES } from "../../../utils/messages";
-import {
-  createCompletedModuleRepository,
-  getAlreadyCompletedModule,
-} from "../completed-modules/completed-modules.repository";
 
 export const createModuleService = async ({
   name,
@@ -97,10 +98,21 @@ export const createModuleService = async ({
   }
 };
 
-export const getModulesService = async (query: Query) => {
-  const { page = "1", perPage = "10" } = query;
+export const getModulesService = async (query: Query, userId: string) => {
+  const { page = "1", perPage = "10", sessionId } = query;
+
+  const session = await getSessionById(sessionId ?? "");
+
+  if (!session) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.SESSION,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
   const [modules, totalData] = await Promise.all([
-    getModulesRepository(query),
+    getModulesRepository(query, userId),
     getModulesCountRepository(query),
   ]);
 
