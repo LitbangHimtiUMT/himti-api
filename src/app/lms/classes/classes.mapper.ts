@@ -43,7 +43,7 @@ export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
       id: item.category.id,
       name: item.category.name,
     },
-    thumbnail: item.thumbnail,
+    thumbnail: ImagePath(`${BUCKET_FOLDER.class}/${item.thumbnail}`),
     price: Number(item.price),
     totalParticipant: item._count.classParticipant,
     creator: {
