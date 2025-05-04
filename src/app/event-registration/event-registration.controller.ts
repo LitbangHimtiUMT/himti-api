@@ -4,7 +4,10 @@ import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
 import { EventRegistrationCreationDTO } from "./event-registration.dto";
 import { createEventRegistrationSchema } from "./event-registration.request";
-import { createEventRegistrationService } from "./event-registration.service";
+import {
+  createEventRegistrationService,
+  getHistoryEventRegistrationService,
+} from "./event-registration.service";
 import { HandleResponse } from "../../utils/handle-response";
 import { MESSAGES } from "../../utils/messages";
 
@@ -45,5 +48,25 @@ export const createEventRegistrationController = async (
     201,
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.EVENT_REGISTRATION.CREATE
+  );
+};
+
+export const getHistoryEventRegistrationController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req;
+  const result = await getHistoryEventRegistrationService(userId as string);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.EVENT_REGISTRATION.HISTORY,
+    result
   );
 };

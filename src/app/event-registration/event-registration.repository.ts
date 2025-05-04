@@ -14,3 +14,21 @@ export const registerEventRepository = async (
     },
   });
 };
+
+export const getEventRegistrationByUserId = async (userId: string) => {
+  return await prisma.eventRegistration.findMany({
+    where: {
+      userId: userId,
+    },
+    include: {
+      event: true,
+      user: {
+        include: {
+          Member: {
+            include: { Generation: true },
+          },
+        },
+      },
+    },
+  });
+};

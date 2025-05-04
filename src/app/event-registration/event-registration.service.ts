@@ -12,7 +12,14 @@ import { getEventById } from "../event/event.repository";
 import { EventRegistrationCreationDTO } from "./event-registration.dto";
 import { environment } from "../../libs";
 import { EventType } from "@prisma/client";
-import { registerEventRepository } from "./event-registration.repository";
+import {
+  getEventRegistrationByUserId,
+  registerEventRepository,
+} from "./event-registration.repository";
+import {
+  EventRegistrationData,
+  getHistoryEventRegistrationDTOMapper,
+} from "./event-registration.mapper";
 
 export const createEventRegistrationService = async (
   data: EventRegistrationCreationDTO
@@ -65,4 +72,18 @@ export const createEventRegistrationService = async (
     });
     return result;
   }
+};
+
+export const getHistoryEventRegistrationService = async (userId: string) => {
+  if (!userId) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  const result = await getEventRegistrationByUserId(userId);
+  return getHistoryEventRegistrationDTOMapper(
+    result as unknown as EventRegistrationData[]
+  );
 };
