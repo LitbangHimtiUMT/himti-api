@@ -28,14 +28,16 @@ export const createEvent = async ({
 };
 
 export const getEvents = async (query: QueryEvent) => {
-  const { isOpen, page = "1", perPage = "10", search, type = "COMMON" } = query;
+  const { isOpen, page = "1", perPage = "10", search, type } = query;
   return await prisma.event.findMany({
     where: {
       name: {
         contains: search,
         mode: "insensitive",
       },
-      type,
+      ...(type && {
+        type,
+      }),
       isOpen: openValue(isOpen as string),
       deletedAt: null,
     },
@@ -49,6 +51,7 @@ export const getEvents = async (query: QueryEvent) => {
       endTime: true,
       isOpen: true,
       image: true,
+      type: true,
     },
     take: Number(perPage),
     skip: (Number(page) - 1) * Number(perPage),
@@ -56,14 +59,16 @@ export const getEvents = async (query: QueryEvent) => {
 };
 
 export const getEventCount = async (query: QueryEvent) => {
-  const { search, isOpen, type = "COMMON" } = query;
+  const { search, isOpen, type } = query;
   return await prisma.event.count({
     where: {
       name: {
         contains: search,
         mode: "insensitive",
       },
-      type,
+      ...(type && {
+        type,
+      }),
       deletedAt: null,
       isOpen: openValue(isOpen),
     },

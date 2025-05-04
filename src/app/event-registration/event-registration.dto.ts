@@ -3,4 +3,5 @@ export interface EventRegistrationCreationDTO {
   userId: string;
   image?: Express.Multer.File;
   material?: string
+  class: string
 }

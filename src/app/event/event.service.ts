@@ -42,6 +42,7 @@ export const createEventService = async ({
   image,
   isOpen,
   startTime,
+  type
 }: CreateEventBodyRequest) => {
   let filename;
   if (isOpen && !startTime) {
@@ -96,6 +97,7 @@ export const createEventService = async ({
       image: filename,
       description,
       isOpen: open,
+      type,
       endTime: new Date(endTime as Date),
       startTime: new Date(startTime as Date),
     });
@@ -122,10 +124,6 @@ export const getEventService = async (query: Query) => {
   ]);
 
   const data = eventsDTOMapper(acara as Event[]);
-  // if (!data.length) {
-  //     return new ErrorApp(MESSAGES.ERROR.NOT_FOUND.ACARA, 404, MESSAGE_CODE.NOT_FOUND)
-
-  // }
   const response = {
     data,
     meta: Meta(Number(page), Number(perPage), totalData),

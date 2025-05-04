@@ -1,7 +1,7 @@
 import { prisma } from "../../config";
 import { EventRegistrationCreationDTO } from "./event-registration.dto";
 
-export const registerEvent = async (
+export const registerEventRepository = async (
   data: Omit<EventRegistrationCreationDTO, "image"> & { image: string }
 ) => {
   return await prisma.eventRegistration.create({
@@ -10,6 +10,7 @@ export const registerEvent = async (
       userId: data.userId,
       image: data.image,
       material: data.material,
+      class: data.class,
     },
   });
 };

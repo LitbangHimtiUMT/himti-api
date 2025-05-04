@@ -25,6 +25,7 @@ export interface CreateEventBodyRequest {
 export interface EventDTO {
   id: string;
   name: string;
+  type: EventType
   image: string;
   startTime: Date;
   endTime: Date;

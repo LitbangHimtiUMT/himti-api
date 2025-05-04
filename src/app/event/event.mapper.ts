@@ -13,6 +13,7 @@ export const eventsDTOMapper = (acaras: Event[]): EventDTO[] => {
       id: acara.id,
       description: acara.description,
       endTime: acara.endTime as Date,
+      type: acara.type,
       image: acara.image.includes("https")
         ? acara.image
         : ImagePath(`event/${acara.image}`),
@@ -26,6 +27,7 @@ export const eventDTOMapper = (event: Event): EventDTO => {
   return {
     id: event.id,
     name: event.name,
+    type: event.type,
     description: event.description,
     image: event.image.includes("https")
       ? event.image
@@ -35,26 +37,3 @@ export const eventDTOMapper = (event: Event): EventDTO => {
     isOpen: generateOpen(event.startTime as Date, event.endTime as Date),
   };
 };
-
-// export const subAcaraMapper = (subAcaras: AttendanceMeetingData[], userId: string): SubAcaraDTO[] => {
-//     return subAcaras.map((item) => {
-//         // const { createdAt, updatedAt, ...rest } = item
-//         let isAlreadyAbsen = false
-//         const absensi = item.absensi.filter((absen) => absen.userId === userId && absen.subAcaraId === item.id)
-//         if (absensi.length) {
-//             isAlreadyAbsen = true
-//         }
-//         const isExpired = new Date(item.endTime as Date) < new Date(Date.now())
-
-//         return {
-//             id: item.id,
-//             name: item.name,
-//             description: item.description,
-//             image: item?.image?.includes('https') ? item?.image : ImagePath(`acara/${item?.image}`),
-//             endTime: item.endTime as Date,
-//             startTime: item.startTime as Date,
-//             isOpenAbsen: !isExpired,
-//             isAlreadyAbsen
-//         }
-//     })
-// }

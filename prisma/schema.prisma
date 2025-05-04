@@ -530,10 +530,13 @@ model EventRegistration {
   userId    String   @map("user_id")
   material  String?
   image     String?
+  class     String
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
   event     Event    @relation(fields: [eventId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+
+  @@map("event_registration")
 }
 
 enum Jabatan {

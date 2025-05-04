@@ -12,6 +12,7 @@ import { getEventById } from "../event/event.repository";
 import { EventRegistrationCreationDTO } from "./event-registration.dto";
 import { environment } from "../../libs";
 import { EventType } from "@prisma/client";
+import { registerEventRepository } from "./event-registration.repository";
 
 export const createEventRegistrationService = async (
   data: EventRegistrationCreationDTO
@@ -57,5 +58,11 @@ export const createEventRegistrationService = async (
       ContentType: FileType["image/webp"],
       ACL: "public-read",
     });
+
+    const result = await registerEventRepository({
+      ...data,
+      image: filename,
+    });
+    return result;
   }
 };
