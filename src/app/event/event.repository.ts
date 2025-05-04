@@ -1,6 +1,5 @@
 import { prisma } from "../../config";
-import { Query } from "../../interface/Query";
-import { CreateEventBodyRequest, EventBodyDTO } from "./event.dto";
+import { CreateEventBodyRequest, EventBodyDTO, QueryEvent } from "./event.dto";
 import { openValue } from "./event.service";
 
 export const createEvent = async ({
@@ -26,14 +25,15 @@ export const createEvent = async ({
   });
 };
 
-export const getEvents = async (query: Query) => {
-  const { isOpen, page = "1", perPage = "10", search } = query;
+export const getEvents = async (query: QueryEvent) => {
+  const { isOpen, page = "1", perPage = "10", search, type = "COMMON" } = query;
   return await prisma.event.findMany({
     where: {
       name: {
         contains: search,
         mode: "insensitive",
       },
+      type,
       isOpen: openValue(isOpen as string),
       deletedAt: null,
     },
@@ -53,14 +53,15 @@ export const getEvents = async (query: Query) => {
   });
 };
 
-export const getEventCount = async (query: Query) => {
-  const { search, isOpen } = query;
+export const getEventCount = async (query: QueryEvent) => {
+  const { search, isOpen, type = "COMMON" } = query;
   return await prisma.event.count({
     where: {
       name: {
         contains: search,
         mode: "insensitive",
       },
+      type,
       deletedAt: null,
       isOpen: openValue(isOpen),
     },
@@ -71,6 +72,7 @@ export const getEventById = async (id: string) => {
   return await prisma.event.findUnique({
     where: {
       id,
+      deletedAt: null,
     },
     select: {
       id: true,
@@ -79,6 +81,7 @@ export const getEventById = async (id: string) => {
       startTime: true,
       endTime: true,
       description: true,
+      type: true
     },
   });
 };

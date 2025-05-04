@@ -33,6 +33,7 @@ model User {
   submissionParticipant Submission[]          @relation("submission_participant")
   submissionMentor      Submission[]          @relation("submission_mentor")
   Transaction           Transaction[]
+  EventRegistration     EventRegistration[]
 
   @@index([memberId], map: "user_fk_1")
   @@index([email], map: "user_fk_2")
@@ -117,6 +118,7 @@ model Event {
   name                String                @db.VarChar(255)
   description         String?               @db.Text
   image               String                @db.VarChar(255)
+  type                EventType             @default(COMMON)
   isOpen              Boolean               @default(true) @map("is_open")
   endTime             DateTime?             @default(now()) @map("end_time")
   startTime           DateTime?             @default(now()) @map("start_time")
@@ -124,6 +126,7 @@ model Event {
   updatedAt           DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
   deletedAt           DateTime?             @map("deleted_at")
   NotificationHistory NotificationHistory[]
+  EventRegistration   EventRegistration[]
 
   @@map("event")
 }
@@ -423,7 +426,7 @@ model Assignment {
   description      String?        @db.Text
   moduleId         String         @unique @map("module_id") @db.VarChar(110)
   dueDate          DateTime       @map("due_date") @db.Date
-  allowedFile             String?        @map("allowed_file") @db.VarChar(10)
+  allowedFile      String?        @map("allowed_file") @db.VarChar(10)
   type             AssignmentType @default(FILE)
   isFinalAssigment Boolean        @default(false) @map("is_final_assignment") @db.Boolean
   createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamp(0)
@@ -521,6 +524,18 @@ model Enrollment {
   @@map("enrollment")
 }
 
+model EventRegistration {
+  id        String   @id @unique @default(uuid())
+  eventId   String   @map("event_id") @db.Char(36)
+  userId    String   @map("user_id")
+  material  String?
+  image     String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  event     Event    @relation(fields: [eventId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
 enum Jabatan {
   KETUA_HIMPUNAN
   WAKIL_KETUA_HIMPUNAN
@@ -585,4 +600,9 @@ enum ClassStatus {
 enum AssignmentType {
   URL
   FILE
+}
+
+enum EventType {
+  COMMON
+  REGISTRATION
 }

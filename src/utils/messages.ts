@@ -140,6 +140,7 @@ export const MESSAGES = {
       YOUTUBE_URL: "Invalid YouTube URL",
       INVITATION_CODE: "Invitation code is invalid",
       MENTOR_JOIN_CLASS: "Mentor can't join in class",
+      COMMONT_EVENT: "Common event can't be register"
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -353,5 +354,8 @@ export const MESSAGES = {
     REFRESH_TOKEN: {
       GET: "Success to fetch refresh token",
     },
+    EVENT_REGISTRATION: {
+      CREATE: 'Success to register event',
+    }
   },
 };

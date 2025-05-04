@@ -22,6 +22,7 @@ export interface FileInterface {
 export const BUCKET_FOLDER = {
   attendance: "attendance",
   event: "event",
+  eventRegistration: "event-registration",
   business: {
     service: "business/service",
     merchandise: "business/merchandise",

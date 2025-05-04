@@ -1,3 +1,5 @@
+import { EventType } from "@prisma/client"
+import { Query } from "../../interface/Query"
 
 export interface EventBodyDTO {
     id?: string
@@ -28,23 +30,6 @@ export interface EventDTO {
     isOpen: boolean
 }
 
-// export interface SubAcaraBodyDTO {
-//     id?: string
-//     name?: string
-//     description?: string,
-//     image?: string,
-//     startTime?: Date,
-//     endTime?: Date
-//     acaraId: string
-// }
-
-// export interface SubAcaraDTO {
-//     id: string
-//     name: string
-//     description: string | null
-//     image: string
-//     endTime: Date
-//     startTime: Date
-//     isOpenAbsen: boolean
-//     isAlreadyAbsen: boolean
-// }
+export interface QueryEvent extends Query {
+    type?: EventType
+}
