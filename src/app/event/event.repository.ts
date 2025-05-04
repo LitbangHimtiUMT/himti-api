@@ -9,6 +9,7 @@ export const createEvent = async ({
   isOpen,
   name,
   startTime,
+  type,
 }: CreateEventBodyRequest) => {
   return await prisma.event.create({
     data: {
@@ -16,6 +17,7 @@ export const createEvent = async ({
       description,
       endTime,
       isOpen,
+      type,
       startTime,
       image: image as string,
     },
@@ -81,7 +83,7 @@ export const getEventById = async (id: string) => {
       startTime: true,
       endTime: true,
       description: true,
-      type: true
+      type: true,
     },
   });
 };
