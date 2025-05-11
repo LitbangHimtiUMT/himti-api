@@ -1,4 +1,4 @@
-import { Event } from "@prisma/client";
+import { Event, EventType } from "@prisma/client";
 import dotenv from "dotenv";
 import { Query } from "../../interface/Query";
 import sharp from "sharp";
@@ -42,8 +42,10 @@ export const createEventService = async ({
   image,
   isOpen,
   startTime,
-  type
-}: CreateEventBodyRequest) => {
+  eventType,
+}: Omit<CreateEventBodyRequest, "type"> & {
+  eventType: EventType;
+}) => {
   let filename;
   if (isOpen && !startTime) {
     return new ErrorApp(
@@ -97,7 +99,7 @@ export const createEventService = async ({
       image: filename,
       description,
       isOpen: open,
-      type,
+      type: eventType,
       endTime: new Date(endTime as Date),
       startTime: new Date(startTime as Date),
     });
