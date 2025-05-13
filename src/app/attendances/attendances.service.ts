@@ -29,6 +29,9 @@ import {
   getAttendancesCount,
 } from "./attendances.repository";
 import { createAttendanceValidate } from "./attendances.validate";
+import { generateMultipleCertificate } from "../event/event.utils";
+import { Response } from "express";
+import { Query } from "../../interface/Query";
 
 export const createAttendanceService = async (
   { meetingId, image, coordinate, address, attendanceTime }: AttendanceDTO,
@@ -191,4 +194,24 @@ export const getAttendancesService = async (query: FilterAttendance) => {
     ),
     meta,
   };
+};
+
+export const generateCertificateByMeetingAttendanceService = async (
+  res: Response,
+  meetingId: string,
+  template: Express.Multer.File,
+  query: Query
+) => {
+  const attendance = await getAttendances({
+    meetingId,
+    ...query,
+  });
+  console.log({ attendance, length: attendance.length });
+  return await generateMultipleCertificate(
+    res,
+    attendance
+      .filter((item) => !!item.User.Member)
+      .map((item) => item.User.Member?.name ?? ""),
+    template.buffer
+  );
 };

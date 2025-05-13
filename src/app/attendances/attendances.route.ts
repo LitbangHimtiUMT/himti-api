@@ -4,6 +4,7 @@ import { verifyToken } from "../../middleware/verify-token";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createAttendanceController,
+  generateCertificateByMeetingAttendanceController,
   getAttendanceByIdController,
   getAttendanceController,
   getAttendancesController,
@@ -17,6 +18,11 @@ route.post(
   verifyToken,
   CatchWrapper(upload.single("image")),
   CatchWrapper(createAttendanceController)
+);
+route.post(
+  "/:meetingId",
+  CatchWrapper(upload.single("image")),
+  CatchWrapper(generateCertificateByMeetingAttendanceController)
 );
 route.get("/", verifyToken, CatchWrapper(getAttendanceController));
 route.get(

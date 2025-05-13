@@ -7,6 +7,7 @@ import { MESSAGES } from "../../utils/messages";
 import { createAttendanceSchema } from "./attendances.request";
 import {
   createAttendanceService,
+  generateCertificateByMeetingAttendanceService,
   getAttendanceByIdService,
   getAttendanceService,
   getAttendancesService,
@@ -115,4 +116,27 @@ export const getAttendancesController = async (
     absensies.data,
     absensies.meta
   );
+};
+
+export const generateCertificateByMeetingAttendanceController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const file = req?.file as Express.Multer.File;
+
+  const { params, query } = req;
+  if (!file) {
+    next(new ErrorApp("File not found", 400, MESSAGE_CODE.BAD_REQUEST));
+    return;
+  }
+
+  const result = await generateCertificateByMeetingAttendanceService(
+    res,
+    params?.meetingId ?? "",
+    file,
+    query
+  );
+  console.log({ result });
+  return result;
 };

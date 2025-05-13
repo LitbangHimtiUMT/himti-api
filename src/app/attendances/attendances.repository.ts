@@ -261,12 +261,14 @@ export const getAttendances = async (query: FilterAttendance) => {
   return await prisma.attendance.findMany({
     where: {
       meetingId,
-      User: {
-        name: {
-          contains: search,
-          mode: "insensitive",
+      ...(search && {
+        User: {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
         },
-      },
+      }),
     },
     select: {
       id: true,
@@ -277,6 +279,11 @@ export const getAttendances = async (query: FilterAttendance) => {
           id: true,
           name: true,
           nim: true,
+          Member: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
       Point: true,

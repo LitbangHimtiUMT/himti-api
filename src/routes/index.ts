@@ -22,6 +22,11 @@ import userRoute from "../app/user/user.route";
 import versionRoute from "../app/version/version.route";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { MESSAGES } from "../utils/messages";
+import path from "path";
+import { createCanvas, loadImage } from "canvas";
+import PDFDocument from "pdfkit";
+import { Stream } from "stream";
+import archiver from "archiver";
 
 const route = Router();
 
@@ -48,96 +53,86 @@ route.use("/version", versionRoute);
 
 route.use("/scheduling-notification-meeting", schedulingNotification);
 
-// registerFont(path.join(__dirname, "../../public/times-new-roman.ttf"), {
-//   family: "Times New Roman",
-// });
-// route.get("/generate", async (req: Request, res: Response) => {
-//   const { name, id } = req.query; // Ambil nama dan id dari query parameter
+const names: string[] = [];
 
-//   if (!name || !id) {
-//     return res.status(400).send("Name and ID are required");
-//   }
+route.get("/generate", async (req: Request, res: Response) => {
+  const templatePath = path.join(
+    __dirname,
+    "../../public/certificate-seminar.png"
+  );
 
-//   // Load template sertifikat
-//   const templatePath = path.join(
-//     __dirname,
-//     "../../public/Sertifikat-Template.png",
-//   );
-//   const canvas = createCanvas(800, 600); // Ukuran sesuai dengan template
-//   const ctx = canvas.getContext("2d");
+  // Persiapkan ZIP archive
+  const archive = archiver("zip", { zlib: { level: 9 } });
+  res.setHeader("Content-Type", "application/zip");
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="certificates.zip"'
+  );
+  archive.pipe(res);
 
-//   try {
-//     const template = await loadImage(templatePath);
-//     ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
+  // const template = await loadImage(templatePath);
 
-//     // Set font dan warna teks
-//     ctx.font = "thin 36px Times New Roman";
-//     ctx.fillStyle = "#000000";
-//     ctx.textAlign = "center";
+  for (const name of names) {
+    const template = await loadImage(templatePath);
+    const canvas = createCanvas(3508, 2480);
+    const ctx = canvas.getContext("2d");
 
-//     // Tambahkan teks nama di posisi yang diinginkan
-//     ctx.fillText(name as string, canvas.width / 2, canvas.height / 2.35);
+    // Gambar background
+    ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
 
-//     const qrCodeOptions = {
-//       errorCorrectionLevel: "H",
-//       type: "image/png",
-//       quality: 0.92,
-//       margin: 1,
-//       color: {
-//         dark: "#000000", // Warna foreground (hitam)
-//         light: "#0000", // Warna background (transparan)
-//       },
-//     };
+    // Atur font
+    ctx.font = "bold 180px Times New Roman";
+    ctx.fillStyle = "#000000";
+    ctx.textAlign = "center";
+    ctx.fillText(name, canvas.width / 2, canvas.height / 2.5);
 
-//     // Generate QR code
-//     const qrCodeUrl = await QRCode.toDataURL(
-//       JSON.stringify({ id }),
-//       qrCodeOptions as QRCodeToDataURLOptions,
-//     );
+    // Buat PDF dari canvas
+    const bufferStream = new Stream.PassThrough();
+    const doc = new PDFDocument({
+      size: [canvas.width, canvas.height],
+      margin: 0,
+    });
+    doc.pipe(bufferStream);
 
-//     // Load QR code image
-//     const qrCodeImage = await loadImage(qrCodeUrl);
+    const imageData = canvas.toBuffer("image/png");
+    doc.image(imageData, 0, 0, { width: canvas.width, height: canvas.height });
+    doc.end();
 
-//     // Tentukan posisi dan ukuran QR code pada sertifikat
-//     const qrCodeSize = 80;
-//     ctx.drawImage(
-//       qrCodeImage,
-//       canvas.width - qrCodeSize - 60,
-//       canvas.height - qrCodeSize - 20,
-//       qrCodeSize,
-//       qrCodeSize,
-//     );
+    // const pdfBuffer = await new Promise<Buffer>((resolve) => {
+    //   const chunks: any[] = [];
+    //   bufferStream.on("data", (chunk) => chunks.push(chunk));
+    //   bufferStream.on("end", () => resolve(Buffer.concat(chunks)));
+    //   doc.pipe(bufferStream); // ❌ Ini menyebabkan duplikasi stream pipe
+    // });
 
-//     // Set header respons sebagai PDF
-//     res.setHeader("Content-Type", "application/pdf");
-//     res.setHeader(
-//       "Content-Disposition",
-//       'attachment; filename="certificate.pdf"',
-//     );
+    // // Tambahkan ke ZIP
+    // archive.append(pdfBuffer, { name: `${name.replace(/ /g, "_")}.pdf` });
 
-//     // Stream gambar ke respons
-//     // canvas.createPNGStream().pipe(res);
+    const pdfBuffer: Buffer = await new Promise((resolve) => {
+      const doc = new PDFDocument({
+        size: [canvas.width, canvas.height],
+        margin: 0,
+      });
+      const chunks: Buffer[] = [];
 
-//     // Buat dokumen PDF
-//     const doc = new PDFDocument({
-//       size: [canvas.width, canvas.height],
-//       margin: 0,
-//     });
+      doc.on("data", (chunk) => chunks.push(chunk));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      doc.on("end", () => resolve(Buffer.concat(chunks as any)));
 
-//     // Stream PDF ke respons
-//     doc.pipe(res);
+      const imageData = canvas.toBuffer("image/png");
+      doc.image(imageData, 0, 0, {
+        width: canvas.width,
+        height: canvas.height,
+      });
+      doc.end();
+    });
 
-//     // Tambahkan gambar canvas ke PDF
-//     const imageData = canvas.toBuffer();
-//     doc.image(imageData, 0, 0, { width: canvas.width, height: canvas.height });
+    archive.append(pdfBuffer, { name: `${name.replace(/ /g, "_")}.pdf` });
+  }
 
-//     // Akhiri dokumen PDF
-//     doc.end();
-//   } catch (error) {
-//     console.error("Error generating certificate:", error);
-//     res.status(500).send("Error generating certificate");
-//   }
-// });
+  // Finalisasi ZIP
+  archive.finalize();
+});
 
 route.get("/", async (req: Request, res: Response) => {
   return res.json({ message: "Hello World 🚀" });

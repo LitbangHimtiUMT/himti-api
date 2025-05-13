@@ -253,3 +253,4 @@ export const deleteMeetingService = async (meetingId: string) => {
   const data = await deleteMeeting(meetingId);
   return data;
 };
+
