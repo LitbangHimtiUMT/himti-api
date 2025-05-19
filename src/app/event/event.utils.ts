@@ -5,6 +5,13 @@ import { Response } from "express";
 import PDFDocument from "pdfkit";
 import { Stream } from "stream";
 
+function capitalizeWords(text: string): string {
+    return text
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
 export const generateMultipleCertificate = async (
   res: Response,
   data: string[],
@@ -34,7 +41,7 @@ export const generateMultipleCertificate = async (
     ctx.font = "bold 180px Times New Roman";
     ctx.fillStyle = "#000000";
     ctx.textAlign = "center";
-    ctx.fillText(name, canvas.width / 2, canvas.height / 2.5);
+    ctx.fillText(capitalizeWords(name), canvas.width / 2, canvas.height / 2.5);
 
     // Buat PDF dari canvas
     const bufferStream = new Stream.PassThrough();

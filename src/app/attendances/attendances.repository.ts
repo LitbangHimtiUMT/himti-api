@@ -270,6 +270,7 @@ export const getAttendances = async (query: FilterAttendance) => {
         },
       }),
     },
+    distinct: ["userId"],
     select: {
       id: true,
       address: true,

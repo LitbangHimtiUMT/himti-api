@@ -196,6 +196,7 @@ export const getAttendancesService = async (query: FilterAttendance) => {
   };
 };
 
+
 export const generateCertificateByMeetingAttendanceService = async (
   res: Response,
   meetingId: string,
@@ -206,12 +207,16 @@ export const generateCertificateByMeetingAttendanceService = async (
     meetingId,
     ...query,
   });
-  console.log({ attendance, length: attendance.length });
+  const count = await getAttendancesCount({
+    meetingId,
+    ...query,
+  });
+  console.log({ attendance, length: attendance.length, count });
   return await generateMultipleCertificate(
     res,
-    attendance
-      .filter((item) => !!item.User.Member)
-      .map((item) => item.User.Member?.name ?? ""),
+    attendance.map((item) =>
+      item.User?.Member ? item.User?.Member?.name : item.User?.name
+    ),
     template.buffer
   );
 };
