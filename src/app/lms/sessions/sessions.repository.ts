@@ -78,3 +78,17 @@ export const getSessionsCountRepository = async (query: Query) => {
   });
 };
 
+export const getDetailSession = async (sessionId: string) => {
+  return await prisma.session.findUnique({
+    where: {
+      id: sessionId,
+    },
+    include: {
+      class: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+};

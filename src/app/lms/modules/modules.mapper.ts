@@ -1,4 +1,4 @@
-import { Assignment, CompletedModule, Module } from "@prisma/client";
+import { Assignment, Class, CompletedModule, Module, Session, User } from "@prisma/client";
 import {
   BUCKET_FOLDER,
   GetPublicURL,
@@ -8,6 +8,11 @@ import { ModulesDTO } from "./modules.dto";
 
 export interface ModuleData extends Module {
   assignment: Assignment | null;
+  session?: Session & {
+    class?: Class & {
+      user?: User
+    }
+  }
   completedModule: CompletedModule[];
   _count?: {
     completedModule?: number;
@@ -36,6 +41,8 @@ export const getModulesMapper = (data: ModuleData[]): ModulesDTO[] => {
           title: item.assignment?.title,
           isFinalAssigment: item.assignment?.isFinalAssigment,
           dueDate: item.assignment?.dueDate,
+          allowedFile: item.assignment.allowedFile,
+          description: item.assignment.description,
         }
       : null,
     isCompleted: !!item.completedModule?.length,
@@ -145,6 +152,10 @@ export const getModuleMapper = (data: ModuleData): ModulesDTO => {
     },
     textModule: data.textModule,
     videoUrl: data.videoUrl,
+    createdBy: {
+      id: data.session?.class?.user?.id ?? '',
+      name: data.session?.class?.user?.name ?? ''
+    },
     youtubeId: data.videoUrl ? youtubeID(data.videoUrl) : null,
     thumbnailUrl: data.videoUrl
       ? `https://i.ytimg.com/vi/${youtubeID(data.videoUrl)}/hqdefault.jpg`
@@ -155,6 +166,7 @@ export const getModuleMapper = (data: ModuleData): ModulesDTO => {
           title: data.assignment?.title,
           isFinalAssigment: data.assignment?.isFinalAssigment,
           dueDate: data.assignment?.dueDate,
+          description: data.assignment.description,
         }
       : null,
   };

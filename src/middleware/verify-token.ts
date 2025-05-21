@@ -75,6 +75,26 @@ export const verifyToken = async (
   });
 };
 
+export const decodeToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.headers.authorization) {
+    return HandleResponse(
+      res,
+      401,
+      MESSAGE_CODE.UNAUTHORIZED,
+      MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
+    );
+  }
+  const token = req.headers.authorization.replace("Bearer ", "");
+  const decodeToken = decode(token) as TokenDecodeInterface;
+
+  (req as RequestWithAccessToken).userId = decodeToken?.id;
+  next();
+};
+
 export const verifyRole =
   (roles?: Roles) =>
   async (req: Request, res: Response, next: NextFunction) => {

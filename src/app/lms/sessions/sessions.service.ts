@@ -1,10 +1,13 @@
 import { Query } from "../../../interface/Query";
+import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
+import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
 import { CreateSessionBodyRequest } from "./sessions.dto";
-import { getSessionsMapper, SessionData } from "./sessions.mapper";
+import { getSessionMapper, getSessionsMapper, SessionData } from "./sessions.mapper";
 import {
   createSessionRepository,
+  getDetailSession,
   getSessionsCountRepository,
   getSessionsRepository,
 } from "./sessions.repository";
@@ -46,4 +49,18 @@ export const getSessionsByClassService = async (
     data,
     meta: Meta(Number(page), Number(perPage), totalData),
   };
+};
+
+export const getSessionService = async (sessionId: string) => {
+  const session = await getDetailSession(sessionId);
+
+  if (!session) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.SESSION,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  return getSessionMapper(session as SessionData);
 };

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  decodeToken,
   RolesEnum,
   verifyRole,
   verifyToken,
@@ -21,6 +22,7 @@ import { joinInvitationClassSchema } from "./classes.request";
 export const classRoute = Router();
 
 classRoute
+  .use(decodeToken)
   .get("/", CatchWrapper(getClassController))
   .use(verifyToken)
   .post(

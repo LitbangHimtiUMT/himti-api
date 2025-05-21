@@ -10,6 +10,7 @@ import { transactionRoute } from "./transactions/transactions.route";
 import { completedModuleRoute } from "./completed-modules/completed-modules.route";
 import { completedClassRoute } from "./completed-classes/completed-classes.route";
 import { assignmentRoute } from "./assignment/assignment.route";
+import { certificateRoute } from "./certificates/certificates.route";
 
 export const lmsRoute = Router();
 
@@ -24,3 +25,4 @@ lmsRoute.use("/transactions", transactionRoute);
 lmsRoute.use("/assignments", assignmentRoute);
 lmsRoute.use("/completed-modules", completedModuleRoute);
 lmsRoute.use("/completed-classes", completedClassRoute);
+lmsRoute.use("/certificates", certificateRoute);

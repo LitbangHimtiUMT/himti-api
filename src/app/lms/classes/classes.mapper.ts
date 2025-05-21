@@ -1,5 +1,6 @@
 import {
   Category,
+  Certificate,
   Class,
   ClassParticipant,
   CompletedClass,
@@ -23,8 +24,9 @@ export interface ClassData extends Class {
   completedClass?: CompletedClass[];
   _count: {
     classParticipant: number;
-  }
-  isAlreadyJoin?: boolean
+  };
+  isAlreadyJoin?: boolean;
+  certificate: Certificate[];
 }
 
 export interface ClassParticipantData extends ClassParticipant {
@@ -57,7 +59,9 @@ export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
   }));
 };
 
-export const getDetailClassMapper = (data: ClassData & {isAlreadyJoin?: boolean}): ClassDTO => {
+export const getDetailClassMapper = (
+  data: ClassData & { isAlreadyJoin?: boolean }
+): ClassDTO => {
   return {
     id: data.id,
     name: data.name,
@@ -81,10 +85,13 @@ export const getDetailClassMapper = (data: ClassData & {isAlreadyJoin?: boolean}
         ? ImagePath(`${BUCKET_FOLDER.user}/${data.user.photo}`)
         : null,
     },
-  }
+  };
 };
 
-export const getClassAccessMapper = (data: ClassParticipantData[]) => {
+export const getClassAccessMapper = (
+  data: ClassParticipantData[],
+  userId: string
+) => {
   return data.map((item) => {
     const total = {
       module: 0,
@@ -97,7 +104,6 @@ export const getClassAccessMapper = (data: ClassParticipantData[]) => {
         total.completed += completed._count?.completedModule ?? 0;
       }
     }
-
     return {
       id: item.class.id,
       participantId: item.id,
@@ -127,6 +133,9 @@ export const getClassAccessMapper = (data: ClassParticipantData[]) => {
         id: session.id,
         name: session.name,
       })),
+      certificate: item.class.certificate.find(
+        (cert) => cert.classId === item.classId && item.userId === userId
+      ) ?? null,
     };
   });
 };

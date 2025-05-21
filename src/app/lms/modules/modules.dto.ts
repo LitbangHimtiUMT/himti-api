@@ -17,10 +17,15 @@ export interface ModulesDTO {
   }
   youtubeId: string | null;
   thumbnailUrl: string | null;
+  createdBy?: {
+    id: string;
+    name: string
+  }
   assignment: {
     id: string;
     title: string;
     isFinalAssigment: boolean;
     dueDate: Date;
+    description: string | null;
   } | null;
 }

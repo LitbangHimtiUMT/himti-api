@@ -120,8 +120,8 @@ model Event {
   image               String                @db.VarChar(255)
   type                EventType             @default(COMMON)
   isOpen              Boolean               @default(true) @map("is_open")
-  endTime             DateTime             @default(now()) @map("end_time")
-  startTime           DateTime             @default(now()) @map("start_time")
+  endTime             DateTime              @default(now()) @map("end_time")
+  startTime           DateTime              @default(now()) @map("start_time")
   createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt           DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
   deletedAt           DateTime?             @map("deleted_at")
@@ -409,6 +409,7 @@ model CompletedClass {
 model Certificate {
   id        String   @id @unique @default(uuid())
   classId   String   @map("class_id") @db.VarChar(110)
+  code      String   @unique @map("certificates_code_unique")
   userId    String   @map("user_id") @db.VarChar(110)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)

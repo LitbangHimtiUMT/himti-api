@@ -357,6 +357,9 @@ export const MESSAGES = {
     EVENT_REGISTRATION: {
       CREATE: 'Success to register event',
       HISTORY: 'Success to get event registration history',
+    },
+    CERTIFICATE: {
+      GENERATE: 'Success to generate certificate'
     }
   },
 };

@@ -9,6 +9,7 @@ import { createSessionSchema } from "./sessions.request";
 import {
   createSessionController,
   getSessionByClassController,
+  getSessionController,
 } from "./sessions.controller";
 import { validateRequest } from "../../../middleware/validate-request";
 
@@ -32,4 +33,6 @@ sessionRoute
       RolesEnum.ANGGOTA,
     ]),
     CatchWrapper(getSessionByClassController)
-  );
+  )
+  .get('/:sessionId', CatchWrapper(getSessionController))
+  ;

@@ -29,6 +29,12 @@ export const getModuleById = async (moduleId: string) => {
           class: {
             select: {
               createdBy: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                }
+              }
             },
           },
         },

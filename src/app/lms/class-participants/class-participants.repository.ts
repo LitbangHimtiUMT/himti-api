@@ -50,6 +50,20 @@ export const getClassParticipantByUserIdRepository = async (
     include: {
       class: {
         select: {
+          certificate: {
+            select: {
+              code: true,
+              id: true,
+              classId: true,
+              class: {
+                select: {
+                  id: true,
+                  name: true
+                },                
+              },
+              userId: true
+            },
+          },
           id: true,
           name: true,
           price: true,

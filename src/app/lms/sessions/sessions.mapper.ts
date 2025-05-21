@@ -1,8 +1,9 @@
-import { Session } from "@prisma/client";
+import { Class, Session, User } from "@prisma/client";
 import { getModulesMapper, ModuleData } from "../modules/modules.mapper";
 
 export interface SessionData extends Session {
   module: ModuleData[];
+  class?: Class & { user: User };
 }
 // : Promise<SessionDTO[]>
 export const getSessionsMapper = (data: SessionData[]) => {
@@ -38,4 +39,21 @@ export const getSessionsMapper = (data: SessionData[]) => {
   });
 
   return datas;
+};
+
+export const getSessionMapper = (data: SessionData) => {
+  return {
+    id: data.id,
+    name: data.name,
+    class: data.class
+      ? {
+          id: data.class.id,
+          name: data.class.name,
+          creator: {
+            id: data.class.user.id,
+            name: data.class.user.name,
+          },
+        }
+      : null,
+  };
 };

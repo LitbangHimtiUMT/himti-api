@@ -144,6 +144,7 @@ export const getClassService = async (query: Query, userId?: string) => {
     getClassRepository(query, userId),
     getClassCountRepository(query, userId),
   ]);
+  console.log({userId})
 
   const meta = Meta(Number(page), Number(perPage), totalData);
 
@@ -163,7 +164,7 @@ export const getClassUserService = async (userId: string, query: Query) => {
   const meta = Meta(Number(page), Number(perPage), totalData);
 
   return {
-    data: getClassAccessMapper(classes as unknown as ClassParticipantData[]),
+    data: getClassAccessMapper(classes as unknown as ClassParticipantData[], userId),
     meta,
   };
 };

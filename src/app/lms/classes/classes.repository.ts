@@ -4,7 +4,7 @@ import { type CreateClassBodyRequest } from "./classes.dto";
 import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../../utils/pagination";
 
-export const getClassById = async (classId: string) => {
+export const getClassById = async (classId: string, userId?: string) => {
   return await prisma.class.findUnique({
     where: {
       id: classId,
@@ -12,6 +12,28 @@ export const getClassById = async (classId: string) => {
     include: {
       user: true,
       category: true,
+      session: {
+        include: {
+          module: {
+            include: {
+              _count: {
+                select: {
+                  completedModule: {
+                    where: {
+                      userId
+                    }
+                  },
+                }
+              },
+              completedModule: {
+                where: {
+                  userId
+                }
+              },
+            },
+          },
+        },
+      },
       _count: {
         select: { classParticipant: true },
       },
