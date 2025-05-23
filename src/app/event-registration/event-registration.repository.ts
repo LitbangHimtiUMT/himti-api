@@ -32,3 +32,12 @@ export const getEventRegistrationByUserId = async (userId: string) => {
     },
   });
 };
+
+export const getExistEventRegistration = async(userId: string, eventId: string) => {
+  return await prisma.eventRegistration.findFirst({
+    where: {
+      userId: userId,
+      eventId: eventId
+    }
+  })
+}

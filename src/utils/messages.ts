@@ -140,7 +140,8 @@ export const MESSAGES = {
       YOUTUBE_URL: "Invalid YouTube URL",
       INVITATION_CODE: "Invitation code is invalid",
       MENTOR_JOIN_CLASS: "Mentor can't join in class",
-      COMMONT_EVENT: "Common event can't be register"
+      COMMONT_EVENT: "Common event can't be register",
+      REGISTERED_EVENT: "You already registered this event",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",

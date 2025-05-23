@@ -14,6 +14,7 @@ import { environment } from "../../libs";
 import { EventType } from "@prisma/client";
 import {
   getEventRegistrationByUserId,
+  getExistEventRegistration,
   registerEventRepository,
 } from "./event-registration.repository";
 import {
@@ -31,6 +32,15 @@ export const createEventRegistrationService = async (
       MESSAGES.ERROR.NOT_FOUND.ACARA,
       404,
       MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  const registered = await getExistEventRegistration(data.userId, data.eventId)
+
+  if(registered) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.REGISTERED_EVENT,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
   if (event.type === EventType.COMMON) {
