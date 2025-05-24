@@ -1,4 +1,6 @@
+import { EventType } from "@prisma/client";
 import sharp from "sharp";
+import { environment } from "../../libs";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
@@ -10,17 +12,14 @@ import {
 import { getUserById } from "../authentication/auth.repository";
 import { getEventById } from "../event/event.repository";
 import { EventRegistrationCreationDTO } from "./event-registration.dto";
-import { environment } from "../../libs";
-import { EventType } from "@prisma/client";
-import {
-  getEventRegistrationByUserId,
-  getExistEventRegistration,
-  registerEventRepository,
-} from "./event-registration.repository";
 import {
   EventRegistrationData,
   getHistoryEventRegistrationDTOMapper,
 } from "./event-registration.mapper";
+import {
+  getEventRegistrationByUserId,
+  registerEventRepository
+} from "./event-registration.repository";
 
 export const createEventRegistrationService = async (
   data: EventRegistrationCreationDTO
@@ -34,15 +33,15 @@ export const createEventRegistrationService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  const registered = await getExistEventRegistration(data.userId, data.eventId)
+  // const registered = await getExistEventRegistration(data.userId, data.eventId)
 
-  if(registered) {
-    return new ErrorApp(
-      MESSAGES.ERROR.INVALID.REGISTERED_EVENT,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
-  }
+  // if(registered) {
+  //   return new ErrorApp(
+  //     MESSAGES.ERROR.INVALID.REGISTERED_EVENT,
+  //     400,
+  //     MESSAGE_CODE.BAD_REQUEST
+  //   );
+  // }
   if (event.type === EventType.COMMON) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.COMMONT_EVENT,
