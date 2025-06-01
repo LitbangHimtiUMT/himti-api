@@ -3,7 +3,7 @@ import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../../utils/pagination";
 import { type CreateModuleBodyRequest } from "./modules.dto";
 
-export const getModuleById = async (moduleId: string) => {
+export const getModuleById = async (moduleId: string, userId?: string) => {
   return await prisma.module.findUnique({
     where: {
       id: moduleId,
@@ -22,6 +22,21 @@ export const getModuleById = async (moduleId: string) => {
           dueDate: true,
           createdAt: true,
           description: true,
+          submission: {
+            where: {
+              ...(userId && {
+                userId,
+              }),
+            },
+            select: {
+              id: true,
+              feedback: true,
+              file: true,
+              createdAt: true,
+              status: true,
+              participant: { select: { id: true, name: true } },
+            },
+          },
         },
       },
       session: {
@@ -33,8 +48,8 @@ export const getModuleById = async (moduleId: string) => {
                 select: {
                   id: true,
                   name: true,
-                }
-              }
+                },
+              },
             },
           },
         },

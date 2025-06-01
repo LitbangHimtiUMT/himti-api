@@ -1,4 +1,4 @@
-import { Level } from "@prisma/client";
+import { ClassStatus, Level } from "@prisma/client";
 import { prisma } from "../../../config";
 import { type CreateClassBodyRequest } from "./classes.dto";
 import { Query } from "../../../interface/Query";
@@ -137,3 +137,14 @@ export const getClassByCode = async (code: string) => {
     },
   });
 };
+
+export const updateStatusClass = async(classId: string, status: ClassStatus) => {
+  return await prisma.class.update({
+    where: {
+      id: classId
+    },
+    data: {
+      status
+    }
+  })
+}

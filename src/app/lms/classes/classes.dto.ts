@@ -9,6 +9,20 @@ export interface CreateClassBodyRequest {
   price: number;
 }
 
+interface ModuleClassDTO {
+  id: string;
+  name: string;
+  fileModule: string | null;
+  textModule: string | null;
+  videoUrl: string | null;
+}
+
+interface SessionClassDTO {
+  id: string;
+  name: string;
+  modules: ModuleClassDTO[];
+}
+
 export interface ClassDTO {
   id: string;
   name: string;
@@ -21,6 +35,7 @@ export interface ClassDTO {
     id: string;
     name: string;
   };
+  sessions?: SessionClassDTO[]
   code: string;
   thumbnail: string | null;
   price: number;

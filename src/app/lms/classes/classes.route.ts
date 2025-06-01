@@ -14,6 +14,7 @@ import {
   getDetailClassByCodeController,
   getDetailClassController,
   joinInvitationClassController,
+  publishClassController,
   userJoinClassController,
 } from "./classes.controller";
 import { validateRequest } from "../../../middleware/validate-request";
@@ -47,5 +48,10 @@ classRoute
     "/join/:classId",
     verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     CatchWrapper(userJoinClassController)
+  )
+  .patch(
+    "/publish/:classId",
+    verifyRole([RolesEnum.MENTOR]),
+    CatchWrapper(publishClassController)
   )
   .get("/:classId", CatchWrapper(getDetailClassController));

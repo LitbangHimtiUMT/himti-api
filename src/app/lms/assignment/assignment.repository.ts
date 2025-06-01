@@ -14,3 +14,24 @@ export const createAssignmentRepository = async (data: CreateAssignmentDTO) => {
     },
   });
 };
+
+export const getAssignmentByIdRepository = async (
+  id: string,
+  userId?: string
+) => {
+  return await prisma.assignment.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      module: true,
+      submission: {
+        where: {
+          ...(userId && {
+            userId,
+          }),
+        },
+      },
+    },
+  });
+};

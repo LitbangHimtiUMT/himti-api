@@ -31,6 +31,7 @@ export const BUCKET_FOLDER = {
   structural: "struktural",
   class: "class",
   modules: "modules",
+  assignments: "assignments",
 };
 
 export const FileType: Record<string, string> = {

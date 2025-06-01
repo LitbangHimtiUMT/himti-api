@@ -19,6 +19,7 @@ export const generateCertificateService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
+
   const total = {
     module: 0,
     completed: 0,

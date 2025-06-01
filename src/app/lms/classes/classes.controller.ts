@@ -12,6 +12,7 @@ import {
   getDetailClassByCodeService,
   getDetailClassService,
   joinInvitationClassService,
+  publishClassService,
   userJoinClassService,
 } from "./classes.service";
 
@@ -121,8 +122,9 @@ export const getDetailClassController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { classId } = req.params;
-  const result = await getDetailClassService(classId);
+  const {userId, params} = req
+  const { classId } = params;
+  const result = await getDetailClassService(classId, userId);
   if (result instanceof ErrorApp) {
     next(result);
     return;
@@ -175,5 +177,25 @@ export const joinInvitationClassController = async (
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.CLASS.JOIN,
     result
+  );
+};
+
+export const publishClassController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { classId } = params;
+  const result = await publishClassService(classId, userId ?? "");
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.PUBLISH,
   );
 };

@@ -23,4 +23,14 @@ moduleRoute
     CatchWrapper(createModuleController)
   )
   .get("/session/:sessionId", CatchWrapper(getModulesController))
-  .get("/:moduleId", CatchWrapper(getDetailModuleController));
+  .get(
+    "/:moduleId",
+    verifyRole([
+      RolesEnum.ADMIN,
+      RolesEnum.SUPER_ADMIN,
+      RolesEnum.USER,
+      RolesEnum.MENTOR,
+      RolesEnum.ANGGOTA,
+    ]),
+    CatchWrapper(getDetailModuleController)
+  );

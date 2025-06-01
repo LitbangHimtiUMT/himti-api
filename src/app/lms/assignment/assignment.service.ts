@@ -1,9 +1,13 @@
+import { SubmissionStatus } from "@prisma/client";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { getModuleById } from "../modules/modules.repository";
 import { CreateAssignmentDTO } from "./assignment.dto";
-import { createAssignmentRepository } from "./assignment.repository";
+import {
+  createAssignmentRepository,
+  getAssignmentByIdRepository,
+} from "./assignment.repository";
 
 export const createAssignmentService = async (
   moduleId: string,
@@ -44,4 +48,27 @@ export const createAssignmentService = async (
     type: data.type,
     allowedFile: data.allowedFile,
   });
+};
+
+export const getAssignmentByIdService = async (
+  assignmentId: string,
+  userId: string
+) => {
+  const assignment = await getAssignmentByIdRepository(assignmentId, userId);
+  if (!assignment) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.MODULE,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+    const activeSubmission = assignment
+      ? assignment.submission.find(
+          (item) => item.status === SubmissionStatus.REVIEWED
+        ) || null
+      : null;
+  return {
+    ...assignment,
+    activeSubmission,
+  };
 };

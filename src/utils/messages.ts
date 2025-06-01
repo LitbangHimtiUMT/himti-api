@@ -57,6 +57,7 @@ export const MESSAGES = {
       CATEGORY: "Category not found",
       CLASS: "Class not found",
       MODULE: "Module not found",
+      ASSIGNMENT: "Assignment not found",
       SESSION: "Session not found",
       MENTOR: "Mentor not found",
       BUSINESS: "Business not found",
@@ -142,6 +143,7 @@ export const MESSAGES = {
       MENTOR_JOIN_CLASS: "Mentor can't join in class",
       COMMONT_EVENT: "Common event can't be register",
       REGISTERED_EVENT: "You already registered this event",
+      CREATOR_PUBLISH: "Only creator can publish class",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -343,6 +345,7 @@ export const MESSAGES = {
       DELETE: "Success to delete class",
       UPDATE: "Success to update class",
       JOIN: "Success to join class",
+      PUBLISH: "Success to publish class",
     },
     CLASS_PARTICIPANT: {
       GET: "Success to fetch class participant",
@@ -361,6 +364,11 @@ export const MESSAGES = {
     },
     CERTIFICATE: {
       GENERATE: 'Success to generate certificate'
-    }
+    },
+    ASSIGNMENT: {
+      GET: "Success to fetch assignment",
+      DELETE: "Success to delete assignment",
+      UPDATE: "Success to update assignment",
+    },
   },
 };

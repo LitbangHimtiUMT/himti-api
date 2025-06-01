@@ -4,7 +4,10 @@ import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
-import { createAssignmentService } from "./assignment.service";
+import {
+  createAssignmentService,
+  getAssignmentByIdService,
+} from "./assignment.service";
 
 export const createAssignmentController = async (
   req: RequestWithAccessToken,
@@ -19,4 +22,25 @@ export const createAssignmentController = async (
     return;
   }
   HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.ASSIGNMENT);
+};
+
+export const getAssignmentByIdController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { assignmentId } = params;
+  const result = await getAssignmentByIdService(assignmentId, userId);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.ASSIGNMENT.GET,
+    result
+  );
 };

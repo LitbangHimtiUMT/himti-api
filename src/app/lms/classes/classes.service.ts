@@ -38,9 +38,11 @@ import {
   getClassById,
   getClassCountRepository,
   getClassRepository,
+  updateStatusClass,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
 import { generateBalancedRandomString } from "../../../utils/generate-random-string";
+import { ClassStatus } from "@prisma/client";
 
 export const createClassService = async (
   {
@@ -263,8 +265,8 @@ export const userJoinClassService = async (userId: string, classId: string) => {
   return undefined;
 };
 
-export const getDetailClassService = async (classId: string) => {
-  const classess = await getClassById(classId);
+export const getDetailClassService = async (classId: string, userId?: string) => {
+  const classess = await getClassById(classId, userId);
   if (!classess) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.CLASS,
@@ -302,7 +304,7 @@ export const joinInvitationClassService = async (
   userId: string,
   data: JoinClassInvitationDTO
 ) => {
-  const classess = await getClassByCode(data.code);
+  const classess = await getClassByCode(atob(data.code));
   if (!classess) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.INVITATION_CODE,
@@ -349,3 +351,22 @@ export const joinInvitationClassService = async (
     classId: result.classId,
   };
 };
+
+export const publishClassService = async(classId: string, userId: string) => {
+  const classess = await getClassById(classId);
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  if(classess.createdBy !== userId) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.CREATOR_PUBLISH,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    )
+  }
+  return await updateStatusClass(classess.id, ClassStatus.PUBLISH)
+}

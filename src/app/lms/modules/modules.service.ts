@@ -125,9 +125,10 @@ export const getModulesService = async (query: Query, userId: string) => {
 
 export const getDetailModuleService = async (
   moduleId: string,
-  userId: string
+  userId: string,
+  isMentor: boolean
 ) => {
-  const modules = await getModuleById(moduleId);
+  const modules = await getModuleById(moduleId, !isMentor ? userId : undefined);
   if (!modules) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.MODULE,

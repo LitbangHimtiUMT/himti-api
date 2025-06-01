@@ -24,6 +24,7 @@ export interface ClassData extends Class {
   completedClass?: CompletedClass[];
   _count: {
     classParticipant: number;
+    session: number;
   };
   isAlreadyJoin?: boolean;
   certificate: Certificate[];
@@ -69,11 +70,22 @@ export const getDetailClassMapper = (
     status: data.status,
     level: data.level,
     code: btoa(data.code),
-    isAlreadyJoin: data.isAlreadyJoin,
+    // isAlreadyJoin: data.isAlreadyJoin,
     category: {
       id: data.category.id,
       name: data.category.name,
     },
+    sessions: data.session.map(session => ({
+      id: session.id,
+      name: session.name,
+      modules: session.module.map(modules => ({
+        id: modules.id,
+        name: modules.name,
+        fileModule: modules.fileModule ? ImagePath(`${BUCKET_FOLDER.modules}/${modules.fileModule}`) : null,
+        textModule: modules.textModule,
+        videoUrl: modules.videoUrl
+      }))
+    })),
     thumbnail: data.thumbnail,
     price: Number(data.price),
     totalParticipant: data._count.classParticipant,
@@ -127,12 +139,13 @@ export const getClassAccessMapper = (
           : "In Progress",
       total: {
         ...total,
-        precentage: (total.completed / total.module) * 100,
+        precentage: ((total.completed / total.module) * 100) || 0,
       },
-      sessions: item.class.session.map((session) => ({
-        id: session.id,
-        name: session.name,
-      })),
+      totalSession: (item.class.session ?? []).length ?? 0,
+      // sessions: item.class.session.map((session) => ({
+      //   id: session.id,
+      //   name: session.name,
+      // })),
       certificate: item.class.certificate.find(
         (cert) => cert.classId === item.classId && item.userId === userId
       ) ?? null,

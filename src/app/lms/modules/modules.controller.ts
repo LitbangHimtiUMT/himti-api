@@ -83,9 +83,9 @@ export const getDetailModuleController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { params, userId } = req;
+  const { params, userId, mentorId } = req;
   const { moduleId } = params;
-  const result = await getDetailModuleService(moduleId, userId);
+  const result = await getDetailModuleService(moduleId, userId, !!mentorId);
   if (result instanceof ErrorApp) {
     next(result);
     return;
