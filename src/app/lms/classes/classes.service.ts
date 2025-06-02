@@ -281,7 +281,7 @@ export const getDetailClassByCodeService = async (
   userId: string,
   code: string
 ) => {
-  const classess = await getClassByCode(code);
+  const classess = await getClassByCode(atob(code));
   if (!classess) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.CLASS,

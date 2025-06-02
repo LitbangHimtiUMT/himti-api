@@ -75,7 +75,7 @@ export const getDetailClassMapper = (
       id: data.category.id,
       name: data.category.name,
     },
-    sessions: data.session.map(session => ({
+    sessions: (data?.session ?? []).map(session => ({
       id: session.id,
       name: session.name,
       modules: session.module.map(modules => ({
