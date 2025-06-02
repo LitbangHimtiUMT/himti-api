@@ -12,10 +12,6 @@ import {
   RemoveFileFromStorage,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
-import {
-  createCompletedModuleRepository,
-  getAlreadyCompletedModule,
-} from "../completed-modules/completed-modules.repository";
 import { getSessionById } from "../sessions/sessions.repository";
 import { CreateModuleBodyRequest } from "./modules.dto";
 import {
@@ -135,13 +131,6 @@ export const getDetailModuleService = async (
       404,
       MESSAGE_CODE.NOT_FOUND
     );
-  }
-  const getCompletedModule = await getAlreadyCompletedModule(moduleId, userId);
-  if (!getCompletedModule && modules.session.class.createdBy !== userId) {
-    await createCompletedModuleRepository({
-      moduleId,
-      userId,
-    });
   }
 
   const data = getModuleMapper(modules as unknown as ModuleData);

@@ -75,17 +75,27 @@ export const getDetailClassMapper = (
       id: data.category.id,
       name: data.category.name,
     },
-    sessions: (data?.session ?? []).map(session => ({
-      id: session.id,
-      name: session.name,
-      modules: session.module.map(modules => ({
-        id: modules.id,
-        name: modules.name,
-        fileModule: modules.fileModule ? ImagePath(`${BUCKET_FOLDER.modules}/${modules.fileModule}`) : null,
-        textModule: modules.textModule,
-        videoUrl: modules.videoUrl
-      }))
-    })),
+    sessions: (data?.session ?? []).map(session => {
+      // Calculate isComplete for each module
+      const modulesWithCompletion = session.module.map(module => ({
+        id: module.id,
+        name: module.name,
+        fileModule: module.fileModule ? ImagePath(`${BUCKET_FOLDER.modules}/${module.fileModule}`) : null,
+        textModule: module.textModule,
+        videoUrl: module.videoUrl,
+        isCompleted: module.completedModule.length > 0 // Assuming completedModule has entries if completed
+      }));
+      
+      // Session is complete if all its modules are complete
+      const isSessionComplete = modulesWithCompletion.every(module => module.isCompleted);
+      
+      return {
+        id: session.id,
+        name: session.name,
+        isCompleted: session.module.length && isSessionComplete,
+        modules: modulesWithCompletion
+      }
+    }),
     thumbnail: data.thumbnail,
     price: Number(data.price),
     totalParticipant: data._count.classParticipant,
