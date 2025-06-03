@@ -9,3 +9,9 @@ export interface CreateAssignmentDTO {
   type: AssignmentType;
   allowedFile?: string;
 }
+
+export interface SubmissionCreationDTO {
+  submittedBy: string;
+  assignmentId: string;
+  file: string;
+}

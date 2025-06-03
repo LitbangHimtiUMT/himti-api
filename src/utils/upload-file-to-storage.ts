@@ -32,6 +32,7 @@ export const BUCKET_FOLDER = {
   class: "class",
   modules: "modules",
   assignments: "assignments",
+  submission: "submission",
 };
 
 export const FileType: Record<string, string> = {
@@ -56,6 +57,7 @@ export const FileType: Record<string, string> = {
     ".docx",
   "application/vnd.oasis.opendocument.text": ".odt",
   "application/x-iwork-pages-sffpages": ".pages", // optional for Apple Pages
+  'application/zip': '.zip'
 };
 
 export const ImageType: Record<string, string> = {

@@ -144,6 +144,10 @@ export const MESSAGES = {
       COMMONT_EVENT: "Common event can't be register",
       REGISTERED_EVENT: "You already registered this event",
       CREATOR_PUBLISH: "Only creator can publish class",
+      SUBMISSION_URL: "Submission must be a valid URL",
+      SUBMISSION_FILE: "Submission must be a valid File",
+      SUBMISSION_FILE_SIZE: "Submission file size must be less than 10mb",
+      SUBMISSION_DUE_DATE: "Submission is late",
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",

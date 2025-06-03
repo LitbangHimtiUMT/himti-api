@@ -7,7 +7,9 @@ import { MESSAGES } from "../../../utils/messages";
 import {
   createAssignmentService,
   getAssignmentByIdService,
+  submitAssignmentService,
 } from "./assignment.service";
+import { submitAssignmentSchema } from "./assignment.request";
 
 export const createAssignmentController = async (
   req: RequestWithAccessToken,
@@ -43,4 +45,42 @@ export const getAssignmentByIdController = async (
     MESSAGES.SUCCESS.ASSIGNMENT.GET,
     result
   );
+};
+
+export const submitAssignmentController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const file = req.file as Express.Multer.File;
+  const { userId } = req;
+  const { body } = req;
+  const combine = {
+    ...body,
+    file,
+  };
+
+  const validate = submitAssignmentSchema.validate(combine);
+  if (validate.error) {
+    next(
+      new ErrorApp(
+        validate.error.message.replace(/"/g, ""),
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      )
+    );
+    return;
+  }
+
+  const classCtrl = await submitAssignmentService({
+    ...combine,
+    submittedBy: userId
+  });
+
+  if (classCtrl instanceof ErrorApp) {
+    next(classCtrl);
+    return;
+  }
+
+  HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.CLASS);
 };
