@@ -1,5 +1,6 @@
 import {
   Assignment,
+  AssignmentType,
   Class,
   Module,
   Session,
@@ -26,7 +27,7 @@ export const getSubmissionMapper = (data: SubmissionData) => {
   return {
     id: data.id,
     submittedBy: data.userId,
-    file: data.file,
+    file: data.assignment.type === AssignmentType.FILE ? ImagePath(`${BUCKET_FOLDER.submission}/${data.file}`) : data.file,
     status: data.status,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
