@@ -73,7 +73,7 @@ export const getAssignmentByIdService = async (
   }
   const activeSubmission = assignment
     ? assignment.submission.find(
-        (item) => item.status === SubmissionStatus.REVIEWED
+        (item) => item.status === SubmissionStatus.REVIEW
       ) || null
     : null;
   const { module: modules, ...rest } = assignment;
@@ -97,6 +97,19 @@ export const getAssignmentByIdService = async (
           )
         : null,
     },
+    historySubmission: assignment?.submission
+      .filter((item) => item.status !== SubmissionStatus.REVIEW)
+      .map((item) => ({
+        id: item.id,
+        file: ImagePath(`${BUCKET_FOLDER.assignments}/${item.file}`),
+        status: item.status,
+        feedback: item.feedback,
+        submittedAt: item.createdAt,
+        submittedBy: {
+          id: item.participant.id,
+          name: item.participant.name,
+        },
+      })),
     activeSubmission,
   };
 };

@@ -61,6 +61,7 @@ export const MESSAGES = {
       SESSION: "Session not found",
       MENTOR: "Mentor not found",
       BUSINESS: "Business not found",
+      SUBMISSION: "Submission is not found",
     },
     ALREADY: {
       GLOBAL: {
@@ -373,6 +374,11 @@ export const MESSAGES = {
       GET: "Success to fetch assignment",
       DELETE: "Success to delete assignment",
       UPDATE: "Success to update assignment",
+    },
+    SUBMISSION: {
+      GET: "Success to fetch submission",
+      DELETE: "Success to delete submission",
+      UPDATE: "Success to update submission",
     },
   },
 };

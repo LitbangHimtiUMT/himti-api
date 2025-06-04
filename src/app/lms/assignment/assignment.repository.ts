@@ -43,6 +43,9 @@ export const getAssignmentDetailRepository = async (
             userId,
           }),
         },
+        include: {
+          participant: true,
+        }
       },
     },
   });

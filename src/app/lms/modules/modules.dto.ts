@@ -29,6 +29,7 @@ export interface ModulesDTO {
     fileName: string | null;
     url: string | null;
   };
+  isCompleted?: boolean;
   youtubeId: string | null;
   thumbnailUrl: string | null;
   createdBy?: {

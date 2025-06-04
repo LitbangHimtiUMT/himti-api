@@ -443,7 +443,7 @@ model Submission {
   id           String           @id @unique @default(uuid())
   assignmentId String           @map("assignment_id") @db.VarChar(110)
   userId       String           @map("user_id") @db.VarChar(110)
-  status       SubmissionStatus @default(REVIEWED)
+  status       SubmissionStatus @default(REVIEW)
   file         String
   feedback     String?          @db.Text
   actionBy     String?          @map("action_by") @db.VarChar(110)
@@ -579,9 +579,9 @@ enum TransactionStatus {
 }
 
 enum SubmissionStatus {
-  REVIEWED
-  APPROVED
-  REJECTED
+  REVIEW
+  APPROVE
+  REJECT
 }
 
 enum MentorStatus {

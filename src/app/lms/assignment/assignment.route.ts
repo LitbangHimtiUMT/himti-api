@@ -9,33 +9,33 @@ import {
 } from "./assignment.controller";
 import { createAssignmentSchema } from "./assignment.request";
 import { upload } from "../../../utils/upload-file-to-storage";
+import { submissionRoute } from "./submission/submission.route";
 
 export const assignmentRoute = Router();
 
-assignmentRoute.post(
-  "/submit",
-  verifyRole([
-    RolesEnum.USER,
-    RolesEnum.ANGGOTA,
-  ]),
-  CatchWrapper(upload.single("file")),
-  CatchWrapper(submitAssignmentController)
-);
-assignmentRoute.post(
-  "/:moduleId",
-  verifyRole([RolesEnum.MENTOR]),
-  validateRequest(createAssignmentSchema),
-  CatchWrapper(createAssignmentController)
-);
+assignmentRoute
+  .use("/submissions", submissionRoute)
+  .post(
+    "/submit",
+    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA]),
+    CatchWrapper(upload.single("file")),
+    CatchWrapper(submitAssignmentController)
+  )
+  .post(
+    "/:moduleId",
+    verifyRole([RolesEnum.MENTOR]),
+    validateRequest(createAssignmentSchema),
+    CatchWrapper(createAssignmentController)
+  )
 
-assignmentRoute.get(
-  "/:assignmentId",
-  verifyRole([
-    RolesEnum.MENTOR,
-    RolesEnum.ADMIN,
-    RolesEnum.SUPER_ADMIN,
-    RolesEnum.USER,
-    RolesEnum.ANGGOTA,
-  ]),
-  CatchWrapper(getAssignmentByIdController)
-);
+  .get(
+    "/:assignmentId",
+    verifyRole([
+      RolesEnum.MENTOR,
+      RolesEnum.ADMIN,
+      RolesEnum.SUPER_ADMIN,
+      RolesEnum.USER,
+      RolesEnum.ANGGOTA,
+    ]),
+    CatchWrapper(getAssignmentByIdController)
+  );

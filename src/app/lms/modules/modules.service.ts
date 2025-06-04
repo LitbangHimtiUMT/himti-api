@@ -124,7 +124,7 @@ export const getDetailModuleService = async (
   userId: string,
   isMentor: boolean
 ) => {
-  const modules = await getModuleById(moduleId, !isMentor ? userId : undefined);
+  const modules = await getModuleById(moduleId, userId, isMentor);
   if (!modules) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.MODULE,
@@ -132,7 +132,7 @@ export const getDetailModuleService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
-
-  const data = getModuleMapper(modules as unknown as ModuleData);
+  const isCompleted = !!modules.completedModule.length;
+  const data = getModuleMapper(modules as unknown as ModuleData, isCompleted);
   return data;
 };

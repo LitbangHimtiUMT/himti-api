@@ -69,10 +69,10 @@ export const getModulesMapper = (data: ModuleData[]): ModulesDTO[] => {
     isCompleted: !!item.completedModule?.length,
   }));
 };
-export const getModuleMapper = (data: ModuleData): ModulesDTO => {
+export const getModuleMapper = (data: ModuleData, isCompleted?: boolean): ModulesDTO => {
   const activeSubmission = data.assignment
     ? data.assignment.submission.find(
-        (item) => item.status === SubmissionStatus.REVIEWED
+        (item) => item.status === SubmissionStatus.REVIEW
       ) || null
     : null;
   return {
@@ -86,6 +86,7 @@ export const getModuleMapper = (data: ModuleData): ModulesDTO => {
     },
     textModule: data.textModule,
     videoUrl: data.videoUrl,
+    isCompleted: !!isCompleted,
     createdBy: {
       id: data.session?.class?.user?.id ?? "",
       name: data.session?.class?.user?.name ?? "",
@@ -102,7 +103,7 @@ export const getModuleMapper = (data: ModuleData): ModulesDTO => {
           dueDate: data.assignment?.dueDate,
           description: data.assignment.description,
           historySubmission: data.assignment.submission
-            .filter((item) => item.status !== SubmissionStatus.REVIEWED)
+            .filter((item) => item.status !== SubmissionStatus.REVIEW)
             .map((item) => ({
               id: item.id,
               file: ImagePath(`${BUCKET_FOLDER.assignments}/${item.file}`),

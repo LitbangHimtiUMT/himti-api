@@ -9,8 +9,36 @@ export const createSubmissionRepository = async (
     data: {
       assignmentId: data.assignmentId,
       userId: data.submittedBy,
-      status: SubmissionStatus.REVIEWED,
+      status: SubmissionStatus.REVIEW,
       file: data.file,
     },
+  });
+};
+
+export const getSubmissionByIdRepository = async (id: string) => {
+  return await prisma.submission.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      assignment: {
+        include: {
+          module: {
+            include: {
+              session: {
+                include: {
+                  class: {
+                    include: {
+                      user: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      mentor: true,
+    }
   });
 };
