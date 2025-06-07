@@ -149,6 +149,7 @@ export const MESSAGES = {
       SUBMISSION_FILE: "Submission must be a valid File",
       SUBMISSION_FILE_SIZE: "Submission file size must be less than 10mb",
       SUBMISSION_DUE_DATE: "Submission is late",
+      REVIEW_STATUS: 'Only review status can be approve or reject',
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
@@ -161,6 +162,8 @@ export const MESSAGES = {
     FORBIDDEN: {
       ROLE: "You are not allowed to access this resource",
       ASSIGNMENT: "Only creator class can create assignment",
+      APPROVE_SUBMISSION: "Only creator class can approve submission",
+      REJECT_SUBMISSION: "Only creator class can approve submission",
     },
     REQUIRED: {
       EMAIL: "Email is required",
@@ -379,6 +382,8 @@ export const MESSAGES = {
       GET: "Success to fetch submission",
       DELETE: "Success to delete submission",
       UPDATE: "Success to update submission",
+      APPROVE: "Success to approve submission",
+      REJECT: "Success to reject submission",
     },
   },
 };

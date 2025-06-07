@@ -1,4 +1,5 @@
 import { prisma } from "../../config";
+import { stringToBool } from "../../utils/string-to-bool";
 import { CreateEventBodyRequest, EventBodyDTO, QueryEvent } from "./event.dto";
 import { openValue } from "./event.service";
 
@@ -28,7 +29,26 @@ export const createEvent = async ({
 };
 
 export const getEvents = async (query: QueryEvent) => {
-  const { isOpen, page = "1", perPage = "10", search, type } = query;
+  const {
+    isOpen,
+    page = "1",
+    perPage = "10",
+    search,
+    type,
+    withDeleted = "false",
+    onlyDeleted = "false",
+  } = query;
+  const withDeletedBool = stringToBool(withDeleted);
+  const onlyDeletedBool = stringToBool(onlyDeleted);
+
+  const whereEvent: {
+    deletedAt?: null | { not: null };
+  } = {};
+  if (onlyDeletedBool) {
+    whereEvent.deletedAt = { not: null };
+  } else if (!withDeletedBool) {
+    whereEvent.deletedAt = null;
+  }
   return await prisma.event.findMany({
     where: {
       name: {
@@ -39,7 +59,7 @@ export const getEvents = async (query: QueryEvent) => {
         type,
       }),
       isOpen: openValue(isOpen as string),
-      deletedAt: null,
+      ...whereEvent,
     },
     orderBy: {
       createdAt: "desc",
@@ -59,7 +79,26 @@ export const getEvents = async (query: QueryEvent) => {
 };
 
 export const getEventCount = async (query: QueryEvent) => {
-  const { search, isOpen, type } = query;
+  const {
+    isOpen,
+    search,
+    type,
+    withDeleted = "false",
+    onlyDeleted = "false",
+  } = query;
+  const withDeletedBool = stringToBool(withDeleted);
+  const onlyDeletedBool = stringToBool(onlyDeleted);
+
+  const whereEvent: {
+    deletedAt?: null | { not: null };
+  } = {};
+
+  if (onlyDeletedBool) {
+    whereEvent.deletedAt = { not: null };
+  } else if (!withDeletedBool) {
+    whereEvent.deletedAt = null;
+  }
+
   return await prisma.event.count({
     where: {
       name: {
@@ -69,7 +108,7 @@ export const getEventCount = async (query: QueryEvent) => {
       ...(type && {
         type,
       }),
-      deletedAt: null,
+      ...whereEvent,
       isOpen: openValue(isOpen),
     },
   });

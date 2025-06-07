@@ -1,4 +1,4 @@
-import { Attendance, EventMeeting, Meeting, User } from "@prisma/client";
+import { Attendance, Class, EventMeeting, Meeting, User } from "@prisma/client";
 import { MeetingDTO, MeetingsDTO } from "./meetings.dto";
 import { generateOpen } from "../../utils/generate-open";
 
@@ -9,6 +9,7 @@ export interface AttendanceData extends Attendance {
 export interface MeetingData extends Meeting {
   EventMeeting: EventMeeting;
   Attendance: AttendanceData[];
+  class: Class | null;
 }
 
 interface MeetingsData extends Meeting {
@@ -26,6 +27,7 @@ export const meetingsDTOMapper = (
     description: item.description as string,
     startTime: item.startTime as Date,
     endTime: item.endTime as Date,
+    class: item.class ? { id: item.class.id } : null,
     isOpen: generateOpen(item.startTime, item.endTime),
     isAlreadyAttend: !!item.Attendance.find((item) => item.userId === userId),
   }));
@@ -36,7 +38,7 @@ export const meetingsDTOMapper = (
 };
 
 export const getMeetingsDTOMapper = (
-  data: MeetingData[],
+  data: MeetingData[]
 ): Omit<MeetingDTO, "resume" | "isAlreadyAttend">[] => {
   const datas = data.map((item) => ({
     id: item.id,

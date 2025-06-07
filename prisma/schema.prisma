@@ -150,10 +150,12 @@ model Meeting {
   startTime           DateTime              @map("start_time") @db.Timestamp(0)
   endTime             DateTime              @map("end_time") @db.Timestamp(0)
   eventMeetingId      String                @map("event_meeting_id") @db.VarChar(110)
+  classId             String?                @map("class_id") @db.VarChar(110)
   EventMeeting        EventMeeting          @relation(fields: [eventMeetingId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt           DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
   resume              String?               @db.Text
+  class               Class?                @relation(fields: [classId], references: [id])
   Attendance          Attendance[]
   NotificationHistory NotificationHistory[]
 
@@ -329,6 +331,7 @@ model Class {
   completedClass   CompletedClass[]
   certificate      Certificate[]
   cransaction      Transaction[]
+  Meeting          Meeting[]
 
   @@index([createdBy], map: "classess_fk_1")
   @@map("classes")

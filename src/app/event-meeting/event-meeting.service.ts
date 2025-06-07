@@ -94,7 +94,7 @@ export const getEventMeetingWithMeetingService = async (
 ) => {
   const { page = "1", perPage = "10" } = query;
   const [eventMeetings, totalData] = await Promise.all([
-    getEventMeetings(query),
+    getEventMeetings(query, userId),
     getEventMeetingsCount(query),
   ]);
 

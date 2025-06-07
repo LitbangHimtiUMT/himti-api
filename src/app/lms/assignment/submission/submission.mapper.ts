@@ -20,6 +20,7 @@ export interface SubmissionData extends Submission {
       };
     };
   };
+  participant: User;
   mentor: User | null;
 }
 
@@ -27,7 +28,10 @@ export const getSubmissionMapper = (data: SubmissionData) => {
   return {
     id: data.id,
     submittedBy: data.userId,
-    file: data.assignment.type === AssignmentType.FILE ? ImagePath(`${BUCKET_FOLDER.submission}/${data.file}`) : data.file,
+    file:
+      data.assignment.type === AssignmentType.FILE
+        ? ImagePath(`${BUCKET_FOLDER.submission}/${data.file}`)
+        : data.file,
     status: data.status,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
@@ -54,4 +58,27 @@ export const getSubmissionMapper = (data: SubmissionData) => {
       videoUrl: data.assignment.module.videoUrl,
     },
   };
+};
+
+export const getSubmissionsMapper = (data: SubmissionData[]) => {
+  return data.map((item) => ({
+    id: item.id,
+    status: item.status,
+    assignment: {
+      id: item.assignment.id,
+      type: item.assignment.type,
+    },
+    user: {
+      id: item.participant.id,
+      name: item.participant.name,
+      photo: item.participant.photo
+        ? ImagePath(`${BUCKET_FOLDER.user}/${item.participant.photo}`)
+        : null,
+    },
+    createdAt: item.createdAt,
+    file:
+      item.assignment.type === AssignmentType.FILE
+        ? ImagePath(`${BUCKET_FOLDER.submission}/${item.file}`)
+        : item.file,
+  }));
 };

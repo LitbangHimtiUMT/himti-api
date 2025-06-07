@@ -36,6 +36,7 @@ export const createMeeting = async ({
   startTime,
   endTime,
   eventMeetingId,
+  classId
 }: CreateMeetingBodyRequest) => {
   return await prisma.meeting.create({
     data: {
@@ -44,6 +45,7 @@ export const createMeeting = async ({
       startTime,
       endTime,
       eventMeetingId,
+      classId
     },
     select: {
       id: true,
@@ -77,6 +79,12 @@ export const getMeetingsByEventMeetingId = async (query: FilterMeeting) => {
       description: true,
       startTime: true,
       endTime: true,
+      class: {
+        select: {
+          id: true,
+          name: true,
+        }
+      },
       EventMeeting: {
         select: {
           id: true,
@@ -188,6 +196,7 @@ export const updateMeeting = async (data: UpdateMeetingBodyRequest) => {
     },
     data: {
       name: data.name,
+      classId: data.classId,
       description: data.description,
       startTime: data.startTime,
       endTime: data.endTime,

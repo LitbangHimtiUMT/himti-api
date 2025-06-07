@@ -3,6 +3,7 @@ import { prisma } from "../../../config";
 import { type CreateClassBodyRequest } from "./classes.dto";
 import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../../utils/pagination";
+import { stringToBool } from "../../../utils/string-to-bool";
 
 export const getClassById = async (classId: string, userId?: string) => {
   return await prisma.class.findUnique({
@@ -20,15 +21,15 @@ export const getClassById = async (classId: string, userId?: string) => {
                 select: {
                   completedModule: {
                     where: {
-                      userId
-                    }
+                      userId,
+                    },
                   },
-                }
+                },
               },
               completedModule: {
                 where: {
-                  userId
-                }
+                  userId,
+                },
               },
             },
           },
@@ -61,8 +62,12 @@ export const createClassRepository = async (
   });
 };
 
-export const getClassRepository = async (query: Query, userId?: string) => {
-  const { search, categoryId, orderBy } = query;
+export const getClassRepository = async (
+  query: Query & { ignoreUser?: string },
+  userId?: string
+) => {
+  const { search, categoryId, orderBy, ignoreUser } = query;
+  const ignoreUserBool = stringToBool(ignoreUser);
   return await prisma.class.findMany({
     where: {
       ...(search && {
@@ -74,9 +79,10 @@ export const getClassRepository = async (query: Query, userId?: string) => {
       ...(categoryId && {
         categoryId,
       }),
-      ...(userId && {
-        createdBy: userId,
-      }),
+      ...(userId &&
+        !ignoreUserBool && {
+          createdBy: userId,
+        }),
       status: userId ? undefined : "PUBLISH",
     },
     include: {
@@ -100,10 +106,14 @@ export const getClassRepository = async (query: Query, userId?: string) => {
 };
 
 export const getClassCountRepository = async (
-  query: Query,
+  query: Query & {
+    ignoreUser?: string;
+  },
   userId?: string
 ) => {
-  const { search, categoryId } = query;
+  const { search, categoryId, ignoreUser } = query;
+  const ignoreUserBool = stringToBool(ignoreUser);
+
   return await prisma.class.count({
     where: {
       ...(search && {
@@ -115,9 +125,10 @@ export const getClassCountRepository = async (
       ...(categoryId && {
         categoryId,
       }),
-      ...(userId && {
-        createdBy: userId,
-      }),
+      ...(userId &&
+        !ignoreUserBool && {
+          createdBy: userId,
+        }),
       status: userId ? undefined : "PUBLISH",
     },
   });
@@ -138,13 +149,16 @@ export const getClassByCode = async (code: string) => {
   });
 };
 
-export const updateStatusClass = async(classId: string, status: ClassStatus) => {
+export const updateStatusClass = async (
+  classId: string,
+  status: ClassStatus
+) => {
   return await prisma.class.update({
     where: {
-      id: classId
+      id: classId,
     },
     data: {
-      status
-    }
-  })
-}
+      status,
+    },
+  });
+};

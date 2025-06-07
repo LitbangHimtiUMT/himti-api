@@ -47,7 +47,7 @@ export const getEventMeetingByName = async (name: string) => {
   });
 };
 
-export const getEventMeetings = async (query: Query) => {
+export const getEventMeetings = async (query: Query, userId?: string) => {
   const { page = "1", perPage = "10", search = "" } = query;
   return await prisma.eventMeeting.findMany({
     where: {
@@ -61,6 +61,23 @@ export const getEventMeetings = async (query: Query) => {
       name: true,
       description: true,
       Meeting: {
+        where: {
+          OR: [
+            // Selalu tampilkan meeting tanpa classId
+            { classId: null },
+            // Untuk meeting dengan classId, tampilkan hanya jika user adalah peserta
+            {
+              classId: { not: null },
+              class: {
+                classParticipant: {
+                  some: {
+                    userId,
+                  },
+                },
+              },
+            },
+          ],
+        },
         orderBy: {
           createdAt: "desc",
         },
@@ -75,6 +92,12 @@ export const getEventMeetings = async (query: Query) => {
             select: {
               userId: true,
             },
+          },
+          class: {
+            select: {
+              id: true,
+              name: true,
+            }
           },
         },
       },

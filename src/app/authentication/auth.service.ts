@@ -149,13 +149,16 @@ export const registerService = async (
       role = "ANGGOTA";
       memberId = isAnggota.id;
     }
+    console.log({ memberId, isAnggota });
     const response = await createUser({
       email,
       name,
       password: hashPassword,
       role,
       nim,
-      memberId: memberId as string,
+      ...(memberId && {
+        memberId,
+      }),
     });
     return response;
   }
@@ -182,7 +185,7 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
     );
   }
   if ((password?.length as number) < 8) {
-  return new ErrorApp(
+    return new ErrorApp(
       MESSAGES.ERROR.INVALID.USER.PASSWORD_LENGTH,
       400,
       MESSAGE_CODE.BAD_REQUEST

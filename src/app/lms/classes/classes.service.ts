@@ -146,7 +146,6 @@ export const getClassService = async (query: Query, userId?: string) => {
     getClassRepository(query, userId),
     getClassCountRepository(query, userId),
   ]);
-  console.log({userId})
 
   const meta = Meta(Number(page), Number(perPage), totalData);
 

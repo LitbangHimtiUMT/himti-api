@@ -1,10 +1,13 @@
-import { Attendance, EventMeeting, Meeting } from "@prisma/client";
+import { Attendance, Class, ClassParticipant, EventMeeting, Meeting } from "@prisma/client";
 import { EventMeetingDTO, EventMeetingWithMeetingDTO } from "./event-meeting.dto";
 import { generateOpen } from "../../utils/generate-open";
 import { FormatIDTime } from "../../utils/format-id-time";
 
 interface MeetingData extends Meeting {
   Attendance: Attendance[];
+  class: Class & {
+    ClassParticipant: ClassParticipant[]
+  }
 }
 
 export interface EventMeetingData extends EventMeeting {
@@ -32,13 +35,16 @@ export const getEventMeetingWithMeetingDTOMapper = (
       name: item.name,
     },
     meeting: item.Meeting.map((subitem) => {
-      console.log(subitem);
       return {
         id: subitem.id,
         name: subitem.name,
         description: subitem.description as string,
         startTime: subitem.startTime as Date,
         endTime: subitem.endTime as Date,
+        class: subitem.class ? {
+          id: subitem.class.id,
+          name: subitem.class.name
+        } : null,
         startTimeID: FormatIDTime(subitem.startTime as Date, "date") as Date,
         endTimeID: FormatIDTime(subitem.endTime as Date, "date") as Date,
         isOpen: generateOpen(subitem.startTime, subitem.endTime),

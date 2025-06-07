@@ -35,4 +35,6 @@ export interface EventDTO {
 
 export interface QueryEvent extends Query {
   type?: EventType;
+  withDeleted?: string;
+  onlyDeleted?: string;
 }

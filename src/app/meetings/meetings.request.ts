@@ -15,6 +15,7 @@ export const createMeetingSchema = Joi.object({
   eventMeetingId: Joi.string().required().messages({
     "any.required": MESSAGES.ERROR.REQUIRED.EVENT_MEETING_ID,
   }),
+  classId: Joi.string().optional().allow(null),
 });
 
 export const updateMeetingSchema = Joi.object({
@@ -28,4 +29,5 @@ export const updateMeetingSchema = Joi.object({
   endTime: Joi.date().optional().messages({
     "date.base": MESSAGES.ERROR.INVALID.END_TIME,
   }),
+  classId: Joi.string().optional().allow(null),
 });

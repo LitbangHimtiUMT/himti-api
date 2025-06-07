@@ -29,16 +29,48 @@ export const getSubmissionByIdRepository = async (id: string) => {
                 include: {
                   class: {
                     include: {
-                      user: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                      user: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       mentor: true,
+    },
+  });
+};
+
+export const getSubmissionByAssignmentRepository = async (
+  assignmentId: string,
+  status?: SubmissionStatus[]
+) => {
+  return prisma.submission.findMany({
+    where: {
+      assignmentId,
+      ...(status && {
+        status: {
+          in: status,
+        },
+      }),
+    },
+    include: {
+      assignment: true,
+      participant: true
     }
+  });
+};
+
+export const updateStatusSubmission = async (submissionId: string, status: SubmissionStatus, actionBy: string) => {
+  return await prisma.submission.update({
+    where: {
+      id: submissionId,
+    },
+    data: {
+      status,
+      actionBy
+    },
   });
 };

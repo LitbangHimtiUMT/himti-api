@@ -6,6 +6,7 @@ export interface CreateMeetingBodyRequest {
   startTime: Date
   endTime: Date
   eventMeetingId: string
+  classId?: string
 }
 
 export interface UpdateMeetingBodyRequest {
@@ -14,6 +15,7 @@ export interface UpdateMeetingBodyRequest {
   description?: string
   startTime?: Date
   endTime?: Date
+  classId?: string
 }
 
 export interface FilterMeeting extends Query {

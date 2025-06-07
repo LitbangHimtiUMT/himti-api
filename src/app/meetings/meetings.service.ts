@@ -4,6 +4,7 @@ import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
 import { Meta } from "../../utils/meta";
 import { getEventMeetingById } from "../event-meeting/event-meeting.repository";
+import { getClassById } from "../lms/classes/classes.repository";
 import {
   CreateMeetingBodyRequest,
   FilterMeeting,
@@ -38,6 +39,18 @@ export const createMeetingService = async (body: CreateMeetingBodyRequest) => {
     );
   }
 
+  if (body.classId) {
+    const classess = await getClassById(body.classId);
+
+    if (!classess) {
+      return new ErrorApp(
+        MESSAGES.ERROR.NOT_FOUND.CLASS,
+        404,
+        MESSAGE_CODE.NOT_FOUND
+      );
+    }
+  }
+
   const meeting = await getMeetingByEventMeetingId(
     body.eventMeetingId,
     body.name
@@ -67,49 +80,6 @@ export const createMeetingService = async (body: CreateMeetingBodyRequest) => {
     endTime: new Date(body.endTime as Date),
   });
 
-  // const fcmUnique = () => {
-  //   const map = new Map();
-  //   const userFcm = fcm.map((userFcm) => ({
-  //     id: userFcm.id,
-  //     fcmToken: userFcm.fcmToken,
-  //     userId: userFcm.userId,
-  //   }));
-  //   userFcm.forEach((item) => map.set(item.userId, item));
-  //   return Array.from(map.values()) as UserFCM[];
-  // };
-
-  // const fcm = await getAllMemberFCMUser({
-  //   page: "1",
-  //   perPage: "99999",
-  // });
-  // if (fcm.length) {
-  //   for (const item of fcm) {
-  //     const message = NotificationMessage(
-  //       data.name,
-  //       data.description ?? "",
-  //       item.fcmToken
-  //     ) as FirebaseNotificationMessage;
-
-  //     SendFirebaseNotification(message)
-  //       .then(() => {})
-  //       .catch((err) => {
-  //         if (err) {
-  //           return;
-  //         }
-  //       });
-  //   }
-
-  //   const unique = fcmUnique();
-  //   for (const item of unique) {
-  //     await createNotification({
-  //       body: data.description ?? "",
-  //       title: data.name,
-  //       meetingId: data.id,
-  //       userId: item.userId,
-  //     });
-  //   }
-  // }
-
   return data;
 };
 
@@ -127,10 +97,18 @@ export const updateMeetingService = async (body: UpdateMeetingBodyRequest) => {
     meeting.eventMeetingId,
     body?.name || ""
   );
-  console.log({
-    alreadyMeeting,
-    meeting,
-  });
+  if(body.classId) {
+    const classess = await getClassById(body.classId);
+
+    if (!classess) {
+      return new ErrorApp(
+        MESSAGES.ERROR.NOT_FOUND.CLASS,
+        404,
+        MESSAGE_CODE.NOT_FOUND
+      );
+    }
+  }
+
   if (alreadyMeeting && alreadyMeeting.id !== meeting.id) {
     return new ErrorApp(
       MESSAGES.ERROR.ALREADY.MEETING,
@@ -253,4 +231,3 @@ export const deleteMeetingService = async (meetingId: string) => {
   const data = await deleteMeeting(meetingId);
   return data;
 };
-
