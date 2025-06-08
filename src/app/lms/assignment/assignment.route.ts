@@ -1,14 +1,13 @@
 import { Router } from "express";
 import { validateRequest } from "../../../middleware/validate-request";
-import { RolesEnum, verifyRole } from "../../../middleware/verify-token";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
+import { upload } from "../../../utils/upload-file-to-storage";
 import {
   createAssignmentController,
   getAssignmentByIdController,
   submitAssignmentController,
 } from "./assignment.controller";
 import { createAssignmentSchema } from "./assignment.request";
-import { upload } from "../../../utils/upload-file-to-storage";
 import { submissionRoute } from "./submission/submission.route";
 
 export const assignmentRoute = Router();
@@ -17,7 +16,7 @@ assignmentRoute
   .use("/submissions", submissionRoute)
   .post(
     "/submit",
-    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA]),
+    // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA]),
     CatchWrapper(upload.single("file")),
     CatchWrapper(submitAssignmentController)
   )
