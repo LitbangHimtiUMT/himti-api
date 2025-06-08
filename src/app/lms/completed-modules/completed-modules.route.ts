@@ -1,8 +1,6 @@
 import { Router } from "express";
 import {
-  RolesEnum,
-  verifyRole,
-  verifyToken,
+  verifyToken
 } from "../../../middleware/verify-token";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { createCompletedModuleController } from "./completed-modules.controller";
@@ -13,6 +11,6 @@ completedModuleRoute
   .use(verifyToken)
   .post(
     "/:moduleId",
-    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
+    // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     CatchWrapper(createCompletedModuleController)
   );

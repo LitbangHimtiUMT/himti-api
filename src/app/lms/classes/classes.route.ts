@@ -49,17 +49,19 @@ classRoute
   .get("/code/:code", CatchWrapper(getDetailClassByCodeController))
   .patch(
     "/join/:classId",
-    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
+    verifyToken,
+    // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     CatchWrapper(userJoinClassController)
   )
   .patch(
     "/publish/:classId",
-    verifyRole([RolesEnum.MENTOR]),
+    verifyToken,
+    // verifyRole([RolesEnum.MENTOR]),
     CatchWrapper(publishClassController)
   )
   .delete(
     "/:classId",
-    verifyRole([RolesEnum.MENTOR]),
+    verifyToken,
     CatchWrapper(deleteClassessController)
   )
   .get("/:classId", CatchWrapper(getDetailClassController));
