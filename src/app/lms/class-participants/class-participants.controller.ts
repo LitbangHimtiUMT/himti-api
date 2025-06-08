@@ -7,6 +7,7 @@ import { MESSAGES } from "../../../utils/messages";
 import {
   createClassParticipantService,
   getClassParticipantsByClassIdService,
+  getParticipantsService,
 } from "./class-participants.service";
 
 export const createClassParticipantController = async (
@@ -57,5 +58,29 @@ export const getClassParticipantsByClassIdController = async (
     MESSAGES.SUCCESS.CLASS_PARTICIPANT.GET,
     result?.data,
     result?.meta
+  );
+};
+
+export const getParticipantsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { query, params } = req;
+  const { classId } = params;
+
+  const result = await getParticipantsService(classId, query);
+
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS_PARTICIPANT.GET,
+    result,
   );
 };

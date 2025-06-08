@@ -68,6 +68,26 @@ export const ImageType: Record<string, string> = {
   "image/webp": ".webp",
 };
 
+export const getFileExtension = (mimeType: string, fileName?: string): string => {
+  // Coba dapatkan ekstensi dari mimeType yang diketahui
+  const extensionFromMime = FileType[mimeType];
+  
+  if (extensionFromMime && mimeType !== "application/octet-stream") {
+    return extensionFromMime;
+  }
+  
+  // Jika mimeType adalah octet-stream, coba deteksi dari nama file
+  if (fileName) {
+    const lastDotIndex = fileName.lastIndexOf('.');
+    if (lastDotIndex !== -1) {
+      return fileName.substring(lastDotIndex).toLowerCase();
+    }
+  }
+  
+  // Fallback default jika tidak bisa dideteksi
+  return ".bin"; // atau "" jika ingin tanpa ekstensi
+};
+
 export const storage = multer.memoryStorage();
 
 export const MulterFileFilter = (

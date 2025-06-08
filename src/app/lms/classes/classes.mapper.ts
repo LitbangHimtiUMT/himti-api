@@ -149,7 +149,7 @@ export const getClassAccessMapper = (
           : "In Progress",
       total: {
         ...total,
-        precentage: ((total.completed / total.module) * 100) || 0,
+        precentage: (((total.completed / total.module) * 100) || 0).toFixed(2),
       },
       totalSession: (item.class.session ?? []).length ?? 0,
       // sessions: item.class.session.map((session) => ({

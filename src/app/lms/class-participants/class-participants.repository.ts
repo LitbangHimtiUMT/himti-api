@@ -165,7 +165,11 @@ export const getClassParticipantByClassIdRepository = async (
       },
     }),
     include: {
-      user: true,
+      user: {
+        include: {
+          mentor: true
+        }
+      },
     },
     ...queryPagination(query),
   });
@@ -214,3 +218,4 @@ export const getExistingClassParticipantRepository = async (
     },
   });
 };
+

@@ -13,6 +13,7 @@ import { ImagePath } from "../../../utils/image-path";
 import {
   BUCKET_FOLDER,
   FileType,
+  getFileExtension,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
 import { environment } from "../../../libs";
@@ -129,6 +130,7 @@ export const submitAssignmentService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
+  console.log({ file: data.file });
 
   if (new Date() > new Date(assignment.dueDate)) {
     return new ErrorApp(
@@ -162,14 +164,15 @@ export const submitAssignmentService = async (
     assignment.type === AssignmentType.FILE &&
     typeof data.file === "object"
   ) {
-    if (data.file.size > 10 * 1024 * 1024) {
+    if (data.file.size > 3 * 1024 * 1024) {
       return new ErrorApp(
         MESSAGES.ERROR.INVALID.SUBMISSION_FILE_SIZE,
         400,
         MESSAGE_CODE.BAD_REQUEST
       );
     }
-    fileName = `${data.file?.originalname.replace(FileType[data.file.mimetype], "")} - ${+new Date()}${FileType[data.file.mimetype]}`;
+    const ext = getFileExtension(data.file.mimetype, data.file.originalname)
+    fileName = `${data.file?.originalname.replace(ext, "")} - ${+new Date()}${ext}`;
     await UploadFileToStorage({
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.submission}/${fileName}`,

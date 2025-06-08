@@ -385,6 +385,7 @@ export const MESSAGES = {
       UPDATE: "Success to update submission",
       APPROVE: "Success to approve submission",
       REJECT: "Success to reject submission",
+      SUBMIT: "Success to submit submission",
     },
   },
 };

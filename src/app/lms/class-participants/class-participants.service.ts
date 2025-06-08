@@ -2,6 +2,7 @@ import { Query } from "../../../interface/Query";
 import { ErrorApp } from "../../../utils/http-error";
 import { Meta } from "../../../utils/meta";
 import { CreateClassParticipantBodyRequest } from "./class-participants.dto";
+import { getParticipantsMapper } from "./class-participants.mapper";
 import {
   createClassParticipantRepository,
   getClassParticipantByClassIdCountRepository,
@@ -34,7 +35,10 @@ export const createClassParticipantService = async (
   return classParticipant;
 };
 
-export const getClassParticipantsByClassIdService = async (classId: string, query: Query) => {
+export const getClassParticipantsByClassIdService = async (
+  classId: string,
+  query: Query
+) => {
   const { page = "1", perPage = "10" } = query;
   const [classParticipants, totalData] = await Promise.all([
     getClassParticipantByClassIdRepository(classId, query),
@@ -47,4 +51,13 @@ export const getClassParticipantsByClassIdService = async (classId: string, quer
     data: classParticipants,
     meta,
   };
+};
+
+export const getParticipantsService = async (classId: string, query: Query) => {
+  const participants = await getClassParticipantByClassIdRepository(classId, {
+    ...query,
+    page: "1",
+    perPage: "999999999",
+  });
+  return getParticipantsMapper(participants);
 };

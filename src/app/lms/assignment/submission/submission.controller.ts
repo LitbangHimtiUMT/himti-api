@@ -55,7 +55,7 @@ export const rejectSubmissionController = async (
 ) => {
   const { params, userId } = req;
   const { submissionId } = params;
-  const result = await rejectSubmissionService(submissionId, userId);
+  const result = await rejectSubmissionService(submissionId, userId, req?.body?.feedback);
   if (result instanceof ErrorApp) {
     next(result);
     return;

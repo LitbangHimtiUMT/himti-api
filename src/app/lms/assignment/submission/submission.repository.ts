@@ -63,14 +63,15 @@ export const getSubmissionByAssignmentRepository = async (
   });
 };
 
-export const updateStatusSubmission = async (submissionId: string, status: SubmissionStatus, actionBy: string) => {
+export const updateStatusSubmission = async (submissionId: string, status: SubmissionStatus, actionBy: string, feedback?: string) => {
   return await prisma.submission.update({
     where: {
       id: submissionId,
     },
     data: {
       status,
-      actionBy
+      actionBy,
+      feedback
     },
   });
 };

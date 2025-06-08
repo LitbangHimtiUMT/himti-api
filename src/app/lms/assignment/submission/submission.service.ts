@@ -32,13 +32,13 @@ export const getSubmissionByAssignmentService = async (
   const submission = await getSubmissionByAssignmentRepository(assignmentId, [
     SubmissionStatus.APPROVE,
     SubmissionStatus.REVIEW,
-    SubmissionStatus.REVIEW,
+    SubmissionStatus.REJECT,
   ]);
 
   return getSubmissionsMapper(submission as unknown as SubmissionData[]);
 };
 
-export const rejectSubmissionService = async(submissionId: string, userId: string) => {
+export const rejectSubmissionService = async(submissionId: string, userId: string, feedback?: string) => {
   const submission = await getSubmissionByIdRepository(submissionId)
 
   if (!submission) {
@@ -63,7 +63,7 @@ export const rejectSubmissionService = async(submissionId: string, userId: strin
     )
   }
 
-  return await updateStatusSubmission(submissionId, SubmissionStatus.REJECT, userId)
+  return await updateStatusSubmission(submissionId, SubmissionStatus.REJECT, userId, feedback)
 }
 
 export const approveSubmissionService = async(submissionId: string, userId: string) => {
