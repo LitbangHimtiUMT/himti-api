@@ -56,7 +56,7 @@ classRoute
     CatchWrapper(publishClassController)
   )
   .delete(
-    "/classId",
+    "/:classId",
     verifyRole([RolesEnum.MENTOR]),
     CatchWrapper(deleteClassessController)
   )
