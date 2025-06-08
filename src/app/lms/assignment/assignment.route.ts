@@ -9,6 +9,8 @@ import {
 } from "./assignment.controller";
 import { createAssignmentSchema } from "./assignment.request";
 import { submissionRoute } from "./submission/submission.route";
+import { checkToken } from "../../authentication/auth.controller";
+import { decodeToken } from "../../../middleware/verify-token";
 
 export const assignmentRoute = Router();
 
@@ -16,6 +18,7 @@ assignmentRoute
   .use("/submissions", submissionRoute)
   .post(
     "/submit",
+    decodeToken,
     // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA]),
     CatchWrapper(upload.single("file")),
     CatchWrapper(submitAssignmentController)
