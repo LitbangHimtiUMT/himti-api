@@ -35,11 +35,13 @@ classRoute
   )
   .get(
     "/user",
+    verifyToken,
     // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     CatchWrapper(getClassUserController)
   )
   .post(
     "/join/invitation",
+    verifyToken,
     // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     validateRequest(joinInvitationClassSchema),
     CatchWrapper(joinInvitationClassController)
