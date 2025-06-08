@@ -1,7 +1,9 @@
+import { ClassStatus } from "@prisma/client";
 import sharp from "sharp";
 import { Query } from "../../../interface/Query";
 import { environment } from "../../../libs";
 import { MESSAGE_CODE } from "../../../utils/error-code";
+import { generateBalancedRandomString } from "../../../utils/generate-random-string";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
@@ -34,15 +36,14 @@ import {
 } from "./classes.mapper";
 import {
   createClassRepository,
+  deleteClassRepository,
   getClassByCode,
   getClassById,
   getClassCountRepository,
   getClassRepository,
-  updateStatusClass,
+  updateStatusClass
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
-import { generateBalancedRandomString } from "../../../utils/generate-random-string";
-import { ClassStatus } from "@prisma/client";
 
 export const createClassService = async (
   {
@@ -368,4 +369,23 @@ export const publishClassService = async(classId: string, userId: string) => {
     )
   }
   return await updateStatusClass(classess.id, ClassStatus.PUBLISH)
+}
+
+export const deleteClassessService = async(classId: string, userId: string) => {
+  const classess = await getClassById(classId)
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  if(classess.createdBy !== userId) {
+    return new ErrorApp(
+      MESSAGES.ERROR.FORBIDDEN.DELETE_CLASS,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    )
+  }
+  return await deleteClassRepository(classess.id)
 }

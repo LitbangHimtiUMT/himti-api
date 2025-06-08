@@ -7,6 +7,7 @@ import { MESSAGES } from "../../../utils/messages";
 import { createClassSchema } from "./classes.request";
 import {
   createClassService,
+  deleteClassessService,
   getClassService,
   getClassUserService,
   getDetailClassByCodeService,
@@ -171,6 +172,7 @@ export const joinInvitationClassController = async (
     next(result);
     return;
   }
+  console.log({result})
   HandleResponse(
     res,
     200,
@@ -197,5 +199,25 @@ export const publishClassController = async (
     200,
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.CLASS.PUBLISH,
+  );
+};
+
+export const deleteClassessController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { classId } = params;
+  const result = await deleteClassessService(classId, userId);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.DELETE,
   );
 };

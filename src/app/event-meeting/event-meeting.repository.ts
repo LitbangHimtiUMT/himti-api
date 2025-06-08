@@ -18,6 +18,12 @@ export const getEventMeetingById = async (eventMeetingId: string) => {
           description: true,
           startTime: true,
           endTime: true,
+          class: {
+            select: {
+              id: true,
+              name: true,
+            }
+          }
         },
       },
     },

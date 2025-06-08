@@ -191,14 +191,14 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
       MESSAGE_CODE.BAD_REQUEST
     );
   }
-  // const match = await bcrypt.compare(password, user.password);
-  // if (!match) {
-  //   return new ErrorApp(
-  //     MESSAGES.ERROR.INVALID.USER.PASSWORD,
-  //     401,
-  //     MESSAGE_CODE.UNAUTHORIZED
-  //   );
-  // }
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.USER.PASSWORD,
+      401,
+      MESSAGE_CODE.UNAUTHORIZED
+    );
+  }
 
   if (user.role === "ADMIN" && !user.memberId) {
     return new ErrorApp(

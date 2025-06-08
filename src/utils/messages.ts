@@ -164,6 +164,7 @@ export const MESSAGES = {
       ASSIGNMENT: "Only creator class can create assignment",
       APPROVE_SUBMISSION: "Only creator class can approve submission",
       REJECT_SUBMISSION: "Only creator class can approve submission",
+      DELETE_CLASS: "Only creator class can delete class",
     },
     REQUIRED: {
       EMAIL: "Email is required",

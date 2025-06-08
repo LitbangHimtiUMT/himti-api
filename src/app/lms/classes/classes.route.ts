@@ -9,6 +9,7 @@ import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { upload } from "../../../utils/upload-file-to-storage";
 import {
   createClassController,
+  deleteClassessController,
   getClassController,
   getClassUserController,
   getDetailClassByCodeController,
@@ -39,7 +40,7 @@ classRoute
   )
   .post(
     "/join/invitation",
-    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA]),
+    // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     validateRequest(joinInvitationClassSchema),
     CatchWrapper(joinInvitationClassController)
   )
@@ -53,5 +54,10 @@ classRoute
     "/publish/:classId",
     verifyRole([RolesEnum.MENTOR]),
     CatchWrapper(publishClassController)
+  )
+  .delete(
+    "/classId",
+    verifyRole([RolesEnum.MENTOR]),
+    CatchWrapper(deleteClassessController)
   )
   .get("/:classId", CatchWrapper(getDetailClassController));

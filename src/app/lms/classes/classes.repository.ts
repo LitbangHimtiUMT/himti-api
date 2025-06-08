@@ -162,3 +162,11 @@ export const updateStatusClass = async (
     },
   });
 };
+
+export const deleteClassRepository = async(classId: string) => {
+  return await prisma.class.delete({
+    where: {
+      id: classId,
+    },
+  });
+}
