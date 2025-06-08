@@ -35,7 +35,7 @@ classRoute
   )
   .get(
     "/user",
-    verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
+    // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     CatchWrapper(getClassUserController)
   )
   .post(
