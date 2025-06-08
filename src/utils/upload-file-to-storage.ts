@@ -57,7 +57,8 @@ export const FileType: Record<string, string> = {
     ".docx",
   "application/vnd.oasis.opendocument.text": ".odt",
   "application/x-iwork-pages-sffpages": ".pages", // optional for Apple Pages
-  'application/zip': '.zip'
+  'application/zip': '.zip',
+  "application/vnd.rar": ".rar"
 };
 
 export const ImageType: Record<string, string> = {
