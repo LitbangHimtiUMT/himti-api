@@ -23,19 +23,19 @@ assignmentRoute
   )
   .post(
     "/:moduleId",
-    verifyRole([RolesEnum.MENTOR]),
+    // verifyRole([RolesEnum.MENTOR]),
     validateRequest(createAssignmentSchema),
     CatchWrapper(createAssignmentController)
   )
 
   .get(
     "/:assignmentId",
-    verifyRole([
-      RolesEnum.MENTOR,
-      RolesEnum.ADMIN,
-      RolesEnum.SUPER_ADMIN,
-      RolesEnum.USER,
-      RolesEnum.ANGGOTA,
-    ]),
+    // verifyRole([
+    //   RolesEnum.MENTOR,
+    //   RolesEnum.ADMIN,
+    //   RolesEnum.SUPER_ADMIN,
+    //   RolesEnum.USER,
+    //   RolesEnum.ANGGOTA,
+    // ]),
     CatchWrapper(getAssignmentByIdController)
   );

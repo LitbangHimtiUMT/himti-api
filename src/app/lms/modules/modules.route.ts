@@ -25,12 +25,12 @@ moduleRoute
   .get("/session/:sessionId", CatchWrapper(getModulesController))
   .get(
     "/:moduleId",
-    verifyRole([
-      RolesEnum.ADMIN,
-      RolesEnum.SUPER_ADMIN,
-      RolesEnum.USER,
-      RolesEnum.MENTOR,
-      RolesEnum.ANGGOTA,
-    ]),
+    // verifyRole([
+    //   RolesEnum.ADMIN,
+    //   RolesEnum.SUPER_ADMIN,
+    //   RolesEnum.USER,
+    //   RolesEnum.MENTOR,
+    //   RolesEnum.ANGGOTA,
+    // ]),
     CatchWrapper(getDetailModuleController)
   );
