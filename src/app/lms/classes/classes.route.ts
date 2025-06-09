@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { validateRequest } from "../../../middleware/validate-request";
 import {
   decodeToken,
   RolesEnum,
@@ -18,7 +19,6 @@ import {
   publishClassController,
   userJoinClassController,
 } from "./classes.controller";
-import { validateRequest } from "../../../middleware/validate-request";
 import { joinInvitationClassSchema } from "./classes.request";
 
 export const classRoute = Router();
@@ -33,35 +33,18 @@ classRoute
     CatchWrapper(upload.single("thumbnail")),
     CatchWrapper(createClassController)
   )
-  .get(
-    "/user",
-    verifyToken,
-    // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
-    CatchWrapper(getClassUserController)
-  )
+  .get("/user", CatchWrapper(getClassUserController))
   .post(
     "/join/invitation",
-    verifyToken,
-    // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
     validateRequest(joinInvitationClassSchema),
     CatchWrapper(joinInvitationClassController)
   )
   .get("/code/:code", CatchWrapper(getDetailClassByCodeController))
-  .patch(
-    "/join/:classId",
-    verifyToken,
-    // verifyRole([RolesEnum.USER, RolesEnum.ANGGOTA, RolesEnum.MENTOR]),
-    CatchWrapper(userJoinClassController)
-  )
+  .patch("/join/:classId", CatchWrapper(userJoinClassController))
   .patch(
     "/publish/:classId",
-    verifyToken,
-    // verifyRole([RolesEnum.MENTOR]),
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     CatchWrapper(publishClassController)
   )
-  .delete(
-    "/:classId",
-    verifyToken,
-    CatchWrapper(deleteClassessController)
-  )
+  .delete("/:classId", CatchWrapper(deleteClassessController))
   .get("/:classId", CatchWrapper(getDetailClassController));

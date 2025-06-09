@@ -5,11 +5,12 @@ import {
   verifyToken,
 } from "../../../middleware/verify-token";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
-import { createSessionSchema } from "./sessions.request";
+import { createSessionSchema, updateSessionSchema } from "./sessions.request";
 import {
   createSessionController,
   getSessionByClassController,
   getSessionController,
+  updateSessionController,
 } from "./sessions.controller";
 import { validateRequest } from "../../../middleware/validate-request";
 
@@ -23,6 +24,12 @@ sessionRoute
     validateRequest(createSessionSchema),
     CatchWrapper(createSessionController)
   )
+  .put(
+    "/:sessionId",
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
+    validateRequest(updateSessionSchema),
+    CatchWrapper(updateSessionController)
+  )
   .get(
     "/class/:classId",
     verifyRole([
@@ -34,5 +41,4 @@ sessionRoute
     ]),
     CatchWrapper(getSessionByClassController)
   )
-  .get('/:sessionId', CatchWrapper(getSessionController))
-  ;
+  .get("/:sessionId", CatchWrapper(getSessionController));

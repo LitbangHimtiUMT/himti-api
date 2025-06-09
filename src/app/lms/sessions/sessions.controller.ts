@@ -7,6 +7,7 @@ import {
   createSessionService,
   getSessionsByClassService,
   getSessionService,
+  updateSessionService,
 } from "./sessions.service";
 import { RequestWithAccessToken } from "../../../interface/Request";
 
@@ -29,6 +30,24 @@ export const createSessionController = async (
   }
 
   HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.SESSION);
+};
+
+export const updateSessionController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { body, params } = req;
+  const { sessionId } = params;
+
+  const session = await updateSessionService(sessionId, body);
+
+  if (session instanceof ErrorApp) {
+    next(session);
+    return;
+  }
+
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.SESSIONS.UPDATE);
 };
 
 export const getSessionByClassController = async (

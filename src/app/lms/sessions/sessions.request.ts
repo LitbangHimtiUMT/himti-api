@@ -1,8 +1,9 @@
 import Joi from "joi";
-import { MESSAGES } from "../../../utils/messages";
 
 export const createSessionSchema = Joi.object({
-  name: Joi.string().required().messages({
-    "any.required": MESSAGES.ERROR.REQUIRED.NAME,
-  }),
+  name: Joi.string().required(),
+});
+
+export const updateSessionSchema = Joi.object({
+  name: Joi.string().optional(),
 });

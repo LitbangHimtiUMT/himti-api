@@ -28,6 +28,20 @@ export const createSessionRepository = async (
   });
 };
 
+export const updateSessionRepository = async (
+  sessionId: string,
+  data: CreateSessionBodyRequest
+) => {
+  const { name } = data;
+
+  return await prisma.session.update({
+    where: { id: sessionId },
+    data: {
+      name: name as string,
+    },
+  });
+};
+
 export const getSessionsRepository = async (query: Query, userId: string) => {
   const { classId, search } = query;
   return await prisma.session.findMany({
