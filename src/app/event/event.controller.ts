@@ -11,15 +11,16 @@ import {
   getEventService,
   updateEventService,
 } from "./event.service";
+import { RequestWithAccessToken } from "../../interface/Request";
 
 export const createEventController = async (
-  req: Request & {
+  req: RequestWithAccessToken & {
     file: Express.Multer.File;
   },
   res: Response,
   next: NextFunction
 ) => {
-  const { body } = req;
+  const { body, userId } = req;
   const file = req.file;
   const combine = { ...body };
   if (file) {
@@ -37,7 +38,7 @@ export const createEventController = async (
     );
     return;
   }
-  const acara = await createEventService(combine);
+  const acara = await createEventService(userId, combine);
   if (acara instanceof ErrorApp) {
     next(acara);
     return;
@@ -69,10 +70,13 @@ export const getEventController = async (
   );
 };
 
-export const deleteEventController = async (req: Request, res: Response) => {
+export const deleteEventController = async (
+  req: RequestWithAccessToken,
+  res: Response
+) => {
   const { id } = req.params;
 
-  const acara = await deleteEventService(id);
+  const acara = await deleteEventService(req.userId, id);
   if (acara instanceof ErrorApp) {
     return HandleResponse(res, acara.statusCode, acara.code, acara.message);
   }
@@ -80,7 +84,7 @@ export const deleteEventController = async (req: Request, res: Response) => {
 };
 
 export const updateEventController = async (
-  req: Request & {
+  req: RequestWithAccessToken & {
     file: Express.Multer.File;
   },
   res: Response,
@@ -90,7 +94,11 @@ export const updateEventController = async (
   // const { name, description, endTime, isOpenAbsen, isOpenRegister, startTime, } = req.body
   const { body } = req;
 
-  const acara = await updateEventService({ ...body, id, image: req.file });
+  const acara = await updateEventService(req.userId, {
+    ...body,
+    id,
+    image: req.file,
+  });
   if (acara instanceof ErrorApp) {
     next(acara);
     return;

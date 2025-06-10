@@ -34,6 +34,7 @@ model User {
   submissionMentor      Submission[]          @relation("submission_mentor")
   Transaction           Transaction[]
   EventRegistration     EventRegistration[]
+  History               History[]
 
   @@index([memberId], map: "user_fk_1")
   @@index([email], map: "user_fk_2")
@@ -541,6 +542,40 @@ model EventRegistration {
   user      User     @relation(fields: [userId], references: [id])
 
   @@map("event_registration")
+}
+
+model History {
+  id        String        @id @unique @default(uuid()) @db.Char(36)
+  title     String
+  flag      HistoryFlag
+  module    HistoryModule
+  actionId  String?       @map("action_id")
+  createdBy String?       @map("created_by")
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  user User? @relation(fields: [createdBy], references: [id])
+
+  @@index([createdBy], map: "history_created_by_fk_1")
+  @@map("histories")
+}
+
+enum HistoryModule {
+  USER
+  EVENT
+  EVENT_MEETING
+  MEETING
+  MEMBER
+  AUTH
+  VERSION
+}
+
+enum HistoryFlag {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
 }
 
 enum Jabatan {

@@ -14,13 +14,13 @@ import {
 } from "./meetings.service";
 
 export const createMeetingController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { body } = req;
+  const { body, userId } = req;
 
-  const result = await createMeetingService(body);
+  const result = await createMeetingService(userId, body);
 
   if (result instanceof ErrorApp) {
     next(result);
@@ -128,13 +128,13 @@ export const updateMeetingController = async (
 };
 
 export const deleteMeetingController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { params } = req;
+  const { params, userId } = req;
   const { meetingId } = params;
-  const result = await deleteMeetingService(meetingId as string);
+  const result = await deleteMeetingService(userId, meetingId as string);
   if (result instanceof ErrorApp) {
     next(result);
     return;

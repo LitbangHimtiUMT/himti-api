@@ -27,6 +27,7 @@ import { createCanvas, loadImage } from "canvas";
 import PDFDocument from "pdfkit";
 import { Stream } from "stream";
 import archiver from "archiver";
+import { historyRoute } from "../app/history/history.route";
 
 const route = Router();
 
@@ -37,6 +38,7 @@ route.use("/angkatan", angkatanRoute);
 route.use("/dosen", dosenRoute);
 route.use("/struktural", strukturalRoute);
 route.use("/anggota", anggotaRoute);
+route.use("/histories", historyRoute);
 route.use("/acara", acaraRoute);
 route.use("/event-meeting", eventMeetingRoute);
 route.use("/event-registration", eventRegistrationRoute);

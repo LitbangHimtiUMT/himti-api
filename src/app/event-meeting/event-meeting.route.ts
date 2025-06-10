@@ -17,33 +17,21 @@ import {
 
 const route = Router();
 
-route.post(
-  "/",
-  verifyToken,
-  validateRequest(createEventMeetingSchema),
-  CatchWrapper(createEventMeetingController)
-);
+route
+  .use(verifyToken)
+  .post(
+    "/",
+    validateRequest(createEventMeetingSchema),
+    CatchWrapper(createEventMeetingController)
+  );
 route.put(
   "/:eventMeetingId",
-  verifyToken,
   validateRequest(updateEventMeetingSchema),
   CatchWrapper(updateEventMeetingController)
 );
-route.get("/", verifyToken, CatchWrapper(getEventMeetingsController));
-route.get(
-  "/meeting",
-  verifyToken,
-  CatchWrapper(getEventMeetingWithMeetingController)
-);
-route.get(
-  "/:eventMeetingId",
-  verifyToken,
-  CatchWrapper(getEventMeetingByIdController)
-);
-route.delete(
-  "/:eventMeetingId",
-  verifyToken,
-  CatchWrapper(deleteEventMeetingController)
-);
+route.get("/", CatchWrapper(getEventMeetingsController));
+route.get("/meeting", CatchWrapper(getEventMeetingWithMeetingController));
+route.get("/:eventMeetingId", CatchWrapper(getEventMeetingByIdController));
+route.delete("/:eventMeetingId", CatchWrapper(deleteEventMeetingController));
 
 export default route;

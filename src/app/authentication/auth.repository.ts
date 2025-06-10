@@ -12,7 +12,8 @@ export const createUser = async ({ email, name, password, nim, role, memberId }:
             memberId
         },
         select: {
-            id: true
+            id: true,
+            name: true
         }
     })
 }

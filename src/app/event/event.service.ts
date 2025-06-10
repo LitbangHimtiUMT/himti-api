@@ -1,4 +1,4 @@
-import { Event, EventType } from "@prisma/client";
+import { Event, EventType, HistoryModule } from "@prisma/client";
 import dotenv from "dotenv";
 import { Query } from "../../interface/Query";
 import sharp from "sharp";
@@ -23,6 +23,13 @@ import {
   sofDeleteEvent,
   updateEvent,
 } from "./event.repository";
+import {
+  historyCreateFlag,
+  historyDeleteFlag,
+  historyUpdateFlag,
+} from "../history/history.repository";
+import { generateOpen } from "../../utils/generate-open";
+import { formatTime } from "../../utils/format-time";
 
 dotenv.config();
 
@@ -35,17 +42,21 @@ export const openValue = (open?: string) => {
   return undefined;
 };
 
-export const createEventService = async ({
-  name,
-  description,
-  endTime,
-  image,
-  isOpen,
-  startTime,
-  eventType,
-}: Omit<CreateEventBodyRequest, "type"> & {
-  eventType: EventType;
-}) => {
+export const createEventService = async (
+  createdBy: string,
+  {
+    name,
+    description,
+    endTime,
+    image,
+    isOpen,
+    startTime,
+    eventType,
+  }: Omit<CreateEventBodyRequest, "type"> & {
+    eventType: EventType;
+  }
+) => {
+  console.log({ image });
   let filename;
   if (isOpen && !startTime) {
     return new ErrorApp(
@@ -85,7 +96,6 @@ export const createEventService = async ({
         ? 75
         : 100;
     const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
-
     await UploadFileToStorage({
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.event}/${filename}`,
@@ -103,16 +113,22 @@ export const createEventService = async ({
       endTime: new Date(endTime as Date),
       startTime: new Date(startTime as Date),
     });
+    await historyCreateFlag({
+      module: HistoryModule.EVENT,
+      createdBy,
+      title: `New event - ${name}`,
+      actionId: response.id,
+    });
     return response;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error) {
-      if (image) {
+      if (image && filename) {
         await RemoveFileFromStorage(
           `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.event}/${filename}`
         );
       }
-      return new ErrorApp(MESSAGE_CODE.BAD_REQUEST, 400, error?.message);
+      return new ErrorApp(error?.message, 400, MESSAGE_CODE.BAD_REQUEST);
     }
   }
 };
@@ -133,7 +149,7 @@ export const getEventService = async (query: Query) => {
   return response;
 };
 
-export const deleteEventService = async (id: string) => {
+export const deleteEventService = async (createdBy: string, id: string) => {
   const acara = await getEventById(id as string);
 
   if (!acara) {
@@ -147,17 +163,26 @@ export const deleteEventService = async (id: string) => {
   await RemoveFileFromStorage(
     `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.event}/${acara.image}`
   );
+  await historyDeleteFlag({
+    module: HistoryModule.EVENT,
+    createdBy,
+    title: `Delete event - ${acara.name}`,
+    actionId: response.id,
+  });
   return response;
 };
-export const updateEventService = async ({
-  id,
-  name,
-  image,
-  description,
-  endTime,
-  isOpen,
-  startTime,
-}: CreateEventBodyRequest) => {
+export const updateEventService = async (
+  createdBy: string,
+  {
+    id,
+    name,
+    image,
+    description,
+    endTime,
+    isOpen,
+    startTime,
+  }: CreateEventBodyRequest
+) => {
   const matchAcara = await getEventById(id as string);
 
   if (!matchAcara) {
@@ -194,8 +219,34 @@ export const updateEventService = async ({
 
   if (startTime) updateFields.startTime = new Date(startTime as Date);
   if (endTime) updateFields.endTime = new Date(endTime as Date);
-  console.log(updateFields);
   const response = await updateEvent(updateFields, id as string);
+
+  const existStatus = generateOpen(
+    matchAcara.startTime as Date,
+    matchAcara.endTime as Date
+  );
+  const newStatus = generateOpen(
+    (startTime ?? matchAcara.startTime) as Date,
+    (endTime ?? matchAcara.endTime) as Date
+  );
+
+  const isDiff =
+    name !== matchAcara.name ||
+    description !== matchAcara.description ||
+    image !== matchAcara.image ||
+    existStatus !== newStatus ||
+    startTime !== matchAcara.startTime ||
+    endTime !== matchAcara.endTime;
+
+  if (isDiff) {
+    await historyUpdateFlag({
+      module: HistoryModule.EVENT,
+      title: `Update event - ${name}`,
+      actionId: matchAcara.id,
+      createdBy,
+    });
+  }
+
   return response;
 };
 
@@ -213,3 +264,47 @@ export const getDetailEventService = async (id: string) => {
 
   return data;
 };
+
+export function getEventChangesString(
+  newData: EventBodyDTO,
+  oldData: Event
+): string {
+  const changes: string[] = [];
+
+  const existStatus = generateOpen(oldData.startTime, oldData.endTime)
+    ? "Open"
+    : "Close";
+  const newStatus = generateOpen(
+    (newData.startTime ?? oldData.startTime) as Date,
+    (newData.endTime ?? oldData.endTime) as Date
+  )
+    ? "Open"
+    : "Close";
+
+  if (newData.name !== oldData.name) {
+    changes.push(`name change from '${oldData.name}' to '${newData.name}'`);
+  }
+  if (newData.description !== oldData.description) {
+    changes.push(
+      `description change from '${oldData.description ?? ""}' to '${newData.description}'`
+    );
+  }
+  if (newData.image !== oldData.image) {
+    changes.push(`image changed`);
+  }
+  if (existStatus !== newStatus) {
+    changes.push(`status change from '${existStatus}' to '${newStatus}'`);
+  }
+  if (newData.startTime !== oldData.startTime && newData.startTime) {
+    changes.push(
+      `start time change from '${formatTime(oldData.startTime)}' to '${formatTime(newData.startTime)}'`
+    );
+  }
+  if (newData.endTime !== oldData.endTime && newData.endTime) {
+    changes.push(
+      `end time change from '${formatTime(oldData.endTime)}' to '${formatTime(newData.endTime)}'`
+    );
+  }
+
+  return changes.join(", ");
+}

@@ -14,13 +14,13 @@ import { MESSAGES } from "../../utils/messages";
 import { RequestWithAccessToken } from "interface/Request";
 
 export const createEventMeetingController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { body } = req;
+  const { body, userId } = req;
 
-  const result = await createEventMeetingService(body);
+  const result = await createEventMeetingService(userId, body);
 
   if (result instanceof ErrorApp) {
     next(result);
@@ -129,13 +129,16 @@ export const getEventMeetingByIdController = async (
 };
 
 export const deleteEventMeetingController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { params } = req;
+  const { params, userId } = req;
   const { eventMeetingId } = params;
-  const result = await deleteEventMeetingService(eventMeetingId as string);
+  const result = await deleteEventMeetingService(
+    userId,
+    eventMeetingId as string
+  );
 
   if (result instanceof ErrorApp) {
     next(result);

@@ -20,6 +20,7 @@ export const eventsDTOMapper = (acaras: Event[]): EventDTO[] => {
       name: acara.name,
       startTime: acara.startTime as Date,
       isOpen: generateOpen(acara.startTime as Date, acara.endTime as Date),
+      isDeleted: !!acara.deletedAt,
     };
   });
 };

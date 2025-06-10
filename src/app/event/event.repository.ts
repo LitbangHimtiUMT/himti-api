@@ -72,6 +72,7 @@ export const getEvents = async (query: QueryEvent) => {
       isOpen: true,
       image: true,
       type: true,
+      deletedAt: true
     },
     take: Number(perPage),
     skip: (Number(page) - 1) * Number(perPage),

@@ -387,5 +387,10 @@ export const MESSAGES = {
       REJECT: "Success to reject submission",
       SUBMIT: "Success to submit submission",
     },
+    HISTORY: {
+      GET: "Success to fetch history",
+      DELETE: "Success to delete history",
+      UPDATE: "Success to update history",
+    }
   },
 };

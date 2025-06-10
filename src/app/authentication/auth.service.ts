@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { HistoryModule, Role } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt, { decode, TokenExpiredError, verify } from "jsonwebtoken";
@@ -34,6 +34,11 @@ import {
 } from "./auth.repository";
 import { Query } from "../../interface/Query";
 import { decryptAES } from "../../utils/decrypt";
+import {
+  historyCreateFlag,
+  historyLoginFlag,
+  historyLogoutFlag,
+} from "../history/history.repository";
 
 dotenv.config();
 
@@ -149,7 +154,6 @@ export const registerService = async (
       role = "ANGGOTA";
       memberId = isAnggota.id;
     }
-    console.log({ memberId, isAnggota });
     const response = await createUser({
       email,
       name,
@@ -169,6 +173,12 @@ export const registerService = async (
     role: "USER",
     nim: undefined,
     memberId: undefined,
+  });
+  await historyCreateFlag({
+    module: HistoryModule.USER,
+    title: `New User Register - ${response.name}`,
+    actionId: response.id,
+    createdBy: response.id,
   });
   return response;
 };
@@ -243,9 +253,20 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
       nim: user.nim,
       role: user.role,
     };
-
+    await historyLoginFlag({
+      module: HistoryModule.AUTH,
+      title: `New User Login - ${user.name}`,
+      actionId: user.id,
+      createdBy: user.id,
+    });
     return { access_token: token, user: userInfo };
   }
+  await historyLoginFlag({
+    module: HistoryModule.AUTH,
+    title: `New User Login - ${user.name}`,
+    actionId: user.id,
+    createdBy: user.id,
+  });
   return {
     accessToken: token,
     refreshToken,
@@ -289,6 +310,13 @@ export const loginAdminService = async ({
     environment.JWT_SECRET as string,
     { expiresIn: "3d" }
   );
+
+  await historyLoginFlag({
+    module: HistoryModule.AUTH,
+    title: `New User Login - ${user.name}`,
+    actionId: user.id,
+    createdBy: user.id,
+  });
 
   return { access_token: token };
 };
@@ -425,6 +453,12 @@ export const logoutService = async (token: string) => {
     await deleteManyUserFCM(user.id);
   }
   const response = await userLogin(user.id, false);
+  await historyLogoutFlag({
+    module: HistoryModule.AUTH,
+    title: `User Logout - ${user.name}`,
+    actionId: user.id,
+    createdBy: user.id,
+  });
   return response;
 };
 
@@ -472,6 +506,12 @@ export const biometricAuthService = async (
     nim: user.nim,
     role: user.role,
   };
+  await historyLoginFlag({
+    module: HistoryModule.AUTH,
+    title: `New User Login - ${user.name}`,
+    actionId: user.id,
+    createdBy: user.id,
+  });
   return { access_token: token, user: userInfo };
 };
 

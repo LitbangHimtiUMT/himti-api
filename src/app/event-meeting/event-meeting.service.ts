@@ -26,8 +26,11 @@ import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
 } from "@prisma/client/runtime/library";
+import { historyCreateFlag, historyDeleteFlag } from "../history/history.repository";
+import { HistoryModule } from "@prisma/client";
 
 export const createEventMeetingService = async (
+  createdBy: string,
   body: CreateEventMeetingBodyRequest
 ) => {
   const eventMeeting = await getEventMeetingByName(body?.name ?? "");
@@ -39,7 +42,12 @@ export const createEventMeetingService = async (
     );
   }
   const data = await createEventMeeting(body?.name ?? "", body?.description);
-
+  await historyCreateFlag({
+    module: HistoryModule.EVENT_MEETING,
+    title: `New Event Meeting - ${body}`,
+    actionId: data.id,
+    createdBy,
+  });
   return data;
 };
 export const updateEventMeetingService = async (
@@ -123,7 +131,7 @@ export const getEventMeetingByIdService = async (eventMeetingId: string) => {
   return eventMeeting;
 };
 
-export const deleteEventMeetingService = async (eventMeetingId: string) => {
+export const deleteEventMeetingService = async (createdBy: string, eventMeetingId: string) => {
   const eventMeeting = await getEventMeetingById(eventMeetingId);
   if (!eventMeeting) {
     return new ErrorApp(
@@ -151,6 +159,11 @@ export const deleteEventMeetingService = async (eventMeetingId: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-
+  await historyDeleteFlag({
+    module: HistoryModule.EVENT_MEETING,
+    title: `Delete Event Meeting - ${eventMeeting.name}`,
+    actionId: eventMeeting.id,
+    createdBy,
+  });
   return true;
 };

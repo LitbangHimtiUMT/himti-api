@@ -4,15 +4,16 @@ import { HandleResponse } from "../../utils/handle-response";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
 import { getVersionService, updateVersionService } from "./version.service";
+import { RequestWithAccessToken } from "../../interface/Request";
 
 export const updateVersionController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { body } = req;
+  const { body, userId } = req;
   const { versionId } = req.params;
-  const version = await updateVersionService(Number(versionId), body);
+  const version = await updateVersionService(userId, Number(versionId), body);
   if (version instanceof ErrorApp) {
     next(version);
     return;

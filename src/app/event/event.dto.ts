@@ -10,6 +10,7 @@ export interface EventBodyDTO {
   startTime?: Date;
   type?: EventType;
   endTime?: Date;
+  isDeleted?: boolean;
 }
 export interface CreateEventBodyRequest {
   id?: string;

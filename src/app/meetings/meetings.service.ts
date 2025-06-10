@@ -1,9 +1,14 @@
+import { HistoryModule } from "@prisma/client";
 import { Query } from "../../interface/Query";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
 import { Meta } from "../../utils/meta";
 import { getEventMeetingById } from "../event-meeting/event-meeting.repository";
+import {
+  historyCreateFlag,
+  historyDeleteFlag,
+} from "../history/history.repository";
 import { getClassById } from "../lms/classes/classes.repository";
 import {
   CreateMeetingBodyRequest,
@@ -28,7 +33,10 @@ import {
   updateMeeting,
 } from "./meetings.repository";
 
-export const createMeetingService = async (body: CreateMeetingBodyRequest) => {
+export const createMeetingService = async (
+  createdBy: string,
+  body: CreateMeetingBodyRequest
+) => {
   const eventMeeting = await getEventMeetingById(body.eventMeetingId);
 
   if (!eventMeeting) {
@@ -79,7 +87,12 @@ export const createMeetingService = async (body: CreateMeetingBodyRequest) => {
     startTime: new Date(body.startTime as Date),
     endTime: new Date(body.endTime as Date),
   });
-
+  await historyCreateFlag({
+    module: HistoryModule.MEETING,
+    title: `New Meeting - ${body.name}`,
+    actionId: data.id,
+    createdBy,
+  });
   return data;
 };
 
@@ -97,7 +110,7 @@ export const updateMeetingService = async (body: UpdateMeetingBodyRequest) => {
     meeting.eventMeetingId,
     body?.name || ""
   );
-  if(body.classId) {
+  if (body.classId) {
     const classess = await getClassById(body.classId);
 
     if (!classess) {
@@ -212,7 +225,10 @@ export const getMeetingByIdService = async (
   return data;
 };
 
-export const deleteMeetingService = async (meetingId: string) => {
+export const deleteMeetingService = async (
+  createdBy: string,
+  meetingId: string
+) => {
   const meeting = await getMeetingById(meetingId);
   if (!meeting) {
     return new ErrorApp(
@@ -229,5 +245,11 @@ export const deleteMeetingService = async (meetingId: string) => {
   //   );
   // }
   const data = await deleteMeeting(meetingId);
+  await historyDeleteFlag({
+    module: HistoryModule.MEETING,
+    title: `Delete Meeting - ${meeting.name}`,
+    actionId: data.id,
+    createdBy,
+  });
   return data;
 };
