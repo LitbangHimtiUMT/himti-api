@@ -14,6 +14,7 @@ import { certificateRoute } from "./certificates/certificates.route";
 
 export const lmsRoute = Router();
 
+lmsRoute.use("/certificates", certificateRoute);
 lmsRoute.use("/mentors", mentorsRoute);
 lmsRoute.use("/categories", categoriesRoute);
 lmsRoute.use("/mentor-transactions", mentorTransactionRoute);
@@ -25,4 +26,3 @@ lmsRoute.use("/transactions", transactionRoute);
 lmsRoute.use("/assignments", assignmentRoute);
 lmsRoute.use("/completed-modules", completedModuleRoute);
 lmsRoute.use("/completed-classes", completedClassRoute);
-lmsRoute.use("/certificates", certificateRoute);

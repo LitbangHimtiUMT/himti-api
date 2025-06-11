@@ -1,5 +1,7 @@
 import moment from "moment";
 import { prisma } from "../../../config";
+import { CertificateQuery } from "./certificates.interface";
+import { queryPagination } from "../../../utils/pagination";
 
 export const getLastCertificate = async (
   month: string | number,
@@ -61,3 +63,75 @@ export const getCertificateUser = async (userId: string, classId: string) => {
     },
   });
 };
+
+export const getCertificatesRepository = async(query: CertificateQuery, userId?: string) => {
+  const {search, classId} = query
+  return prisma.certificate.findMany({
+    where: {
+      ...classId && {
+        classId
+      },
+      ...userId && {
+        userId
+      },
+      ...search && {
+        OR: [
+          {
+            class: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              }
+            },
+          },
+          {
+            code: {
+              contains: search,
+              mode: "insensitive",
+            }
+          }
+        ]
+      }
+    },
+    include: {
+      class: {
+        include: {
+          category: true,
+        }
+      },
+    },
+    ...queryPagination(query)
+  })
+}
+
+export const getCertificatesCountRepository = async(query: CertificateQuery, userId?: string) => {
+  const {search, classId} = query
+  return prisma.certificate.count({
+    where: {
+      ...classId && {
+        classId
+      },
+      ...userId && {
+        userId
+      },
+      ...search && {
+        OR: [
+          {
+            class: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              }
+            },
+          },
+          {
+            code: {
+              contains: search,
+              mode: "insensitive",
+            }
+          }
+        ]
+      }
+    },
+  })
+}

@@ -372,7 +372,8 @@ export const MESSAGES = {
       HISTORY: 'Success to get event registration history',
     },
     CERTIFICATE: {
-      GENERATE: 'Success to generate certificate'
+      GENERATE: 'Success to generate certificate',
+      GET: 'Success to get certificate',
     },
     ASSIGNMENT: {
       GET: "Success to fetch assignment",
