@@ -514,7 +514,7 @@ export const biometricAuthService = async (
   };
   await historyLoginFlag({
     module: HistoryModule.AUTH,
-    title: `New User Login - ${user.name}`,
+    title: `New User Login HIMTI APP - ${user.name}`,
     actionId: user.id,
     createdBy: user.id,
   });
