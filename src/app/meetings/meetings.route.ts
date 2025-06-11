@@ -15,28 +15,29 @@ import { VerifySuperAdmin } from "../../middleware/verify-super-admin";
 
 const route = Router();
 
-route.get("/", verifyToken, CatchWrapper(getMeetingsController));
-route.put(
-  "/:meetingId",
-  VerifySuperAdmin,
-  validateRequest(updateMeetingSchema),
-  CatchWrapper(updateMeetingController)
-);
-route.post(
-  "/",
-  validateRequest(createMeetingSchema),
-  CatchWrapper(createMeetingController)
-);
-route.get("/:meetingId", verifyToken, CatchWrapper(getMeetingByIdController));
-route.get(
-  "/event-meeting/:eventMeetingId",
-  verifyToken,
-  CatchWrapper(getMeetingByEventMeetingIdController)
-);
-route.delete(
-  "/:meetingId",
-  VerifySuperAdmin,
-  CatchWrapper(deleteMeetingController)
-);
+route
+  .use(verifyToken)
+  .get("/", CatchWrapper(getMeetingsController))
+  .put(
+    "/:meetingId",
+    VerifySuperAdmin,
+    validateRequest(updateMeetingSchema),
+    CatchWrapper(updateMeetingController)
+  )
+  .post(
+    "/",
+    validateRequest(createMeetingSchema),
+    CatchWrapper(createMeetingController)
+  )
+  .get("/:meetingId", CatchWrapper(getMeetingByIdController))
+  .get(
+    "/event-meeting/:eventMeetingId",
+    CatchWrapper(getMeetingByEventMeetingIdController)
+  )
+  .delete(
+    "/:meetingId",
+    VerifySuperAdmin,
+    CatchWrapper(deleteMeetingController)
+  );
 
 export default route;
