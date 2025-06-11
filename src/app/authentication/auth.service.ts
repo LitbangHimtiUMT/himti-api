@@ -166,7 +166,7 @@ export const registerService = async (
     });
     await historyCreateFlag({
       module: HistoryModule.USER,
-      title: `New User HIMTI APP Register - ${response.name}`,
+      title: `New User Register (HIMTI APP) - ${response.name}`,
       actionId: response.id,
       createdBy: response.id,
     });
@@ -182,7 +182,7 @@ export const registerService = async (
   });
   await historyCreateFlag({
     module: HistoryModule.USER,
-    title: `New User LMS Register - ${response.name}`,
+    title: `New User Register (LMS) - ${response.name}`,
     actionId: response.id,
     createdBy: response.id,
   });
@@ -261,7 +261,7 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
     };
     await historyLoginFlag({
       module: HistoryModule.AUTH,
-      title: `New User Login HIMTI APP - ${user.name}`,
+      title: `New User Login (HIMTI APP) - ${user.name}`,
       actionId: user.id,
       createdBy: user.id,
     });
@@ -269,7 +269,7 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
   }
   await historyLoginFlag({
     module: HistoryModule.AUTH,
-    title: `New User Login LMS - ${user.name}`,
+    title: `New User Login (LMS) - ${user.name}`,
     actionId: user.id,
     createdBy: user.id,
   });
@@ -319,7 +319,7 @@ export const loginAdminService = async ({
 
   await historyLoginFlag({
     module: HistoryModule.AUTH,
-    title: `New User CMS Login - ${user.name}`,
+    title: `New User Login (CMS) - ${user.name}`,
     actionId: user.id,
     createdBy: user.id,
   });
@@ -514,7 +514,7 @@ export const biometricAuthService = async (
   };
   await historyLoginFlag({
     module: HistoryModule.AUTH,
-    title: `New User Login HIMTI APP - ${user.name}`,
+    title: `New User Login (HIMTI APP) - ${user.name}`,
     actionId: user.id,
     createdBy: user.id,
   });
