@@ -164,6 +164,12 @@ export const registerService = async (
         memberId,
       }),
     });
+    await historyCreateFlag({
+      module: HistoryModule.USER,
+      title: `New User HIMTI APP Register - ${response.name}`,
+      actionId: response.id,
+      createdBy: response.id,
+    });
     return response;
   }
   const response = await createUser({
@@ -176,7 +182,7 @@ export const registerService = async (
   });
   await historyCreateFlag({
     module: HistoryModule.USER,
-    title: `New User Register - ${response.name}`,
+    title: `New User LMS Register - ${response.name}`,
     actionId: response.id,
     createdBy: response.id,
   });
@@ -255,7 +261,7 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
     };
     await historyLoginFlag({
       module: HistoryModule.AUTH,
-      title: `New User Login - ${user.name}`,
+      title: `New User Login HIMTI APP - ${user.name}`,
       actionId: user.id,
       createdBy: user.id,
     });
@@ -263,7 +269,7 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
   }
   await historyLoginFlag({
     module: HistoryModule.AUTH,
-    title: `New User Login - ${user.name}`,
+    title: `New User Login LMS - ${user.name}`,
     actionId: user.id,
     createdBy: user.id,
   });
@@ -313,7 +319,7 @@ export const loginAdminService = async ({
 
   await historyLoginFlag({
     module: HistoryModule.AUTH,
-    title: `New User Login - ${user.name}`,
+    title: `New User CMS Login - ${user.name}`,
     actionId: user.id,
     createdBy: user.id,
   });
