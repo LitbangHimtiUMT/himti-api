@@ -110,5 +110,9 @@ export const getMeetingDTOMapper = (
       id: data.EventMeeting.id,
       name: data.EventMeeting.name,
     },
+    class: data.class ? {
+      id: data.class.id,
+      name: data.class.name
+    } : null
   };
 };

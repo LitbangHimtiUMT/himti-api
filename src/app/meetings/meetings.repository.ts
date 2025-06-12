@@ -25,6 +25,12 @@ export const getMeetingById = async (meetingId: string) => {
           userId: true,
         },
       },
+      class: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
       EventMeeting: true,
     },
   });
@@ -36,7 +42,7 @@ export const createMeeting = async ({
   startTime,
   endTime,
   eventMeetingId,
-  classId
+  classId,
 }: CreateMeetingBodyRequest) => {
   return await prisma.meeting.create({
     data: {
@@ -45,7 +51,7 @@ export const createMeeting = async ({
       startTime,
       endTime,
       eventMeetingId,
-      classId
+      classId,
     },
     select: {
       id: true,
@@ -83,7 +89,7 @@ export const getMeetingsByEventMeetingId = async (query: FilterMeeting) => {
         select: {
           id: true,
           name: true,
-        }
+        },
       },
       EventMeeting: {
         select: {
