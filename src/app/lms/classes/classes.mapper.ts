@@ -7,8 +7,12 @@ import {
   Session,
   User,
 } from "@prisma/client";
+import { environment } from "../../../libs";
 import { ImagePath } from "../../../utils/image-path";
-import { BUCKET_FOLDER } from "../../../utils/upload-file-to-storage";
+import {
+  BUCKET_FOLDER,
+  GetFileFromStorage
+} from "../../../utils/upload-file-to-storage";
 import { ModuleData } from "../modules/modules.mapper";
 import { ClassDTO } from "./classes.dto";
 
@@ -60,9 +64,13 @@ export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
   }));
 };
 
-export const getDetailClassMapper = (
+export const getDetailClassMapper = async (
   data: ClassData & { isAlreadyJoin?: boolean }
-): ClassDTO => {
+): Promise<ClassDTO> => {
+  const file = await GetFileFromStorage(
+    `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${data.thumbnail}`
+  );
+
   return {
     id: data.id,
     name: data.name,
@@ -70,33 +78,38 @@ export const getDetailClassMapper = (
     status: data.status,
     level: data.level,
     code: btoa(data.code),
-    // isAlreadyJoin: data.isAlreadyJoin,
+    thumbnailFileSize: file?.buffer?.ContentLength ?? 0,
+    isAlreadyJoin: !!data?.isAlreadyJoin,
     category: {
       id: data.category.id,
       name: data.category.name,
     },
-    sessions: (data?.session ?? []).map(session => {
+    sessions: (data?.session ?? []).map((session) => {
       // Calculate isComplete for each module
-      const modulesWithCompletion = session.module.map(module => ({
+      const modulesWithCompletion = session.module.map((module) => ({
         id: module.id,
         name: module.name,
-        fileModule: module.fileModule ? ImagePath(`${BUCKET_FOLDER.modules}/${module.fileModule}`) : null,
+        fileModule: module.fileModule
+          ? ImagePath(`${BUCKET_FOLDER.modules}/${module.fileModule}`)
+          : null,
         textModule: module.textModule,
         videoUrl: module.videoUrl,
-        isCompleted: module.completedModule.length > 0 // Assuming completedModule has entries if completed
+        isCompleted: module.completedModule.length > 0, // Assuming completedModule has entries if completed
       }));
-      
+
       // Session is complete if all its modules are complete
-      const isSessionComplete = modulesWithCompletion.every(module => module.isCompleted);
-      
+      const isSessionComplete = modulesWithCompletion.every(
+        (module) => module.isCompleted
+      );
+
       return {
         id: session.id,
         name: session.name,
         isCompleted: session.module.length && isSessionComplete,
-        modules: modulesWithCompletion
-      }
+        modules: modulesWithCompletion,
+      };
     }),
-    thumbnail: data.thumbnail,
+    thumbnail: ImagePath(`${BUCKET_FOLDER.class}/${data.thumbnail}`),
     price: Number(data.price),
     totalParticipant: data._count.classParticipant,
     creator: {
@@ -149,16 +162,17 @@ export const getClassAccessMapper = (
           : "In Progress",
       total: {
         ...total,
-        precentage: (((total.completed / total.module) * 100) || 0).toFixed(2),
+        precentage: ((total.completed / total.module) * 100 || 0).toFixed(2),
       },
       totalSession: (item.class.session ?? []).length ?? 0,
       // sessions: item.class.session.map((session) => ({
       //   id: session.id,
       //   name: session.name,
       // })),
-      certificate: item.class.certificate.find(
-        (cert) => cert.classId === item.classId && item.userId === userId
-      ) ?? null,
+      certificate:
+        item.class.certificate.find(
+          (cert) => cert.classId === item.classId && item.userId === userId
+        ) ?? null,
     };
   });
 };

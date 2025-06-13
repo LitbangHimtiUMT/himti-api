@@ -41,7 +41,8 @@ import {
   getClassById,
   getClassCountRepository,
   getClassRepository,
-  updateStatusClass
+  updateClassRepository,
+  updateStatusClass,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
 
@@ -60,6 +61,7 @@ export const createClassService = async (
 
   try {
     const validate = await createClassValidate(
+      "create",
       {
         categoryId,
         level,
@@ -125,6 +127,100 @@ export const createClassService = async (
       );
     }
     return new ErrorApp(
+      "Error when update class data or upload file to storage",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+};
+
+export const updateClassService = async (
+  classId: string,
+  {
+    name,
+    description,
+    thumbnail,
+    level,
+    categoryId,
+    price,
+  }: Partial<CreateClassBodyRequest>,
+) => {
+  let fileName;
+
+  try {
+    const classess = await getClassById(classId);
+
+    if (!classess) {
+      return new ErrorApp(
+        MESSAGES.ERROR.NOT_FOUND.CLASS,
+        404,
+        MESSAGE_CODE.NOT_FOUND
+      );
+    }
+    const validate = await createClassValidate(
+      "update",
+      {
+        categoryId,
+        level,
+        thumbnail,
+        name,
+        price,
+        description,
+      },
+    );
+
+    if (validate instanceof ErrorApp) {
+      return validate;
+    }
+
+    if (thumbnail) {
+      const img = thumbnail as Express.Multer.File;
+
+      fileName = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}.webp`;
+      const quality =
+        ((thumbnail as unknown as Express.Multer.File)?.size as number) >
+        5 * 1024 * 1024
+          ? 75
+          : 100;
+      const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
+      const exist = await GetFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${classess.thumbnail}`
+      );
+      if (exist.exists) {
+        await RemoveFileFromStorage(
+          `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${classess.thumbnail}`
+        );
+      }
+      await UploadFileToStorage({
+        Bucket: environment.STORAGE.BUCKET,
+        Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`,
+        Body: compress,
+        ContentType: FileType["image/webp"],
+        ACL: "public-read",
+      });
+    }
+    const createClass = await updateClassRepository(classess.id, {
+      name,
+      description,
+      thumbnail: fileName ? fileName : undefined,
+      categoryId,
+      price,
+    });
+
+    return createClass;
+  } catch (error) {
+    console.log({
+      error,
+    });
+    const exist = await GetFileFromStorage(
+      `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`
+    );
+    if (exist.exists) {
+      await RemoveFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`
+      );
+    }
+    return new ErrorApp(
       "Error when create class data or upload file to storage",
       400,
       MESSAGE_CODE.BAD_REQUEST
@@ -166,7 +262,10 @@ export const getClassUserService = async (userId: string, query: Query) => {
   const meta = Meta(Number(page), Number(perPage), totalData);
 
   return {
-    data: getClassAccessMapper(classes as unknown as ClassParticipantData[], userId),
+    data: getClassAccessMapper(
+      classes as unknown as ClassParticipantData[],
+      userId
+    ),
     meta,
   };
 };
@@ -265,7 +364,10 @@ export const userJoinClassService = async (userId: string, classId: string) => {
   return undefined;
 };
 
-export const getDetailClassService = async (classId: string, userId?: string) => {
+export const getDetailClassService = async (
+  classId: string,
+  userId?: string
+) => {
   const classess = await getClassById(classId, userId);
   if (!classess) {
     return new ErrorApp(
@@ -274,7 +376,7 @@ export const getDetailClassService = async (classId: string, userId?: string) =>
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  return getDetailClassMapper(classess as ClassData);
+  return await getDetailClassMapper(classess as ClassData);
 };
 
 export const getDetailClassByCodeService = async (
@@ -294,7 +396,7 @@ export const getDetailClassByCodeService = async (
     userId
   );
 
-  return getDetailClassMapper({
+  return await getDetailClassMapper({
     ...classess,
     isAlreadyJoin: !!alreadyJoin,
   } as ClassData);
@@ -313,12 +415,12 @@ export const joinInvitationClassService = async (
     );
   }
 
-  if(classess.createdBy === userId) {
+  if (classess.createdBy === userId) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.MENTOR_JOIN_CLASS,
       400,
       MESSAGE_CODE.BAD_REQUEST
-    )
+    );
   }
 
   const alreadyJoin = await getExistingClassParticipantRepository(
@@ -352,7 +454,7 @@ export const joinInvitationClassService = async (
   };
 };
 
-export const publishClassService = async(classId: string, userId: string) => {
+export const publishClassService = async (classId: string, userId: string) => {
   const classess = await getClassById(classId);
   if (!classess) {
     return new ErrorApp(
@@ -361,18 +463,21 @@ export const publishClassService = async(classId: string, userId: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  if(classess.createdBy !== userId) {
+  if (classess.createdBy !== userId) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.CREATOR_PUBLISH,
       400,
       MESSAGE_CODE.BAD_REQUEST
-    )
+    );
   }
-  return await updateStatusClass(classess.id, ClassStatus.PUBLISH)
-}
+  return await updateStatusClass(classess.id, ClassStatus.PUBLISH);
+};
 
-export const deleteClassessService = async(classId: string, userId: string) => {
-  const classess = await getClassById(classId)
+export const deleteClassessService = async (
+  classId: string,
+  userId: string
+) => {
+  const classess = await getClassById(classId);
   if (!classess) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.CLASS,
@@ -380,12 +485,12 @@ export const deleteClassessService = async(classId: string, userId: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  if(classess.createdBy !== userId) {
+  if (classess.createdBy !== userId) {
     return new ErrorApp(
       MESSAGES.ERROR.FORBIDDEN.DELETE_CLASS,
       400,
       MESSAGE_CODE.BAD_REQUEST
-    )
+    );
   }
-  return await deleteClassRepository(classess.id)
-}
+  return await deleteClassRepository(classess.id);
+};

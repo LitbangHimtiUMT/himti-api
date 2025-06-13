@@ -6,40 +6,57 @@ import { getUserById } from "../../authentication/auth.repository";
 import { CreateClassBodyRequest } from "./classes.dto";
 
 export const createClassValidate = async (
-  { categoryId, level, thumbnail }: Omit<CreateClassBodyRequest, "session">,
-  userId: string
+  action: "create" | "update",
+  {
+    categoryId,
+    level,
+    thumbnail,
+  }: Partial<Omit<CreateClassBodyRequest, "session">>,
+  userId?: string
 ) => {
-  if (level !== "BEGINNER" && level !== "INTERMEDIATE" && level !== "EXPERT") {
-    return new ErrorApp(
-      MESSAGES.ERROR.INVALID.LEVEL,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
+  if (level) {
+    if (
+      level !== "BEGINNER" &&
+      level !== "INTERMEDIATE" &&
+      level !== "EXPERT"
+    ) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.LEVEL,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
   }
 
-  const getCategory = await getCategoryById(categoryId as string);
-  if (!getCategory) {
-    return new ErrorApp(
-      MESSAGES.ERROR.NOT_FOUND.CATEGORY,
-      404,
-      MESSAGE_CODE.NOT_FOUND
-    );
+  if (categoryId) {
+    const getCategory = await getCategoryById(categoryId as string);
+    if (!getCategory) {
+      return new ErrorApp(
+        MESSAGES.ERROR.NOT_FOUND.CATEGORY,
+        404,
+        MESSAGE_CODE.NOT_FOUND
+      );
+    }
   }
 
-  if (!thumbnail) {
-    return new ErrorApp(
-      MESSAGES.ERROR.REQUIRED.IMAGE,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
+  if (action === "create") {
+    if (!thumbnail) {
+      return new ErrorApp(
+        MESSAGES.ERROR.REQUIRED.IMAGE,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
   }
 
-  const getUser = await getUserById(userId as string);
-  if (!getUser) {
-    return new ErrorApp(
-      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
-      404,
-      MESSAGE_CODE.NOT_FOUND
-    );
+  if (userId) {
+    const getUser = await getUserById(userId as string);
+    if (!getUser) {
+      return new ErrorApp(
+        MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+        404,
+        MESSAGE_CODE.NOT_FOUND
+      );
+    }
   }
 };

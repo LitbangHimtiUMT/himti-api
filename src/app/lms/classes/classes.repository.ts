@@ -62,6 +62,26 @@ export const createClassRepository = async (
   });
 };
 
+export const updateClassRepository = async (
+  classId: string,
+  data: Partial<CreateClassBodyRequest>
+) => {
+  const { name, description, thumbnail, level, categoryId, price } = data;
+  return await prisma.class.update({
+    where: {
+      id: classId,
+    },
+    data: {
+      name,
+      description,
+      thumbnail: thumbnail as string,
+      level: level as Level,
+      price: Number.isNaN(Number(price)) ? undefined : Number(price),
+      categoryId: categoryId as string,
+    },
+  });
+};
+
 export const getClassRepository = async (
   query: Query & { ignoreUser?: string },
   userId?: string
@@ -163,10 +183,10 @@ export const updateStatusClass = async (
   });
 };
 
-export const deleteClassRepository = async(classId: string) => {
+export const deleteClassRepository = async (classId: string) => {
   return await prisma.class.delete({
     where: {
       id: classId,
     },
   });
-}
+};

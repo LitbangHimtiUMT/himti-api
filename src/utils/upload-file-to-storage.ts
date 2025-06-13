@@ -135,6 +135,24 @@ export const UploadFileToStorage = async (data: FileInterface) => {
   }
 };
 
+export const GetFileSizeFromStorage = async (data: FileInterface) => {
+  try {
+    const result = await StorageS3Client.send(new HeadObjectCommand(data));
+    const sizeInBytes = result.ContentLength ?? 0;
+
+    console.log("File size (bytes):", sizeInBytes);
+
+    return {
+      sizeInBytes,
+      sizeInKilobytes: sizeInBytes / 1024,
+      sizeInMegabytes: sizeInBytes / (1024 * 1024),
+    };
+  } catch (error) {
+    console.error("Failed to get file size:", error);
+    throw error;
+  }
+};
+
 export const RemoveFileFromStorage = async (key: string) => {
   try {
     const file = new DeleteObjectCommand({
@@ -153,11 +171,11 @@ export const GetFileFromStorage = async (key: string) => {
     Bucket: environment.STORAGE.BUCKET,
     Key: key,
   });
+  console.log({command})
 
   try {
-    await StorageS3Client.send(command);
-    console.log(`File exists: ${key}`);
-    return { exists: true, error: null };
+    const buffer = await StorageS3Client.send(command);
+    return { exists: true, error: null,  buffer};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.name === "NotFound") {
@@ -165,7 +183,7 @@ export const GetFileFromStorage = async (key: string) => {
       return { exists: false, error: null };
     }
     console.error(`Error checking file existence: ${error}`);
-    return { exists: false, error };
+    return { exists: false, error, buffer: null };
   }
 };
 

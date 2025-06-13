@@ -37,6 +37,7 @@ export interface ClassDTO {
   };
   sessions?: SessionClassDTO[]
   code: string;
+  thumbnailFileSize?: number
   thumbnail: string | null;
   price: number;
   creator: {

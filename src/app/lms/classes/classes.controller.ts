@@ -4,7 +4,7 @@ import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
-import { createClassSchema } from "./classes.request";
+import { createClassSchema, updateClassSchema } from "./classes.request";
 import {
   createClassService,
   deleteClassessService,
@@ -14,6 +14,7 @@ import {
   getDetailClassService,
   joinInvitationClassService,
   publishClassService,
+  updateClassService,
   userJoinClassService,
 } from "./classes.service";
 
@@ -51,6 +52,41 @@ export const createClassController = async (
   }
 
   HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.CLASS);
+};
+
+export const updateClassController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const file = req?.file as Express.Multer.File;
+  const { body, params } = req;
+  console.log({ file });
+  const combine = {
+    ...body,
+    thumbnail: file,
+  };
+
+  const validate = updateClassSchema.validate(combine);
+  if (validate.error) {
+    next(
+      new ErrorApp(
+        validate.error.message.replace(/"/g, ""),
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      )
+    );
+    return;
+  }
+
+  const classCtrl = await updateClassService(params?.classId, combine);
+
+  if (classCtrl instanceof ErrorApp) {
+    next(classCtrl);
+    return;
+  }
+
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.CLASS.UPDATE);
 };
 
 export const getClassController = async (
@@ -123,7 +159,7 @@ export const getDetailClassController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const {userId, params} = req
+  const { userId, params } = req;
   const { classId } = params;
   const result = await getDetailClassService(classId, userId);
   if (result instanceof ErrorApp) {
@@ -172,7 +208,7 @@ export const joinInvitationClassController = async (
     next(result);
     return;
   }
-  console.log({result})
+  console.log({ result });
   HandleResponse(
     res,
     200,
@@ -198,7 +234,7 @@ export const publishClassController = async (
     res,
     200,
     MESSAGE_CODE.SUCCESS,
-    MESSAGES.SUCCESS.CLASS.PUBLISH,
+    MESSAGES.SUCCESS.CLASS.PUBLISH
   );
 };
 
@@ -214,10 +250,5 @@ export const deleteClassessController = async (
     next(result);
     return;
   }
-  HandleResponse(
-    res,
-    200,
-    MESSAGE_CODE.SUCCESS,
-    MESSAGES.SUCCESS.CLASS.DELETE,
-  );
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.CLASS.DELETE);
 };

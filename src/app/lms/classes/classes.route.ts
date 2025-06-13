@@ -17,6 +17,7 @@ import {
   getDetailClassController,
   joinInvitationClassController,
   publishClassController,
+  updateClassController,
   userJoinClassController,
 } from "./classes.controller";
 import { joinInvitationClassSchema } from "./classes.request";
@@ -32,6 +33,12 @@ classRoute
     verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     CatchWrapper(upload.single("thumbnail")),
     CatchWrapper(createClassController)
+  )
+  .put(
+    "/:classId",
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
+    CatchWrapper(upload.single("thumbnail")),
+    CatchWrapper(updateClassController)
   )
   .get("/user", CatchWrapper(getClassUserController))
   .post(
