@@ -101,7 +101,18 @@ export const getClassRepository = async (
       }),
       ...(userId &&
         !ignoreUserBool && {
-          createdBy: userId,
+          OR: [
+            {
+              createdBy: userId,
+            },
+            {
+              ClassMentor: {
+                some: {
+                  userId,
+                },
+              },
+            },
+          ],
         }),
       status: userId ? undefined : "PUBLISH",
     },
@@ -147,7 +158,18 @@ export const getClassCountRepository = async (
       }),
       ...(userId &&
         !ignoreUserBool && {
-          createdBy: userId,
+          OR: [
+            {
+              createdBy: userId,
+            },
+            {
+              ClassMentor: {
+                some: {
+                  userId,
+                },
+              },
+            },
+          ],
         }),
       status: userId ? undefined : "PUBLISH",
     },
