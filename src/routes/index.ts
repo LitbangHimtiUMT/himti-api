@@ -140,6 +140,11 @@ route.get("/", async (req: Request, res: Response) => {
   return res.json({ message: "Hello World 🚀" });
 });
 
+route.get("/scheduler", async (req: Request, res: Response) => {
+  console.log('himti scheduler...')
+  return res.json({ message: "himti scheduler" });
+});
+
 route.use("*", (req: Request, res: Response) => {
   return res.status(404).json({
     status: 404,

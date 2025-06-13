@@ -18,10 +18,13 @@
       "dest": "src/index.ts"
     }
   ],
-  "crons": [
-    {
-      "path": "/testing-cronjob",
-      "schedule": "35 21 * * *"
-    }
-  ]
+  "cron": {
+    "jobs": [
+      {
+        "path": "/scheduler",
+        "schedule": "* * * * *",
+        "enabled": true
+      }
+    ]
+  }
 }
