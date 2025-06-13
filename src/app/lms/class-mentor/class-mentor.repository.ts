@@ -13,6 +13,18 @@ export const createClassMentorRepository = async (
   });
 };
 
+export const getClassMentorRepository = async (
+  classId: string,
+  userId: string
+) => {
+  return prisma.classMentor.findFirst({
+    where: {
+      classId,
+      userId,
+    },
+  });
+};
+
 export const getMentorByClassRepository = async (classId: string, query: Query) => {
   const {search} = query
   return prisma.classMentor.findMany({

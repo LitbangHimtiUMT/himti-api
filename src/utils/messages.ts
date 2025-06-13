@@ -150,6 +150,7 @@ export const MESSAGES = {
       SUBMISSION_FILE_SIZE: "Submission file size must be less than 10mb",
       SUBMISSION_DUE_DATE: "Submission is late",
       REVIEW_STATUS: 'Only review status can be approve or reject',
+      ALREADY_INVITED: 'Mentor is already invited in this class',
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",

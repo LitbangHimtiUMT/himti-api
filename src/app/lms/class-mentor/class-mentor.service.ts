@@ -9,6 +9,7 @@ import { getMentorByIdRepository } from "../mentor/mentor.repository";
 import { InviteMentorDTO } from "./class-mentor.dto";
 import {
   createClassMentorRepository,
+  getClassMentorRepository,
   getMentorByClassRepository,
 } from "./class-mentor.repository";
 import { getClassMentorMapper } from "./class-mentor.mapper";
@@ -32,6 +33,15 @@ export const inviteMentorService = async (
       MESSAGES.ERROR.NOT_FOUND.MENTOR,
       404,
       MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const exist = await getClassMentorRepository(classess.id, mentor.userId);
+  if (exist) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ALREADY_INVITED,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
     );
   }
   const result = await createClassMentorRepository(classess.id, mentor.userId);

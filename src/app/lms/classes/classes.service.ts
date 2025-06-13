@@ -1,4 +1,4 @@
-import { ClassStatus } from "@prisma/client";
+import { ClassStatus, HistoryModule } from "@prisma/client";
 import sharp from "sharp";
 import { Query } from "../../../interface/Query";
 import { environment } from "../../../libs";
@@ -45,6 +45,7 @@ import {
   updateStatusClass,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
+import { historyCreateFlag } from "../../history/history.repository";
 
 export const createClassService = async (
   {
@@ -112,7 +113,12 @@ export const createClassService = async (
       },
       userId
     );
-
+    await historyCreateFlag({
+      module: HistoryModule.CLASS,
+      title: `New Class - ${createClass.name}`,
+      actionId: createClass.id,
+      createdBy: userId,
+    });
     return createClass;
   } catch (error) {
     console.log({
@@ -143,7 +149,7 @@ export const updateClassService = async (
     level,
     categoryId,
     price,
-  }: Partial<CreateClassBodyRequest>,
+  }: Partial<CreateClassBodyRequest>
 ) => {
   let fileName;
 
@@ -157,17 +163,14 @@ export const updateClassService = async (
         MESSAGE_CODE.NOT_FOUND
       );
     }
-    const validate = await createClassValidate(
-      "update",
-      {
-        categoryId,
-        level,
-        thumbnail,
-        name,
-        price,
-        description,
-      },
-    );
+    const validate = await createClassValidate("update", {
+      categoryId,
+      level,
+      thumbnail,
+      name,
+      price,
+      description,
+    });
 
     if (validate instanceof ErrorApp) {
       return validate;
@@ -449,6 +452,12 @@ export const joinInvitationClassService = async (
     },
     userId
   );
+  await historyCreateFlag({
+    module: HistoryModule.CLASS,
+    title: `Join class ${classess.name}`,
+    actionId: result.id,
+    createdBy: userId,
+  });
   return {
     classId: result.classId,
   };
