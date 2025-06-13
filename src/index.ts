@@ -3,7 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-
+import schedule from 'node-schedule'
 import { environment } from "./libs";
 import routes from "./routes";
 import { HandlingError } from "./utils/handling-error";
@@ -55,6 +55,9 @@ app.use(HandlingError);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}🚀`);
+  schedule.scheduleJob('* * * * *', async () => {
+		console.log('log scheduler himti api')
+	})
 });
 
 export default app;
