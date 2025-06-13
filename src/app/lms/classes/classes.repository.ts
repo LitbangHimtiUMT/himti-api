@@ -58,6 +58,11 @@ export const createClassRepository = async (
       createdBy: userId,
       status: "DRAFT",
       code: data.code,
+      ClassMentor: {
+        create: {
+          userId,
+        },
+      },
     },
   });
 };
