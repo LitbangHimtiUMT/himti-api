@@ -15,6 +15,7 @@ import {
 } from "../../../utils/upload-file-to-storage";
 import { ModuleData } from "../modules/modules.mapper";
 import { ClassDTO } from "./classes.dto";
+import { formatTime } from "../../../utils/format-time";
 
 interface SessionData extends Session {
   module: ModuleData[];
@@ -28,6 +29,7 @@ export interface ClassData extends Class {
   completedClass?: CompletedClass[];
   _count: {
     classParticipant: number;
+    ClassMentor: number;
     session: number;
   };
   isAlreadyJoin?: boolean;
@@ -53,6 +55,8 @@ export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
     thumbnail: ImagePath(`${BUCKET_FOLDER.class}/${item.thumbnail}`),
     price: Number(item.price),
     totalParticipant: item._count.classParticipant,
+    totalMentor: item._count.ClassMentor,
+    createdAt: formatTime(item.createdAt),
     creator: {
       id: item.user.id,
       name: item.user.name,

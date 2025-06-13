@@ -31,6 +31,7 @@ export interface ClassDTO {
   totalParticipant: number;
   isAlreadyJoin?: boolean
   level: Level;
+  createdAt?: Date | string;
   category: {
     id: string;
     name: string;

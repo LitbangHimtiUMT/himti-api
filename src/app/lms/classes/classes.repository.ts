@@ -122,6 +122,7 @@ export const getClassRepository = async (
       _count: {
         select: {
           classParticipant: true,
+          ClassMentor: true,
         },
       },
     },
