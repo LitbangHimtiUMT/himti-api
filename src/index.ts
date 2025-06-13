@@ -3,10 +3,11 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import schedule from 'node-schedule'
+import schedule from "node-schedule";
 import { environment } from "./libs";
 import routes from "./routes";
 import { HandlingError } from "./utils/handling-error";
+import { prisma } from "./config";
 
 const app = express();
 
@@ -55,9 +56,16 @@ app.use(HandlingError);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}🚀`);
-  schedule.scheduleJob('* * * * *', async () => {
-		console.log('log scheduler himti api')
-	})
+  schedule.scheduleJob("* * * * *", async () => {
+    console.log("log scheduler himti api");
+    await prisma.history.create({
+      data: {
+        flag: "CREATE",
+        module: "USER",
+        title: "User Scheduler",
+      },
+    });
+  });
 });
 
 export default app;
