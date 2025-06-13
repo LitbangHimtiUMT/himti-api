@@ -21,6 +21,11 @@ import {
   userJoinClassController,
 } from "./classes.controller";
 import { joinInvitationClassSchema } from "./classes.request";
+import {
+  getMentorByClassController,
+  inviteMentorController,
+} from "../class-mentor/class-mentor.controller";
+import { inviteMentorSchema } from "../class-mentor/class-mentor.request";
 
 export const classRoute = Router();
 
@@ -28,6 +33,12 @@ classRoute
   .use(decodeToken)
   .get("/", CatchWrapper(getClassController))
   .use(verifyToken)
+  .post(
+    "/invite",
+    validateRequest(inviteMentorSchema),
+    CatchWrapper(inviteMentorController)
+  )
+  .get("/mentor/:classId", CatchWrapper(getMentorByClassController))
   .post(
     "/",
     verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),

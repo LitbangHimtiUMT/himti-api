@@ -1,7 +1,7 @@
 import { prisma } from "../../../config";
-import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../../utils/pagination";
 import { CreateMentorDAO } from "./mentor.dao";
+import { QueryMentor } from "./mentor.interface";
 
 export const createMentorRepository = async (
   userId: string,
@@ -27,8 +27,11 @@ export const getMentorByUserIdRepository = async (userId: string) => {
   });
 };
 
-export const getMentorsRepository = async (query: Query) => {
-  const { search } = query;
+export const getMentorsRepository = async (
+  query: QueryMentor,
+  userId?: string
+) => {
+  const { search, classId } = query;
   return await prisma.mentor.findMany({
     where: {
       user: {
@@ -39,6 +42,22 @@ export const getMentorsRepository = async (query: Query) => {
           },
         }),
       },
+      NOT: [
+        ...(userId ? [{ userId }] : []),
+        ...(classId
+          ? [
+              {
+                user: {
+                  ClassMentor: {
+                    some: {
+                      classId,
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+      ],
     },
     include: {
       user: true,
@@ -47,8 +66,11 @@ export const getMentorsRepository = async (query: Query) => {
   });
 };
 
-export const getMentorsCountRepository = async (query: Query) => {
-  const { search } = query;
+export const getMentorsCountRepository = async (
+  query: QueryMentor,
+  userId?: string
+) => {
+  const { search, classId } = query;
   return await prisma.mentor.count({
     where: {
       user: {
@@ -59,6 +81,22 @@ export const getMentorsCountRepository = async (query: Query) => {
           },
         }),
       },
+      NOT: [
+        ...(userId ? [{ userId }] : []),
+        ...(classId
+          ? [
+              {
+                user: {
+                  ClassMentor: {
+                    some: {
+                      classId,
+                    },
+                  },
+                },
+              },
+            ]
+          : []),
+      ],
     },
   });
 };

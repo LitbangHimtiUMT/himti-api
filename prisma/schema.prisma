@@ -35,6 +35,7 @@ model User {
   Transaction           Transaction[]
   EventRegistration     EventRegistration[]
   History               History[]
+  ClassMentor           ClassMentor[]
 
   @@index([memberId], map: "user_fk_1")
   @@index([email], map: "user_fk_2")
@@ -333,9 +334,25 @@ model Class {
   certificate      Certificate[]
   cransaction      Transaction[]
   Meeting          Meeting[]
+  ClassMentor      ClassMentor[]
 
   @@index([createdBy], map: "classess_fk_1")
   @@map("classes")
+}
+
+model ClassMentor {
+  id        String   @id @unique @default(uuid()) @db.Char(36)
+  classId   String   @map("class_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  user      User     @relation(fields: [userId], references: [id], map: "class_mentor_user")
+  class     Class    @relation(fields: [classId], references: [id], map: "class_mentor_class")
+
+  @@unique([userId, classId], map: "user_class_unique")
+  @@index([classId], map: "class_mentor_class_id_fkey")
+  @@index([userId], map: "class_mentor_user_id_fkey")
+  @@map("class_mentor")
 }
 
 model ClassParticipant {
@@ -510,23 +527,11 @@ model Transaction {
   updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
   class         Class             @relation(fields: [classId], references: [id], onDelete: NoAction)
   user          User              @relation(fields: [userId], references: [id], onDelete: NoAction)
-  enrollment    Enrollment[]
 
   @@unique([uniqueCode], map: "transactions_unique_pk_1")
   @@index([classId], map: "transactions_fk_1")
   @@index([userId], map: "transactions_fk_2")
   @@map("transactions")
-}
-
-model Enrollment {
-  id            String      @id @unique @default(uuid())
-  transactionId String      @map("transaction_id") @db.VarChar(110)
-  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamp(0)
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
-
-  @@index([transactionId], map: "enrollment_fk_1")
-  @@map("enrollment")
 }
 
 model EventRegistration {
@@ -568,6 +573,9 @@ enum HistoryModule {
   MEMBER
   AUTH
   VERSION
+  CLASS
+  MENTOR
+  LECTURER
 }
 
 enum HistoryFlag {

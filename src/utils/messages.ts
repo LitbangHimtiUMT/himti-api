@@ -355,6 +355,7 @@ export const MESSAGES = {
       UPDATE: "Success to update class",
       JOIN: "Success to join class",
       PUBLISH: "Success to publish class",
+      INVITE_MENTOR: "Success to invite mentor",
     },
     CLASS_PARTICIPANT: {
       GET: "Success to fetch class participant",

@@ -9,6 +9,7 @@ import { ErrorApp } from "../../../utils/http-error";
 import { HandleResponse } from "../../../utils/handle-response";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { MESSAGES } from "../../../utils/messages";
+import { RequestWithAccessToken } from "../../../interface/Request";
 
 export const createMentorController = async (
   req: Request,
@@ -26,12 +27,12 @@ export const createMentorController = async (
 };
 
 export const getMentorsController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { query } = req;
-  const result = await getMentorsService(query);
+  const { query, userId } = req;
+  const result = await getMentorsService(query, userId);
   if (result instanceof ErrorApp) {
     next(result);
     return;
