@@ -18,13 +18,10 @@
       "dest": "src/index.ts"
     }
   ],
-  "cron": {
-    "jobs": [
-      {
-        "path": "/scheduler",
-        "schedule": "* * * * *",
-        "enabled": true
-      }
-    ]
-  }
+  "crons": [
+    {
+      "path": "/scheduler",
+      "schedule": "* * * * *"
+    }
+  ]
 }
