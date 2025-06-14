@@ -208,6 +208,7 @@ export const updateClassService = async (
       thumbnail: fileName ? fileName : undefined,
       categoryId,
       price,
+      level
     });
 
     return createClass;
