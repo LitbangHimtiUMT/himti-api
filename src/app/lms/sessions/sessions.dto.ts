@@ -1,8 +1,8 @@
 import { ModulesDTO } from "../modules/modules.dto";
 
 export interface CreateSessionBodyRequest {
-  name?: string;
-  classId?: string;
+  name: string;
+  classId: string;
 }
 
 export interface SessionDTO {

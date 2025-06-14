@@ -6,4 +6,5 @@ export interface HistoryCreationDTO {
     flag: HistoryFlag
     actionId?: string
     createdBy?: string
+    statusCode?: string
 }

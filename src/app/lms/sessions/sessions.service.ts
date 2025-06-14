@@ -24,6 +24,7 @@ export const createSessionService = async ({
 }: CreateSessionBodyRequest) => {
   const validate = await createSessionValidate({
     classId,
+    name,
   });
 
   if (validate instanceof ErrorApp) {

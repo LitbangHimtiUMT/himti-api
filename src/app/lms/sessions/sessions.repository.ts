@@ -106,3 +106,12 @@ export const getDetailSession = async (sessionId: string) => {
     },
   });
 };
+
+export const getSessionByName = async (name: string, classId: string) => {
+  return await prisma.session.findFirst({
+    where: {
+      name,
+      classId
+    },
+  });
+};

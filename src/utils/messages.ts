@@ -89,6 +89,7 @@ export const MESSAGES = {
       MEETING: "Meeting at this meeting event already exists",
       USER_MENTOR: "User has become a mentor",
       CATEGORY: "Category is already exist",
+      SESSION_CLASS: "Session already exists in this class",
     },
     INVALID: {
       GLOBAL: {

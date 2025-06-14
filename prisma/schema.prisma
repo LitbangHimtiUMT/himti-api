@@ -550,14 +550,15 @@ model EventRegistration {
 }
 
 model History {
-  id        String        @id @unique @default(uuid()) @db.Char(36)
-  title     String
-  flag      HistoryFlag
-  module    HistoryModule
-  actionId  String?       @map("action_id")
-  createdBy String?       @map("created_by")
-  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamp(0)
+  id         String        @id @unique @default(uuid()) @db.Char(36)
+  title      String
+  flag       HistoryFlag
+  module     HistoryModule
+  statusCode String?        @map("status_code")
+  actionId   String?       @map("action_id")
+  createdBy  String?       @map("created_by")
+  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime      @updatedAt @map("updated_at") @db.Timestamp(0)
 
   user User? @relation(fields: [createdBy], references: [id])
 
@@ -576,6 +577,7 @@ enum HistoryModule {
   CLASS
   MENTOR
   LECTURER
+  SYSTEM
 }
 
 enum HistoryFlag {
@@ -584,6 +586,7 @@ enum HistoryFlag {
   DELETE
   LOGIN
   LOGOUT
+  ERROR
 }
 
 enum Jabatan {

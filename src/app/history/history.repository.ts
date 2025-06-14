@@ -1,4 +1,4 @@
-import { HistoryFlag } from "@prisma/client";
+import { HistoryFlag, HistoryModule } from "@prisma/client";
 import { prisma } from "../../config";
 import { HistoryCreationDTO } from "./history.dto";
 import { HistoryQuery } from "./history.interface";
@@ -11,6 +11,7 @@ export const createHistory = async (data: HistoryCreationDTO) => {
       module: data.module,
       title: data.title,
       actionId: data.actionId,
+      statusCode: data.statusCode
     },
   });
 };
@@ -25,6 +26,7 @@ export const historyCreateFlag = async (
       title: data.title,
       actionId: data.actionId,
       createdBy: data.createdBy,
+      statusCode: data.statusCode
     },
   });
 };
@@ -39,6 +41,7 @@ export const historyLoginFlag = async (
       title: data.title,
       actionId: data.actionId,
       createdBy: data.createdBy,
+      statusCode: data.statusCode
     },
   });
 };
@@ -53,6 +56,7 @@ export const historyLogoutFlag = async (
       title: data.title,
       actionId: data.actionId,
       createdBy: data.createdBy,
+      statusCode: data.statusCode
     },
   });
 };
@@ -67,6 +71,37 @@ export const historyDeleteFlag = async (
       title: data.title,
       actionId: data.actionId,
       createdBy: data.createdBy,
+      statusCode: data.statusCode
+    },
+  });
+};
+
+export const historyErrorFlag = async (
+  data: Omit<HistoryCreationDTO, "flag">
+) => {
+  return prisma.history.create({
+    data: {
+      flag: HistoryFlag.ERROR,
+      module: data.module,
+      title: data.title,
+      actionId: data.actionId,
+      createdBy: data.createdBy,
+      statusCode: data.statusCode
+    },
+  });
+};
+
+export const historyErrorSystem = async (
+  data: Omit<HistoryCreationDTO, "flag" | 'module'>
+) => {
+  return prisma.history.create({
+    data: {
+      flag: HistoryFlag.ERROR,
+      module: HistoryModule.SYSTEM,
+      title: data.title,
+      actionId: data.actionId,
+      createdBy: data.createdBy,
+      statusCode: data.statusCode
     },
   });
 };
