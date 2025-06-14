@@ -79,7 +79,7 @@ export const updateSessionService = async (
   if (session.name !== data.name) {
     await historyUpdateFlag({
       module: HistoryModule.CLASS,
-      title: `Update Session from ${session.name} to ${result.name} on class: ${session.name}`,
+      title: `Update Session from ${session.name} to ${result.name} on class: ${session.class.name}`,
       actionId: session.class.id,
       createdBy: userId,
     });
