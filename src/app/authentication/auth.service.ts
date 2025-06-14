@@ -7,7 +7,7 @@ import { environment } from "../../libs";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { random } from "../../utils/generate-random-otp";
 import { ErrorApp } from "../../utils/http-error";
-import { SendEmail } from "../../utils/mailer-config";
+import { sendOtp } from "../../utils/mailer-config";
 import { MESSAGES } from "../../utils/messages";
 import { getMemberByNIM } from "../members/members.repository";
 import {
@@ -344,7 +344,7 @@ export const requestOtpService = async (email: string) => {
   const hashOtp = await bcrypt.hash(randomOtp.toString(), 10);
   const otp = await createOtp(hashOtp, email, expired);
 
-  await SendEmail(user.email, user.name, randomOtp);
+  await sendOtp(user.email, user.name, randomOtp);
   const data = {
     key: otp.id,
     otp: hashOtp,

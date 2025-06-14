@@ -151,6 +151,7 @@ export const MESSAGES = {
       SUBMISSION_DUE_DATE: "Submission is late",
       REVIEW_STATUS: 'Only review status can be approve or reject',
       ALREADY_INVITED: 'Mentor is already invited in this class',
+      SELF_INVITED: 'You cannot invite yourself',
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",

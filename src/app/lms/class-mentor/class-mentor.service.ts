@@ -13,6 +13,8 @@ import {
   getMentorByClassRepository,
 } from "./class-mentor.repository";
 import { getClassMentorMapper } from "./class-mentor.mapper";
+import { getUserById } from "../../authentication/auth.repository";
+import { sendMailInvitationMentor } from "./class-mentor.utility";
 
 export const inviteMentorService = async (
   createdBy: string,
@@ -36,6 +38,14 @@ export const inviteMentorService = async (
     );
   }
 
+  if (mentor.userId === createdBy) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.SELF_INVITED,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+
   const exist = await getClassMentorRepository(classess.id, mentor.userId);
   if (exist) {
     return new ErrorApp(
@@ -44,13 +54,32 @@ export const inviteMentorService = async (
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+  const inviter = await getUserById(createdBy);
+  if (!inviter) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
   const result = await createClassMentorRepository(classess.id, mentor.userId);
-  await historyCreateFlag({
-    module: HistoryModule.CLASS,
-    title: `Invite ${mentor.user?.name} to class ${classess.name}`,
-    actionId: result.id,
-    createdBy,
-  });
+  await Promise.all([
+    historyCreateFlag({
+      module: HistoryModule.CLASS,
+      title: `Invite ${mentor.user?.name} to class ${classess.name}`,
+      actionId: result.id,
+      createdBy,
+    }),
+    ...(mentor?.user?.email
+      ? [
+          sendMailInvitationMentor(mentor.user?.email, {
+            className: classess.name,
+            inviter: inviter.name,
+            recipient: mentor.user?.name,
+          }),
+        ]
+      : []),
+  ]);
   return result;
 };
 

@@ -27,11 +27,8 @@ export const getMentorByUserIdRepository = async (userId: string) => {
   });
 };
 
-export const getMentorsRepository = async (
-  query: QueryMentor,
-  userId?: string
-) => {
-  const { search, classId } = query;
+export const getMentorsRepository = async (query: QueryMentor) => {
+  const { search, classId, userIds } = query;
   return await prisma.mentor.findMany({
     where: {
       user: {
@@ -43,7 +40,15 @@ export const getMentorsRepository = async (
         }),
       },
       NOT: [
-        ...(userId ? [{ userId }] : []),
+        ...(userIds?.length
+          ? [
+              {
+                userId: {
+                  in: userIds,
+                },
+              },
+            ]
+          : []),
         ...(classId
           ? [
               {
@@ -62,15 +67,15 @@ export const getMentorsRepository = async (
     include: {
       user: true,
     },
+    orderBy: {
+      createdAt: "desc",
+    },
     ...queryPagination(query),
   });
 };
 
-export const getMentorsCountRepository = async (
-  query: QueryMentor,
-  userId?: string
-) => {
-  const { search, classId } = query;
+export const getMentorsCountRepository = async (query: QueryMentor) => {
+  const { search, classId, userIds } = query;
   return await prisma.mentor.count({
     where: {
       user: {
@@ -82,7 +87,15 @@ export const getMentorsCountRepository = async (
         }),
       },
       NOT: [
-        ...(userId ? [{ userId }] : []),
+        ...(userIds?.length
+          ? [
+              {
+                userId: {
+                  in: userIds,
+                },
+              },
+            ]
+          : []),
         ...(classId
           ? [
               {

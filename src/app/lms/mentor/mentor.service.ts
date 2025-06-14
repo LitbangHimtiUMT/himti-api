@@ -3,6 +3,7 @@ import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
 import { getUserById } from "../../authentication/auth.repository";
+import { getClassById } from "../classes/classes.repository";
 import { getMentorTransactionsByMentorIdRepository } from "../mentor-transactions/mentor-transactions.repository";
 import { CreateMentorDAO } from "./mentor.dao";
 import { QueryMentor } from "./mentor.interface";
@@ -46,11 +47,25 @@ export const getMentorsService = async (
   query: QueryMentor,
   userId?: string
 ) => {
-  const { page = "1", perPage = "10" } = query;
-  console.log({ userId });
+  const { page = "1", perPage = "10", classId } = query;
+  const userIds: string[] = [];
+  if (classId) {
+    const classess = await getClassById(classId);
+    if (classess) {
+      userIds.push(classess.createdBy);
+    }
+    if (userId) {
+      userIds.push(userId);
+    }
+  }
+
+  const queryParams = {
+    ...query,
+    userIds,
+  };
   const [mentors, totalData] = await Promise.all([
-    getMentorsRepository(query, userId),
-    getMentorsCountRepository(query, userId),
+    getMentorsRepository(queryParams),
+    getMentorsCountRepository(queryParams),
   ]);
 
   const meta = Meta(Number(page), Number(perPage), totalData);
