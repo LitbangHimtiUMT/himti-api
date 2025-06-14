@@ -44,7 +44,7 @@ export const createSessionService = async (
 
   await historyCreateFlag({
     module: HistoryModule.CLASS,
-    title: `New Session on class: ${session.name}`,
+    title: `New Session ${session.name} on class: ${session.class.name}`,
     actionId: session.class.id,
     createdBy: userId,
   });

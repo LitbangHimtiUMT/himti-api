@@ -45,7 +45,7 @@ import {
   updateStatusClass,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
-import { historyCreateFlag, historyDeleteFlag } from "../../history/history.repository";
+import { historyCreateFlag, historyDeleteFlag, historyUpdateFlag } from "../../history/history.repository";
 
 export const createClassService = async (
   {
@@ -480,6 +480,12 @@ export const publishClassService = async (classId: string, userId: string) => {
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+  historyUpdateFlag({
+    module: HistoryModule.CLASS,
+    title: `Publish class ${classess.name}`,
+    actionId: classess.id,
+    createdBy: userId,
+  })
   return await updateStatusClass(classess.id, ClassStatus.PUBLISH);
 };
 
