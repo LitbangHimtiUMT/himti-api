@@ -1,8 +1,13 @@
+import { HistoryModule } from "@prisma/client";
 import { Query } from "../../../interface/Query";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
+import {
+  historyCreateFlag,
+  historyUpdateFlag,
+} from "../../history/history.repository";
 import { CreateSessionBodyRequest } from "./sessions.dto";
 import {
   getSessionMapper,
@@ -12,16 +17,17 @@ import {
 import {
   createSessionRepository,
   getDetailSession,
+  getSessionByName,
   getSessionsCountRepository,
   getSessionsRepository,
   updateSessionRepository,
 } from "./sessions.repository";
 import { createSessionValidate } from "./sessions.validate";
 
-export const createSessionService = async ({
-  name,
-  classId,
-}: CreateSessionBodyRequest) => {
+export const createSessionService = async (
+  { name, classId }: CreateSessionBodyRequest,
+  userId: string
+) => {
   const validate = await createSessionValidate({
     classId,
     name,
@@ -36,12 +42,20 @@ export const createSessionService = async ({
     classId,
   });
 
+  await historyCreateFlag({
+    module: HistoryModule.CLASS,
+    title: `New Session on class: ${session.name}`,
+    actionId: session.class.id,
+    createdBy: userId,
+  });
+
   return session;
 };
 
 export const updateSessionService = async (
   sessionId: string,
-  data: CreateSessionBodyRequest
+  data: CreateSessionBodyRequest,
+  userId: string
 ) => {
   const session = await getDetailSession(sessionId);
 
@@ -52,8 +66,24 @@ export const updateSessionService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  const result = await updateSessionRepository(sessionId, data);
+  const sessionExist = await getSessionByName(data.name, session.class.id);
 
+  if (sessionExist && sessionExist.id !== session.id) {
+    return new ErrorApp(
+      MESSAGES.ERROR.ALREADY.SESSION_CLASS,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  const result = await updateSessionRepository(sessionId, data);
+  if (session.name !== data.name) {
+    await historyUpdateFlag({
+      module: HistoryModule.CLASS,
+      title: `Update Session from ${session.name} to ${result.name} on class: ${session.name}`,
+      actionId: session.class.id,
+      createdBy: userId,
+    });
+  }
   return result;
 };
 

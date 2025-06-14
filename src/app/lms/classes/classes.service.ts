@@ -45,7 +45,7 @@ import {
   updateStatusClass,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
-import { historyCreateFlag } from "../../history/history.repository";
+import { historyCreateFlag, historyDeleteFlag } from "../../history/history.repository";
 
 export const createClassService = async (
   {
@@ -502,5 +502,11 @@ export const deleteClassessService = async (
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+  await historyDeleteFlag({
+    module: HistoryModule.CLASS,
+    title: `Delete class ${classess.name}`,
+    actionId: classess.id,
+    createdBy: userId,
+  })
   return await deleteClassRepository(classess.id);
 };

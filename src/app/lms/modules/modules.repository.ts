@@ -52,8 +52,11 @@ export const getModuleById = async (moduleId: string, userId?: string, isMentor?
       },
       session: {
         select: {
+          name: true,
           class: {
             select: {
+              name: true,
+              id: true,
               createdBy: true,
               user: {
                 select: {
@@ -82,6 +85,13 @@ export const createModuleRepository = async (
       videoUrl,
       fileModule,
     },
+    include: {
+      session: {
+        include: {
+          class: true,
+        }
+      }
+    }
   });
 };
 

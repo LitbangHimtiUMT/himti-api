@@ -1,22 +1,27 @@
-import { AssignmentType, SubmissionStatus } from "@prisma/client";
+import {
+  AssignmentType,
+  HistoryModule,
+  SubmissionStatus,
+} from "@prisma/client";
+import { environment } from "../../../libs";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
-import { MESSAGES } from "../../../utils/messages";
-import { getModuleById } from "../modules/modules.repository";
-import { CreateAssignmentDTO, SubmissionCreationDTO } from "./assignment.dto";
-import {
-  createAssignmentRepository,
-  getAssignmentByIdRepository,
-  getAssignmentDetailRepository,
-} from "./assignment.repository";
 import { ImagePath } from "../../../utils/image-path";
+import { MESSAGES } from "../../../utils/messages";
 import {
   BUCKET_FOLDER,
   FileType,
   getFileExtension,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
-import { environment } from "../../../libs";
+import { historyCreateFlag } from "../../history/history.repository";
+import { getMentorByClassRepository } from "../class-mentor/class-mentor.repository";
+import { getModuleById } from "../modules/modules.repository";
+import { CreateAssignmentDTO, SubmissionCreationDTO } from "./assignment.dto";
+import {
+  createAssignmentRepository,
+  getAssignmentDetailRepository,
+} from "./assignment.repository";
 import { createSubmissionRepository } from "./submission/submission.repository";
 
 export const createAssignmentService = async (
@@ -33,7 +38,12 @@ export const createAssignmentService = async (
     );
   }
 
-  if (userId !== modules.session.class.createdBy) {
+  const mentors = await getMentorByClassRepository(
+    modules.session.class.id,
+    {}
+  );
+  const isJoin = mentors.find((item) => item.userId === userId);
+  if (userId !== modules.session.class.createdBy && !isJoin) {
     return new ErrorApp(
       MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
       403,
@@ -49,6 +59,12 @@ export const createAssignmentService = async (
     );
   }
 
+  await historyCreateFlag({
+    module: HistoryModule.CLASS,
+    title: `New Assignment on modules: ${modules.name}, session: ${modules.session.name}, class: ${modules.session.class.name}`,
+    actionId: modules.session.class.id,
+    createdBy: userId,
+  });
   return await createAssignmentRepository({
     dueDate: data.dueDate,
     title: data.title,
@@ -121,7 +137,7 @@ export const submitAssignmentService = async (
   }
 ) => {
   let fileName = "";
-  const assignment = await getAssignmentByIdRepository(data.assignmentId);
+  const assignment = await getAssignmentDetailRepository(data.assignmentId);
 
   if (!assignment) {
     return new ErrorApp(
@@ -130,7 +146,18 @@ export const submitAssignmentService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  console.log({ file: data.file });
+
+  const alreadyReview = assignment.submission
+    .filter((item) => item.userId === data.submittedBy)
+    .find((item) => item.status === SubmissionStatus.REVIEW);
+
+  if (alreadyReview) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.HAS_REVIEW_SUBMISION,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
 
   if (new Date() > new Date(assignment.dueDate)) {
     return new ErrorApp(
@@ -171,7 +198,7 @@ export const submitAssignmentService = async (
         MESSAGE_CODE.BAD_REQUEST
       );
     }
-    const ext = getFileExtension(data.file.mimetype, data.file.originalname)
+    const ext = getFileExtension(data.file.mimetype, data.file.originalname);
     fileName = `${data.file?.originalname.replace(ext, "")} - ${+new Date()}${ext}`;
     await UploadFileToStorage({
       Bucket: environment.STORAGE.BUCKET,
@@ -183,7 +210,12 @@ export const submitAssignmentService = async (
   } else {
     fileName = data.file as string;
   }
-
+  await historyCreateFlag({
+    module: HistoryModule.CLASS,
+    title: `Submit Assignment on modules: ${assignment?.module?.name ?? "-"}, session: ${assignment?.module?.session?.name ?? "-"}, class: ${assignment?.module?.session.class.name ?? "-"}`,
+    actionId: assignment?.module?.session.class.id,
+    createdBy: data.submittedBy,
+  });
   return await createSubmissionRepository({
     assignmentId: assignment.id,
     submittedBy: data.submittedBy,

@@ -26,14 +26,19 @@ import {
   getModulesRepository,
 } from "./modules.repository";
 import { createModuleValidate } from "./modules.validate";
+import { historyCreateFlag } from "../../history/history.repository";
+import { HistoryModule } from "@prisma/client";
 
-export const createModuleService = async ({
-  name,
-  sessionId,
-  textModule,
-  videoUrl,
-  fileModule,
-}: CreateModuleBodyRequest) => {
+export const createModuleService = async (
+  {
+    name,
+    sessionId,
+    textModule,
+    videoUrl,
+    fileModule,
+  }: CreateModuleBodyRequest,
+  userId: string
+) => {
   let fileName: string | undefined = undefined;
   try {
     const validate = await createModuleValidate(sessionId);
@@ -70,7 +75,12 @@ export const createModuleService = async ({
       videoUrl,
       fileModule: fileName,
     });
-
+    await historyCreateFlag({
+      module: HistoryModule.CLASS,
+      title: `New Module ${moduleService.name} on session: ${moduleService.session.name}, class: ${moduleService.session.class.name}`,
+      actionId: moduleService.session.class.id,
+      createdBy: userId,
+    });
     return moduleService;
   } catch (error) {
     console.log({

@@ -153,6 +153,7 @@ export const MESSAGES = {
       REVIEW_STATUS: 'Only review status can be approve or reject',
       ALREADY_INVITED: 'Mentor is already invited in this class',
       SELF_INVITED: 'You cannot invite yourself',
+      HAS_REVIEW_SUBMISION: `You already have a review, waiting for approval and submit again`,
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",

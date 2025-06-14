@@ -59,7 +59,7 @@ export const getFileCertificateController = async (
   res: Response,
   next: NextFunction
 ) => {
-  // next
+  next
   // const certificateData = {
   //   studentName: req.body.studentName || 'John Doe',
   //   courseName: req.body.courseName || 'Advanced TypeScript',

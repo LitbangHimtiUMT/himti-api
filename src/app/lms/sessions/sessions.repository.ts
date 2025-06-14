@@ -25,6 +25,9 @@ export const createSessionRepository = async (
       name: name as string,
       classId: classId as string,
     },
+    include: {
+      class: true,
+    }
   });
 };
 

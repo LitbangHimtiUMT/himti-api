@@ -20,7 +20,7 @@ export const createModuleController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { body, files, params } = req;
+  const { body, files, params, userId } = req;
   const { sessionId } = params;
 
   const combineBodyFile = {
@@ -40,7 +40,7 @@ export const createModuleController = async (
     );
     return;
   }
-  const moduleCtrl = await createModuleService(combineBodyFile);
+  const moduleCtrl = await createModuleService(combineBodyFile, userId);
 
   if (moduleCtrl instanceof ErrorApp) {
     next(moduleCtrl);
