@@ -37,10 +37,13 @@ export const getUsers = async ({
           mode: "insensitive",
         },
       },
-      {
-        role,
-      },
     ];
+  }
+
+  if (role) {
+    filter.OR.push({
+      role,
+    });
   }
 
   return await prisma.user.findMany({
