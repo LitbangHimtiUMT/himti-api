@@ -1,4 +1,5 @@
 import { Role } from "@prisma/client"
+import { Query } from "../../interface/Query"
 
 export interface AbsensiDTO {
     userId?: string
@@ -11,11 +12,10 @@ export interface TokenTypes {
     id: string
 }
 
-export interface IFilterUser {
+export interface IFilterUser extends Query {
     search?: string
     role?: Role
-    page?: number
-    perPage?: number
+    roles?: string
 }
 
 export interface UserRequestBodyDTO {

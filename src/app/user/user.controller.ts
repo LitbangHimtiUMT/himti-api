@@ -1,4 +1,3 @@
-import { Role } from "@prisma/client";
 import { NextFunction, type Request, type Response } from "express";
 import { RequestWithAccessToken } from "../../interface/Request";
 import { MESSAGE_CODE } from "../../utils/error-code";
@@ -19,13 +18,7 @@ export const getUsersController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { search, role, page, perPage } = req.query;
-  const users = await getUsersService({
-    page: page ? Number(page) : undefined,
-    perPage: perPage ? Number(perPage) : undefined,
-    role: role ? (role as Role) : undefined,
-    search: search as string,
-  });
+  const users = await getUsersService(req.query);
   if (users instanceof ErrorApp) {
     next(users);
     return;

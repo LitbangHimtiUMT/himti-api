@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { prisma } from "../../config";
 import { ReturnValue } from "../../utils/return-value";
 import {
@@ -9,12 +9,12 @@ import {
 import { Query } from "../../interface/Query";
 import { queryPagination } from "../../utils/pagination";
 
-export const getUsers = async ({
-  page,
-  perPage,
-  search,
-  role,
-}: IFilterUser) => {
+export const getUsers = async (query: IFilterUser) => {
+  const {
+    search,
+    role,
+    roles,
+  } = query
   const filter = {} as { OR: Prisma.UserWhereInput[] };
 
   if (search) {
@@ -40,7 +40,15 @@ export const getUsers = async ({
     ];
   }
 
-  if (role) {
+  if (roles) {
+    const parse = JSON.parse(roles ?? "[]") as Role[];
+    console.log({ parse });
+    filter.OR.push({
+      role: {
+        in: parse,
+      },
+    });
+  } else if (role) {
     filter.OR.push({
       role,
     });
@@ -59,8 +67,7 @@ export const getUsers = async ({
       role: true,
       isLogin: true,
     },
-    take: perPage,
-    skip: (Number(page) - 1) * Number(perPage),
+    ...queryPagination(query)
   });
 };
 

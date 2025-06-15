@@ -23,20 +23,13 @@ import {
 } from "./user.repository";
 import { Query } from "../../interface/Query";
 
-export const getUsersService = async ({
-  page = 1,
-  perPage = 10,
-  search,
-  role,
-}: IFilterUser) => {
+export const getUsersService = async (query: IFilterUser) => {
+  const { page = "1", perPage = "10" } = query;
   const [users, totalData] = await Promise.all([
-    getUsers({ page, perPage, search, role }),
-    getUsersCount({ search }),
+    getUsers(query),
+    getUsersCount(query),
   ]);
-  const meta = Meta(page, perPage, totalData);
-  // if (!users.length) {
-  //     return new ErrorApp(MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT, 404, MESSAGE_CODE.NOT_FOUND)
-  // }
+  const meta = Meta(Number(page), Number(perPage), totalData);
 
   return { data: users, meta };
 };
