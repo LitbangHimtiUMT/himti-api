@@ -10,11 +10,7 @@ import { Query } from "../../interface/Query";
 import { queryPagination } from "../../utils/pagination";
 
 export const getUsers = async (query: IFilterUser) => {
-  const {
-    search,
-    role,
-    roles,
-  } = query
+  const { search, role, roles } = query;
   const filter = {} as { OR: Prisma.UserWhereInput[] };
 
   if (search) {
@@ -43,15 +39,21 @@ export const getUsers = async (query: IFilterUser) => {
   if (roles) {
     const parse = JSON.parse(roles ?? "[]") as Role[];
     console.log({ parse });
-    filter.OR.push({
-      role: {
-        in: parse,
+    filter.OR = [
+      ...filter.OR,
+      {
+        role: {
+          in: parse,
+        },
       },
-    });
+    ];
   } else if (role) {
-    filter.OR.push({
-      role,
-    });
+    filter.OR = [
+      ...filter.OR,
+      {
+        role,
+      }
+    ]
   }
 
   return await prisma.user.findMany({
@@ -67,7 +69,7 @@ export const getUsers = async (query: IFilterUser) => {
       role: true,
       isLogin: true,
     },
-    ...queryPagination(query)
+    ...queryPagination(query),
   });
 };
 
