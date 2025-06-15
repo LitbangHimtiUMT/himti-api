@@ -11,7 +11,9 @@ import { queryPagination } from "../../utils/pagination";
 
 export const getUsers = async (query: IFilterUser) => {
   const { search, role, roles } = query;
-  const filter = {} as { OR: Prisma.UserWhereInput[] };
+  const filter = {
+    OR: []
+  } as { OR: Prisma.UserWhereInput[] };
 
   if (search) {
     filter.OR = [
