@@ -554,7 +554,8 @@ model History {
   title      String
   flag       HistoryFlag
   module     HistoryModule
-  statusCode String?        @map("status_code")
+  statusCode String?       @map("status_code")
+  endpoint   String?
   actionId   String?       @map("action_id")
   createdBy  String?       @map("created_by")
   createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamp(0)

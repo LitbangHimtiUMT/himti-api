@@ -8,6 +8,7 @@ import {
   createAssignmentService,
   getAssignmentByIdService,
   submitAssignmentService,
+  updateAssignmentService,
 } from "./assignment.service";
 import { submitAssignmentSchema } from "./assignment.request";
 
@@ -24,6 +25,21 @@ export const createAssignmentController = async (
     return;
   }
   HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.ASSIGNMENT);
+};
+
+export const updateAssignmentController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { body, params, userId } = req;
+  const { assignmentId } = params;
+  const result = await updateAssignmentService(assignmentId, body, userId ?? "");
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.ASSIGNMENT.UPDATE);
 };
 
 export const getAssignmentByIdController = async (

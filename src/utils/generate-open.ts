@@ -18,3 +18,13 @@ export const generateSingleOpenByEndTime = (endTime: Date) => {
   const open = new Date(endTime as Date) < new Date(Date.now())
   return open
 }
+
+export const checkDueDate = (dueDate: Date): boolean => {
+  const now = new Date();
+  const due = new Date(dueDate);
+  
+  // Set due date ke akhir hari (23:59:59.999)
+  due.setHours(23, 59, 59, 999);
+  
+  return now <= due;
+}

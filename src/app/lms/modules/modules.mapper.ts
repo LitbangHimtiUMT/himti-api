@@ -15,6 +15,7 @@ import {
 import { youtubeID } from "../../../utils/youtbe-url";
 import { ModulesDTO } from "./modules.dto";
 import { ImagePath } from "../../../utils/image-path";
+import { checkDueDate } from "../../../utils/generate-open";
 
 export interface ModuleData extends Module {
   assignment:
@@ -60,6 +61,7 @@ export const getModulesMapper = (data: ModuleData[]): ModulesDTO[] => {
       ? {
           id: item.assignment?.id,
           title: item.assignment?.title,
+          isOpen: checkDueDate(new Date(item.assignment.dueDate)),
           isFinalAssigment: item.assignment?.isFinalAssigment,
           dueDate: item.assignment?.dueDate,
           allowedFile: item.assignment.allowedFile,
@@ -102,6 +104,7 @@ export const getModuleMapper = (data: ModuleData, isCompleted?: boolean): Module
           isFinalAssigment: data.assignment?.isFinalAssigment,
           dueDate: data.assignment?.dueDate,
           description: data.assignment.description,
+          isOpen: checkDueDate(new Date(data.assignment.dueDate)),
           historySubmission: data.assignment.submission
             .filter((item) => item.status !== SubmissionStatus.REVIEW)
             .map((item) => ({

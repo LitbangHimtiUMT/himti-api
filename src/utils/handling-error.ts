@@ -30,35 +30,38 @@ export const HandlingError = async (
   const { password, ...rest } = req.body;
   password?.toString();
 
+  // Dapatkan informasi endpoint yang diakses
+  const endpoint = `${req.method} ${req.originalUrl}`;
+
+  console.log({ endpoint });
+
   const errorTitle = `Error => ${err?.message ?? "Error not expected"} ${isHaveBody ? `, Body => ${JSON.stringify(rest)}` : ""} ${isHaveParams ? `, Params => ${JSON.stringify(req.params)}` : ""}`;
+
+  const errorLog = {
+    title: errorTitle,
+    createdBy,
+    statusCode: `${statusCode} - ${errorCode}`,
+    endpoint,
+  };
 
   if (err instanceof ErrorApp) {
     statusCode = err.statusCode;
     errorCode = err.code;
+    errorLog.statusCode = `${statusCode} - ${errorCode}`;
 
-    await historyErrorSystem({
-      title: errorTitle,
-      createdBy,
-      statusCode: `${statusCode} - ${errorCode}`,
-    });
+    await historyErrorSystem(errorLog);
     return HandleResponse(res, err.statusCode, err.code, err.message);
   }
   if (err instanceof MulterError) {
     statusCode = 400;
     errorCode = MESSAGE_CODE.BAD_REQUEST;
-    await historyErrorSystem({
-      title: errorTitle,
-      createdBy,
-      statusCode: `${statusCode} - ${errorCode}`,
-    });
+    errorLog.statusCode = `${statusCode} - ${errorCode}`;
+
+    await historyErrorSystem(errorLog);
     return HandleResponse(res, 400, MESSAGE_CODE.BAD_REQUEST, err.message);
   }
   console.log({ err });
-  await historyErrorSystem({
-    title: errorTitle,
-    createdBy,
-    statusCode: `${statusCode} - ${errorCode}`,
-  });
+  await historyErrorSystem(errorLog);
   return HandleResponse(
     res,
     500,

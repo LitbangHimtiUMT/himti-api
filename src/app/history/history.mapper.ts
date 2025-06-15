@@ -10,6 +10,7 @@ export const getHistoriesMapper = (data: HistoryData[]) => {
     flag: item.flag,
     actionId: item.actionId,
     statusCode: item.statusCode,
+    endpoint: item.endpoint,
     createdAt: item.createdAt,
     user: item.user ? {
         id: item.user.id,

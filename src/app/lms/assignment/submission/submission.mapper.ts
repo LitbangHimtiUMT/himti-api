@@ -9,6 +9,7 @@ import {
 } from "@prisma/client";
 import { ImagePath } from "../../../../utils/image-path";
 import { BUCKET_FOLDER } from "../../../../utils/upload-file-to-storage";
+import { checkDueDate } from "../../../../utils/generate-open";
 
 export interface SubmissionData extends Submission {
   assignment: Assignment & {
@@ -46,6 +47,7 @@ export const getSubmissionMapper = (data: SubmissionData) => {
       id: data.assignment.module.session.class.user.id,
       name: data.assignment.module.session.class.user.name,
     },
+    isOpen: checkDueDate(new Date(data.assignment.dueDate)),
     module: {
       id: data.assignment.module.id,
       name: data.assignment.module.name,
@@ -68,6 +70,7 @@ export const getSubmissionsMapper = (data: SubmissionData[]) => {
       id: item.assignment.id,
       type: item.assignment.type,
     },
+    isOpen: checkDueDate(new Date(item.assignment.dueDate)),
     user: {
       id: item.participant.id,
       name: item.participant.name,

@@ -42,6 +42,7 @@ export interface ModulesDTO {
     isFinalAssigment: boolean;
     dueDate: Date;
     description: string | null;
+    isOpen: boolean
     historySubmission?: SubmissionDTO[];
     activeSubmission?: SubmissionDTO | null;
   } | null;

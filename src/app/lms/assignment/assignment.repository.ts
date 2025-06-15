@@ -15,6 +15,23 @@ export const createAssignmentRepository = async (data: CreateAssignmentDTO) => {
   });
 };
 
+export const updateAssignmentRepository = async (
+  assignmentId: string,
+  data: Omit<CreateAssignmentDTO, "moduleId">
+) => {
+  return await prisma.assignment.update({
+    where: { id: assignmentId },
+    data: {
+      title: data.title,
+      description: data.description,
+      dueDate: new Date(data.dueDate),
+      isFinalAssigment: data.isFinalAssignment || false,
+      allowedFile: data.allowedFile,
+      type: data.type,
+    },
+  });
+};
+
 export const getAssignmentDetailRepository = async (
   id: string,
   userId?: string
@@ -45,7 +62,7 @@ export const getAssignmentDetailRepository = async (
         },
         include: {
           participant: true,
-        }
+        },
       },
     },
   });
@@ -57,4 +74,4 @@ export const getAssignmentByIdRepository = async (id: string) => {
       id,
     },
   });
-}
+};

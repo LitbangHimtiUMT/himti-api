@@ -34,11 +34,13 @@ export const validateRequest = (
       const { password, ...rest } = req.body;
       password?.toString();
       const errorTitle = `Error => ${errors?.[0] ?? "Error not expected"} ${isHaveBody ? `, Body => ${JSON.stringify(rest)}` : ""} ${isHaveParams ? `, Params => ${JSON.stringify(req.params)}` : ""}`;
+      const endpoint = `${req.method} ${req.originalUrl}`;
 
       await historyErrorSystem({
         title: errorTitle,
         createdBy: request?.userId ?? undefined,
-        statusCode: `400 - ${MESSAGE_CODE.BAD_REQUEST}`
+        statusCode: `400 - ${MESSAGE_CODE.BAD_REQUEST}`,
+        endpoint,
       });
       return HandleResponse(res, 400, MESSAGE_CODE.BAD_REQUEST, errors?.[0]);
     }

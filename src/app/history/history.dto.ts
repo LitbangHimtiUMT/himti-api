@@ -7,4 +7,5 @@ export interface HistoryCreationDTO {
     actionId?: string
     createdBy?: string
     statusCode?: string
+    endpoint?: string
 }

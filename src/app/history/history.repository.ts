@@ -101,7 +101,8 @@ export const historyErrorSystem = async (
       title: data.title,
       actionId: data.actionId,
       createdBy: data.createdBy,
-      statusCode: data.statusCode
+      statusCode: data.statusCode,
+      endpoint: data.endpoint
     },
   });
 };

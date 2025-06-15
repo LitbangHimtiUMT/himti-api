@@ -7,6 +7,7 @@ import {
   createAssignmentController,
   getAssignmentByIdController,
   submitAssignmentController,
+  updateAssignmentController,
 } from "./assignment.controller";
 import { createAssignmentSchema } from "./assignment.request";
 import { submissionRoute } from "./submission/submission.route";
@@ -28,6 +29,13 @@ assignmentRoute
     verifyToken,
     validateRequest(createAssignmentSchema),
     CatchWrapper(createAssignmentController)
+  )
+  .put(
+    "/:assignmentId",
+    // verifyRole([RolesEnum.MENTOR]),
+    verifyToken,
+    validateRequest(createAssignmentSchema),
+    CatchWrapper(updateAssignmentController)
   )
 
   .get(

@@ -5,6 +5,7 @@ import {
 } from "@prisma/client";
 import { environment } from "../../../libs";
 import { MESSAGE_CODE } from "../../../utils/error-code";
+import { checkDueDate } from "../../../utils/generate-open";
 import { ErrorApp } from "../../../utils/http-error";
 import { ImagePath } from "../../../utils/image-path";
 import { MESSAGES } from "../../../utils/messages";
@@ -14,13 +15,17 @@ import {
   getFileExtension,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
-import { historyCreateFlag } from "../../history/history.repository";
+import {
+  historyCreateFlag,
+  historyUpdateFlag,
+} from "../../history/history.repository";
 import { getMentorByClassRepository } from "../class-mentor/class-mentor.repository";
 import { getModuleById } from "../modules/modules.repository";
 import { CreateAssignmentDTO, SubmissionCreationDTO } from "./assignment.dto";
 import {
   createAssignmentRepository,
   getAssignmentDetailRepository,
+  updateAssignmentRepository,
 } from "./assignment.repository";
 import { createSubmissionRepository } from "./submission/submission.repository";
 
@@ -51,7 +56,9 @@ export const createAssignmentService = async (
     );
   }
 
-  if (new Date() > new Date(data.dueDate)) {
+  const isOpen = checkDueDate(new Date(data.dueDate));
+
+  if (!isOpen) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.DUE_DATE,
       400,
@@ -76,6 +83,60 @@ export const createAssignmentService = async (
   });
 };
 
+export const updateAssignmentService = async (
+  assignmentId: string,
+  data: Omit<CreateAssignmentDTO, "moduleId">,
+  userId: string
+) => {
+  const assignment = await getAssignmentDetailRepository(assignmentId);
+  if (!assignment) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.ASSIGNMENT,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const mentors = await getMentorByClassRepository(
+    assignment.module?.session?.class?.id ?? "",
+    {}
+  );
+  const isJoin = mentors.find((item) => item.userId === userId);
+  if (userId !== assignment?.module?.session.class.createdBy && !isJoin) {
+    return new ErrorApp(
+      MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
+      403,
+      MESSAGE_CODE.FORBIDDEN
+    );
+  }
+
+  const isOpen = checkDueDate(new Date(data.dueDate));
+  if (!isOpen) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.DUE_DATE,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+
+  if (data.title !== assignment.title) {
+    await historyUpdateFlag({
+      module: HistoryModule.CLASS,
+      title: `Update Assignment from ${assignment.title} to ${data.title}`,
+      actionId: assignment?.module?.session.class.id ?? "",
+      createdBy: userId,
+    });
+  }
+  return await updateAssignmentRepository(assignment.id, {
+    dueDate: data.dueDate,
+    title: data.title,
+    description: data.description,
+    isFinalAssignment: data.isFinalAssignment,
+    type: data.type,
+    allowedFile: data.allowedFile,
+  });
+};
+
 export const getAssignmentByIdService = async (
   assignmentId: string,
   userId: string
@@ -93,9 +154,17 @@ export const getAssignmentByIdService = async (
         (item) => item.status === SubmissionStatus.REVIEW
       ) || null
     : null;
+  const active = activeSubmission
+    ? {
+        ...activeSubmission,
+        file: ImagePath(`${BUCKET_FOLDER.submission}/${activeSubmission.file}`),
+        isOpen: checkDueDate(new Date(assignment.dueDate)),
+      }
+    : null;
   const { module: modules, ...rest } = assignment;
   return {
     ...rest,
+    isOpen: checkDueDate(new Date(assignment.dueDate)),
     module: {
       id: modules?.id,
       name: modules?.name,
@@ -127,7 +196,7 @@ export const getAssignmentByIdService = async (
           name: item.participant.name,
         },
       })),
-    activeSubmission,
+    activeSubmission: active,
   };
 };
 
@@ -158,8 +227,8 @@ export const submitAssignmentService = async (
       MESSAGE_CODE.BAD_REQUEST
     );
   }
-
-  if (new Date() > new Date(assignment.dueDate)) {
+  const isOpen = checkDueDate(new Date(assignment.dueDate));
+  if (!isOpen) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.SUBMISSION_DUE_DATE,
       400,
