@@ -11,51 +11,58 @@ import { queryPagination } from "../../utils/pagination";
 
 export const getUsers = async (query: IFilterUser) => {
   const { search, role, roles } = query;
-  const filter = {
-    OR: []
-  } as { OR: Prisma.UserWhereInput[] };
+  let filter = {} as { OR: Prisma.UserWhereInput[] };
 
   if (search) {
-    filter.OR = [
-      {
-        name: {
-          contains: search,
-          mode: "insensitive",
+    filter = {
+      ...filter,
+      OR: [
+        ...(filter?.OR ?? []),
+        {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
         },
-      },
-      {
-        email: {
-          contains: search,
-          mode: "insensitive",
+        {
+          email: {
+            contains: search,
+            mode: "insensitive",
+          },
         },
-      },
-      {
-        nim: {
-          contains: search,
-          mode: "insensitive",
+        {
+          nim: {
+            contains: search,
+            mode: "insensitive",
+          },
         },
-      },
-    ];
+      ],
+    };
   }
 
   if (roles) {
     const parse = JSON.parse(roles ?? "[]") as Role[];
-    console.log({ parse });
-    filter.OR = [
-      ...filter.OR,
-      {
-        role: {
-          in: parse,
+    filter = {
+      ...filter,
+      OR: [
+        ...(filter?.OR ?? []),
+        {
+          role: {
+            in: parse,
+          },
         },
-      },
-    ];
+      ],
+    };
   } else if (role) {
-    filter.OR = [
-      ...filter.OR,
-      {
-        role,
-      }
-    ]
+    filter = {
+      ...filter,
+      OR: [
+        ...(filter?.OR ?? []),
+        {
+          role,
+        },
+      ],
+    };
   }
 
   return await prisma.user.findMany({
@@ -75,30 +82,59 @@ export const getUsers = async (query: IFilterUser) => {
   });
 };
 
-export const getUsersCount = async ({ search }: IFilterUser) => {
-  const filter = {} as { OR: Prisma.UserWhereInput[] };
+export const getUsersCount = async ({ search, role, roles }: IFilterUser) => {
+  let filter = {} as { OR: Prisma.UserWhereInput[], };
 
   if (search) {
-    filter.OR = [
-      {
-        name: {
-          contains: search,
-          mode: "insensitive",
+    filter = {
+      ...filter,
+      OR: [
+        ...(filter?.OR ?? []),
+        {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
         },
-      },
-      {
-        email: {
-          contains: search,
-          mode: "insensitive",
+        {
+          email: {
+            contains: search,
+            mode: "insensitive",
+          },
         },
-      },
-      {
-        nim: {
-          contains: search,
-          mode: "insensitive",
+        {
+          nim: {
+            contains: search,
+            mode: "insensitive",
+          },
         },
-      },
-    ];
+      ],
+    };
+  }
+
+  if (roles) {
+    const parse = JSON.parse(roles ?? "[]") as Role[];
+    filter = {
+      ...filter,
+      OR: [
+        ...(filter?.OR ?? []),
+        {
+          role: {
+            in: parse,
+          },
+        },
+      ],
+    };
+  } else if (role) {
+    filter = {
+      ...filter,
+      OR: [
+        ...(filter?.OR ?? []),
+        {
+          role,
+        },
+      ],
+    };
   }
 
   return await prisma.user.count({
