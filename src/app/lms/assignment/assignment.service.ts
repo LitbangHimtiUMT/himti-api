@@ -66,13 +66,7 @@ export const createAssignmentService = async (
     );
   }
 
-  await historyCreateFlag({
-    module: HistoryModule.CLASS,
-    title: `New Assignment on modules: ${modules.name}, session: ${modules.session.name}, class: ${modules.session.class.name}`,
-    actionId: modules.session.class.id,
-    createdBy: userId,
-  });
-  return await createAssignmentRepository({
+  const result = await createAssignmentRepository({
     dueDate: data.dueDate,
     title: data.title,
     description: data.description,
@@ -81,6 +75,15 @@ export const createAssignmentService = async (
     type: data.type,
     allowedFile: data.allowedFile,
   });
+
+  await historyCreateFlag({
+    module: HistoryModule.CLASS,
+    title: `New Assignment ${data.title} on modules: ${modules.name}, session: ${modules.session.name}, class: ${modules.session.class.name}`,
+    actionId: modules.session.class.id,
+    createdBy: userId,
+  });
+
+  return result;
 };
 
 export const updateAssignmentService = async (
@@ -268,12 +271,12 @@ export const submitAssignmentService = async (
       );
     }
     const ext = getFileExtension(data.file.mimetype, data.file.originalname);
-    if(assignment?.allowedFile && assignment?.allowedFile !== ext) {
+    if (assignment?.allowedFile && assignment?.allowedFile !== ext) {
       return new ErrorApp(
         `Format File is invalid, allowed file is ${assignment.allowedFile} extension`,
         400,
         MESSAGE_CODE.BAD_REQUEST
-      )
+      );
     }
     fileName = `${data.file?.originalname.replace(ext, "")} - ${+new Date()}${ext}`;
     await UploadFileToStorage({
