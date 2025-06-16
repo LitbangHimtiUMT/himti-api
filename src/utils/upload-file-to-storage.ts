@@ -96,13 +96,17 @@ export const MulterFileFilter = (
   callBack: FileFilterCallback
 ): void => {
   console.log("ur file =>", file);
-  if (file.mimetype && FileType[file.mimetype]) {
+  const values = Object.values(FileType);
+  const fileType = file.mimetype;
+
+  const isAllowed = values.includes(fileType);
+  if (file.mimetype && !isAllowed) {
     callBack(null, true);
   } else {
     callBack(null, false);
     callBack(
       new ErrorApp(
-        "Tipe file tidak mendukung, tipe file harus berjenis: png, jpg, dan jpeg",
+        `Format File is not allowed`,
         400,
         MESSAGE_CODE.BAD_REQUEST
       )
