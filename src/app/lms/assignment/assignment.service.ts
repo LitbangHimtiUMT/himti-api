@@ -268,6 +268,13 @@ export const submitAssignmentService = async (
       );
     }
     const ext = getFileExtension(data.file.mimetype, data.file.originalname);
+    if(assignment?.allowedFile && assignment?.allowedFile !== ext) {
+      return new ErrorApp(
+        `Format File is invalid, allowed file is ${assignment.allowedFile} extension`,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      )
+    }
     fileName = `${data.file?.originalname.replace(ext, "")} - ${+new Date()}${ext}`;
     await UploadFileToStorage({
       Bucket: environment.STORAGE.BUCKET,
