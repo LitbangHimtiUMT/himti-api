@@ -1,0 +1,208 @@
+import { formatTime } from "../../../../utils/format-time";
+import { sendMail } from "../../../../utils/mailer-config";
+
+interface MailRejectProps {
+  participant: {
+    name: string;
+    email: string;
+  };
+  instructorName: string;
+  className: string;
+  submittedAt: Date;
+  feedback?: string;
+  assignmentName: string;
+}
+
+export const rejectEmail = async (email: string, data: MailRejectProps) => {
+  return sendMail({
+    subject: `Submission Rejected`,
+    to: email,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Status Update</title>
+    <style type="text/css">
+        /* Base Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f7f9fc;
+        }
+        
+        /* Email Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Header */
+        .email-header {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .logo {
+            max-height: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        /* Content */
+        .email-content {
+            padding: 30px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+        
+        .status-card {
+            background: #fff8f8;
+            border-left: 4px solid #ff6b6b;
+            padding: 20px;
+            border-radius: 0 4px 4px 0;
+            margin-bottom: 25px;
+        }
+        
+        .status-title {
+            color: #ff6b6b;
+            font-weight: 600;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        .submission-details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .action-items {
+            margin: 25px 0;
+        }
+        
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .action-list {
+            padding-left: 20px;
+        }
+        
+        .action-list li {
+            margin-bottom: 10px;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #6e8efb;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            margin: 15px 0;
+        }
+        
+        /* Footer */
+        .email-footer {
+            padding: 20px;
+            text-align: center;
+            background: #f1f3f5;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .footer-links {
+            margin: 15px 0;
+        }
+        
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-content {
+                padding: 20px;
+            }
+            
+            .header-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+            <h1 style="font-size: 22px;">HIMTI LMS</h1>
+            <h1 class="header-title">Submission Rejected</h1>
+        </div>
+        
+        <!-- Content -->
+        <div class="email-content">
+            <p class="greeting">Hello ${data.participant.name},</p>
+            
+            <div class="status-card">
+                <h2 class="status-title">Submission Rejected</h2>
+                <p>We've reviewed your recent submission, but unfortunately it doesn't meet all the requirements at this time.</p>
+            </div>
+            
+            <div class="submission-details">
+                <p><span class="detail-label">Course:</span> ${data.className}</p>
+                <p><span class="detail-label">Assignment:</span> ${data.assignmentName}</p>
+                <p><span class="detail-label">Submitted:</span> ${formatTime(data.submittedAt)}</p>
+                <p><span class="detail-label">Feedback:</span> ${data.feedback ?? '-'}</p>
+            </div>
+            
+            <p>While your submission showed effort, we identified some areas that need improvement:</p>
+            
+            
+            <p>We encourage you to review the feedback carefully and consider resubmitting. Our goal is to help you succeed in this course.</p>
+            
+            <p>If you have any questions, please don't hesitate to reach out to your instructor or teaching assistant.</p>
+            
+            <p>Best regards,<br>
+            ${data.instructorName}<br>
+            ${data.className} Instructor<br>
+            HIMTI LMS</p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer">
+            <p>This email was sent regarding your activity in ${data.className}.</p>
+            <p>&copy; ${new Date().getFullYear()} HIMTI LMS. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>`,
+  });
+};

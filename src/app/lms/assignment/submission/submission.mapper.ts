@@ -74,6 +74,7 @@ export const getSubmissionsMapper = (data: SubmissionData[]) => {
     user: {
       id: item.participant.id,
       name: item.participant.name,
+      email: item.participant.email,
       photo: item.participant.photo
         ? ImagePath(`${BUCKET_FOLDER.user}/${item.participant.photo}`)
         : null,

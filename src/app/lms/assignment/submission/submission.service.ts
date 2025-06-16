@@ -17,6 +17,8 @@ import {
   historyApproveFlag,
   historyRejectFlag,
 } from "../../../history/history.repository";
+import { getUserById } from "../../../authentication/auth.repository";
+import { rejectEmail } from "./submission.utility";
 
 export const getSubmissionByIdService = async (id: string) => {
   const submission = await getSubmissionByIdRepository(id);
@@ -80,6 +82,16 @@ export const rejectSubmissionService = async (
     }
   }
 
+  const mentor = await getUserById(userId);
+
+  if (!mentor) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
   const result = await updateStatusSubmission(
     submissionId,
     SubmissionStatus.REJECT,
@@ -87,6 +99,19 @@ export const rejectSubmissionService = async (
     feedback
   );
 
+  if (submission?.assignment?.module?.session?.class) {
+    await rejectEmail(submission.participant.email, {
+      assignmentName: submission.assignment.title,
+      className: submission?.assignment?.module?.session.class.name,
+      instructorName: mentor.name,
+      participant: {
+        email: submission.participant.email,
+        name: submission.participant.name,
+      },
+      submittedAt: submission.createdAt,
+      feedback: result?.feedback ?? undefined,
+    });
+  }
   await historyRejectFlag({
     module: HistoryModule.CLASS,
     title: `Submission ${submission.participant.name} of ${submission.assignment.title} is reject${feedback ? ` with feedback: ${feedback}` : ""}`,
