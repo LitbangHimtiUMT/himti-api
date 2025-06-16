@@ -76,6 +76,36 @@ export const historyDeleteFlag = async (
   });
 };
 
+export const historyApproveFlag = async (
+  data: Omit<HistoryCreationDTO, "flag">
+) => {
+  return prisma.history.create({
+    data: {
+      flag: HistoryFlag.APPROVE,
+      module: data.module,
+      title: data.title,
+      actionId: data.actionId,
+      createdBy: data.createdBy,
+      statusCode: data.statusCode
+    },
+  });
+};
+
+export const historyRejectFlag = async (
+  data: Omit<HistoryCreationDTO, "flag">
+) => {
+  return prisma.history.create({
+    data: {
+      flag: HistoryFlag.REJECT,
+      module: data.module,
+      title: data.title,
+      actionId: data.actionId,
+      createdBy: data.createdBy,
+      statusCode: data.statusCode
+    },
+  });
+};
+
 export const historyErrorFlag = async (
   data: Omit<HistoryCreationDTO, "flag">
 ) => {

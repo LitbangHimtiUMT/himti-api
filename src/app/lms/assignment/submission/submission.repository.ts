@@ -38,6 +38,7 @@ export const getSubmissionByIdRepository = async (id: string) => {
           },
         },
       },
+      participant: true,
       mentor: true,
     },
   });

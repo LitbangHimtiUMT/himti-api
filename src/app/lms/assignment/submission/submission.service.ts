@@ -1,4 +1,4 @@
-import { SubmissionStatus } from "@prisma/client";
+import { HistoryModule, SubmissionStatus } from "@prisma/client";
 import { MESSAGE_CODE } from "../../../../utils/error-code";
 import { ErrorApp } from "../../../../utils/http-error";
 import { MESSAGES } from "../../../../utils/messages";
@@ -10,8 +10,13 @@ import {
 import {
   getSubmissionByAssignmentRepository,
   getSubmissionByIdRepository,
-  updateStatusSubmission
+  updateStatusSubmission,
 } from "./submission.repository";
+import { getMentorByClassRepository } from "../../class-mentor/class-mentor.repository";
+import {
+  historyApproveFlag,
+  historyRejectFlag,
+} from "../../../history/history.repository";
 
 export const getSubmissionByIdService = async (id: string) => {
   const submission = await getSubmissionByIdRepository(id);
@@ -38,8 +43,12 @@ export const getSubmissionByAssignmentService = async (
   return getSubmissionsMapper(submission as unknown as SubmissionData[]);
 };
 
-export const rejectSubmissionService = async(submissionId: string, userId: string, feedback?: string) => {
-  const submission = await getSubmissionByIdRepository(submissionId)
+export const rejectSubmissionService = async (
+  submissionId: string,
+  userId: string,
+  feedback?: string
+) => {
+  const submission = await getSubmissionByIdRepository(submissionId);
 
   if (!submission) {
     return new ErrorApp(
@@ -48,26 +57,50 @@ export const rejectSubmissionService = async(submissionId: string, userId: strin
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  if(submission.status !== 'REVIEW') {
+  if (submission.status !== "REVIEW") {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.REVIEW_STATUS,
       400,
       MESSAGE_CODE.BAD_REQUEST
-    )
+    );
   }
-  if(submission?.assignment.module?.session.class.createdBy !== userId) {
-    return new ErrorApp(
-      MESSAGES.ERROR.FORBIDDEN.REJECT_SUBMISSION,
-      403,
-      MESSAGE_CODE.FORBIDDEN
-    )
+  const classId = submission.assignment?.module?.session.class.id;
+  if (classId) {
+    const mentors = await getMentorByClassRepository(classId, {});
+    const isJoin = mentors.find((item) => item.userId === userId);
+    if (
+      userId !== submission?.assignment?.module?.session.class.createdBy &&
+      !isJoin
+    ) {
+      return new ErrorApp(
+        MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
+        403,
+        MESSAGE_CODE.FORBIDDEN
+      );
+    }
   }
 
-  return await updateStatusSubmission(submissionId, SubmissionStatus.REJECT, userId, feedback)
-}
+  const result = await updateStatusSubmission(
+    submissionId,
+    SubmissionStatus.REJECT,
+    userId,
+    feedback
+  );
 
-export const approveSubmissionService = async(submissionId: string, userId: string) => {
-  const submission = await getSubmissionByIdRepository(submissionId)
+  await historyRejectFlag({
+    module: HistoryModule.CLASS,
+    title: `Submission ${submission.participant.name} of ${submission.assignment.title} is reject${feedback ? ` with feedback: ${feedback}` : ""}`,
+    actionId: classId,
+    createdBy: userId,
+  });
+  return result;
+};
+
+export const approveSubmissionService = async (
+  submissionId: string,
+  userId: string
+) => {
+  const submission = await getSubmissionByIdRepository(submissionId);
 
   if (!submission) {
     return new ErrorApp(
@@ -76,20 +109,40 @@ export const approveSubmissionService = async(submissionId: string, userId: stri
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  if(submission.status !== 'REVIEW') {
+  if (submission.status !== "REVIEW") {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.REVIEW_STATUS,
       400,
       MESSAGE_CODE.BAD_REQUEST
-    )
-  }
-  if(submission?.assignment.module?.session.class.createdBy !== userId) {
-    return new ErrorApp(
-      MESSAGES.ERROR.FORBIDDEN.REJECT_SUBMISSION,
-      403,
-      MESSAGE_CODE.FORBIDDEN
-    )
+    );
   }
 
-  return await updateStatusSubmission(submissionId, SubmissionStatus.APPROVE, userId)
-}
+  const classId = submission.assignment?.module?.session.class.id;
+  if (classId) {
+    const mentors = await getMentorByClassRepository(classId, {});
+    const isJoin = mentors.find((item) => item.userId === userId);
+    if (
+      userId !== submission?.assignment?.module?.session.class.createdBy &&
+      !isJoin
+    ) {
+      return new ErrorApp(
+        MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
+        403,
+        MESSAGE_CODE.FORBIDDEN
+      );
+    }
+  }
+
+  const result = await updateStatusSubmission(
+    submissionId,
+    SubmissionStatus.APPROVE,
+    userId
+  );
+  await historyApproveFlag({
+    module: HistoryModule.CLASS,
+    title: `Submission ${submission.participant.name} of ${submission.assignment.title} is approve`,
+    actionId: classId,
+    createdBy: userId,
+  });
+  return result;
+};

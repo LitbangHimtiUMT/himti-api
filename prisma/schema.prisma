@@ -588,6 +588,8 @@ enum HistoryFlag {
   LOGIN
   LOGOUT
   ERROR
+  REJECT
+  APPROVE
 }
 
 enum Jabatan {
