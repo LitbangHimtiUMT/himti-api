@@ -190,7 +190,7 @@ export const getAssignmentByIdService = async (
       .filter((item) => item.status !== SubmissionStatus.REVIEW)
       .map((item) => ({
         id: item.id,
-        file: ImagePath(`${BUCKET_FOLDER.assignments}/${item.file}`),
+        file: assignment.type === 'FILE' ? ImagePath(`${BUCKET_FOLDER.assignments}/${item.file}`) : item.file,
         status: item.status,
         feedback: item.feedback,
         submittedAt: item.createdAt,

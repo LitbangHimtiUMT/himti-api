@@ -73,7 +73,7 @@ export const submitAssignmentController = async (
   const { body } = req;
   const combine = {
     ...body,
-    file,
+    file: file ? file : body?.file,
   };
 
   const validate = submitAssignmentSchema.validate(combine);

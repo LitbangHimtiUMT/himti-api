@@ -14,5 +14,5 @@ export const createAssignmentSchema = Joi.object({
 
 export const submitAssignmentSchema = Joi.object({
   assignmentId: Joi.string().required(),
-  file: Joi.any().required().allow(null),
+  file: Joi.any().required(),
 });
