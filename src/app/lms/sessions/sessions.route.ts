@@ -8,6 +8,7 @@ import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { createSessionSchema, updateSessionSchema } from "./sessions.request";
 import {
   createSessionController,
+  deleteSessionController,
   getSessionByClassController,
   getSessionController,
   updateSessionController,
@@ -41,4 +42,5 @@ sessionRoute
     ]),
     CatchWrapper(getSessionByClassController)
   )
+  .delete(`/:sessionId`, CatchWrapper(deleteSessionController))
   .get("/:sessionId", CatchWrapper(getSessionController));

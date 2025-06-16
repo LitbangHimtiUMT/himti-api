@@ -7,6 +7,7 @@ import { MESSAGES } from "../../../utils/messages";
 import { createModuleSchema } from "./modules.request";
 import {
   createModuleService,
+  deleteModuleService,
   getDetailModuleService,
   getModulesService,
 } from "./modules.service";
@@ -97,4 +98,19 @@ export const getDetailModuleController = async (
     MESSAGES.SUCCESS.MODULES.GET,
     result
   );
+};
+
+export const deleteModuleController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { moduleId } = params;
+  const result = await deleteModuleService(moduleId, userId);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.MODULES.DELETE);
 };

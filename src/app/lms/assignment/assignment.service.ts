@@ -13,10 +13,12 @@ import {
   BUCKET_FOLDER,
   FileType,
   getFileExtension,
+  RemoveFileFromStorage,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
 import {
   historyCreateFlag,
+  historyDeleteFlag,
   historyUpdateFlag,
 } from "../../history/history.repository";
 import { getMentorByClassRepository } from "../class-mentor/class-mentor.repository";
@@ -24,8 +26,9 @@ import { getModuleById } from "../modules/modules.repository";
 import { CreateAssignmentDTO, SubmissionCreationDTO } from "./assignment.dto";
 import {
   createAssignmentRepository,
+  deleteAssignmentRepository,
   getAssignmentDetailRepository,
-  updateAssignmentRepository,
+  updateAssignmentRepository
 } from "./assignment.repository";
 import { createSubmissionRepository } from "./submission/submission.repository";
 
@@ -73,7 +76,7 @@ export const createAssignmentService = async (
     moduleId,
     isFinalAssignment: data.isFinalAssignment,
     type: data.type,
-    allowedFile: data.allowedFile,
+    allowedFile: data.type === "URL" ? undefined : data.allowedFile,
   });
 
   await historyCreateFlag({
@@ -190,7 +193,10 @@ export const getAssignmentByIdService = async (
       .filter((item) => item.status !== SubmissionStatus.REVIEW)
       .map((item) => ({
         id: item.id,
-        file: assignment.type === 'FILE' ? ImagePath(`${BUCKET_FOLDER.assignments}/${item.file}`) : item.file,
+        file:
+          assignment.type === "FILE"
+            ? ImagePath(`${BUCKET_FOLDER.assignments}/${item.file}`)
+            : item.file,
         status: item.status,
         feedback: item.feedback,
         submittedAt: item.createdAt,
@@ -300,4 +306,40 @@ export const submitAssignmentService = async (
     submittedBy: data.submittedBy,
     file: fileName,
   });
+};
+
+export const deleteAssignmentService = async (id: string, userId: string) => {
+  const assignment = await getAssignmentDetailRepository(id);
+
+  const classId = assignment?.module?.session?.class?.id;
+  if (classId) {
+    const mentors = await getMentorByClassRepository(classId, {});
+    const isJoin = mentors.find((item) => item.userId === userId);
+    if (userId !== assignment?.module?.session?.class?.createdBy && !isJoin) {
+      return new ErrorApp(
+        MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
+        403,
+        MESSAGE_CODE.FORBIDDEN
+      );
+    }
+  }
+
+  await historyDeleteFlag({
+    module: HistoryModule.CLASS,
+    title: `Delete Assignment on modules: ${assignment?.module?.name ?? "-"}, session: ${assignment?.module?.session?.name ?? "-"}, class: ${assignment?.module?.session.class.name ?? "-"}`,
+    actionId: assignment?.module?.session.class.id,
+    createdBy: userId,
+  });
+  return await Promise.all([
+    ...(assignment?.type === "FILE"
+      ? (assignment?.submission ?? []).map(async (item) => {
+          if (assignment.type) {
+            await RemoveFileFromStorage(
+              `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.submission}/${item.file}`
+            );
+          }
+        })
+      : []),
+    deleteAssignmentRepository(id),
+  ]);
 };

@@ -5,6 +5,7 @@ import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { upload } from "../../../utils/upload-file-to-storage";
 import {
   createAssignmentController,
+  deleteAssignmentController,
   getAssignmentByIdController,
   submitAssignmentController,
   updateAssignmentController,
@@ -49,4 +50,9 @@ assignmentRoute
     //   RolesEnum.ANGGOTA,
     // ]),
     CatchWrapper(getAssignmentByIdController)
+  )
+  .delete(
+    "/:assignmentId",
+    verifyToken,
+    CatchWrapper(deleteAssignmentController)
   );

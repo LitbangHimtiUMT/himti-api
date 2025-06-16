@@ -21,13 +21,18 @@ import {
 } from "./modules.mapper";
 import {
   createModuleRepository,
+  deleteModuleRepository,
   getModuleById,
   getModulesCountRepository,
   getModulesRepository,
 } from "./modules.repository";
 import { createModuleValidate } from "./modules.validate";
-import { historyCreateFlag } from "../../history/history.repository";
+import {
+  historyCreateFlag,
+  historyDeleteFlag,
+} from "../../history/history.repository";
 import { HistoryModule } from "@prisma/client";
+import { getMentorByClassRepository } from "../class-mentor/class-mentor.repository";
 
 export const createModuleService = async (
   {
@@ -145,4 +150,47 @@ export const getDetailModuleService = async (
   const isCompleted = !!modules.completedModule.length;
   const data = getModuleMapper(modules as unknown as ModuleData, isCompleted);
   return data;
+};
+
+export const deleteModuleService = async (moduleId: string, userId: string) => {
+  const modules = await getModuleById(moduleId);
+  if (!modules) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.MODULE,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const classId = modules?.session?.class?.id;
+  if (classId) {
+    const mentors = await getMentorByClassRepository(classId, {});
+    const isJoin = mentors.find((item) => item.userId === userId);
+    if (userId !== modules?.session?.class?.createdBy && !isJoin) {
+      return new ErrorApp(
+        MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
+        403,
+        MESSAGE_CODE.FORBIDDEN
+      );
+    }
+  }
+
+  await historyDeleteFlag({
+    module: HistoryModule.CLASS,
+    title: `Delete Module ${modules?.name ?? "-"} on session: ${modules?.session?.name ?? "-"}, class: ${modules?.session.class.name ?? "-"}`,
+    actionId: modules?.session.class.id,
+    createdBy: userId,
+  });
+  return await Promise.all([
+    ...(modules?.assignment?.type === "FILE"
+      ? (modules?.assignment?.submission ?? []).map(async (item) => {
+          if (modules?.assignment?.type) {
+            await RemoveFileFromStorage(
+              `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.submission}/${item.file}`
+            );
+          }
+        })
+      : []),
+    deleteModuleRepository(moduleId),
+  ]);
 };

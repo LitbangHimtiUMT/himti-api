@@ -3,7 +3,11 @@ import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../../utils/pagination";
 import { type CreateModuleBodyRequest } from "./modules.dto";
 
-export const getModuleById = async (moduleId: string, userId?: string, isMentor?: boolean) => {
+export const getModuleById = async (
+  moduleId: string,
+  userId?: string,
+  isMentor?: boolean
+) => {
   return await prisma.module.findUnique({
     where: {
       id: moduleId,
@@ -22,11 +26,12 @@ export const getModuleById = async (moduleId: string, userId?: string, isMentor?
         },
         select: {
           id: true,
-          userId: true
-        }
+          userId: true,
+        },
       },
       assignment: {
         select: {
+          type: true,
           id: true,
           title: true,
           isFinalAssigment: true,
@@ -35,9 +40,10 @@ export const getModuleById = async (moduleId: string, userId?: string, isMentor?
           description: true,
           submission: {
             where: {
-              ...(userId && !isMentor && {
-                userId,
-              }),
+              ...(userId &&
+                !isMentor && {
+                  userId,
+                }),
             },
             select: {
               id: true,
@@ -89,9 +95,9 @@ export const createModuleRepository = async (
       session: {
         include: {
           class: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 };
 
@@ -134,3 +140,28 @@ export const getModulesCountRepository = async (query: Query) => {
     },
   });
 };
+
+export const getModulesByClass = async (classId: string) => {
+  return prisma.module.findMany({
+    where: {
+      session: {
+        classId,
+      },
+    },
+    include: {
+      assignment: {
+        include: {
+          submission: true,
+        }
+      }
+    }
+  });
+};
+
+export const deleteModuleRepository = async(moduleId: string) => {
+  return prisma.module.delete({
+    where: {
+      id: moduleId,
+    },
+  });
+}

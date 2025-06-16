@@ -6,6 +6,7 @@ import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import {
   createAssignmentService,
+  deleteAssignmentService,
   getAssignmentByIdService,
   submitAssignmentService,
   updateAssignmentService,
@@ -24,7 +25,7 @@ export const createAssignmentController = async (
     next(result);
     return;
   }
-  HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.ASSIGNMENT);
+  HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.ASSIGNMENT, result);
 };
 
 export const updateAssignmentController = async (
@@ -99,4 +100,19 @@ export const submitAssignmentController = async (
   }
 
   HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.SUBMISSION.SUBMIT);
+};
+
+export const deleteAssignmentController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { assignmentId } = params;
+  const result = await deleteAssignmentService(assignmentId, userId);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.ASSIGNMENT.DELETE);
 };

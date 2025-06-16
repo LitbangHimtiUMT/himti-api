@@ -118,3 +118,11 @@ export const getSessionByName = async (name: string, classId: string) => {
     },
   });
 };
+
+export const deleteSessionRepository = async(sessionId: string) => {
+  return await prisma.session.delete({
+    where: {
+      id: sessionId,
+    },
+  });
+}

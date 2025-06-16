@@ -6,6 +6,7 @@ import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
 import {
   historyCreateFlag,
+  historyDeleteFlag,
   historyUpdateFlag,
 } from "../../history/history.repository";
 import { CreateSessionBodyRequest } from "./sessions.dto";
@@ -16,6 +17,7 @@ import {
 } from "./sessions.mapper";
 import {
   createSessionRepository,
+  deleteSessionRepository,
   getDetailSession,
   getSessionByName,
   getSessionsCountRepository,
@@ -23,6 +25,12 @@ import {
   updateSessionRepository,
 } from "./sessions.repository";
 import { createSessionValidate } from "./sessions.validate";
+import { getModulesByClass } from "../modules/modules.repository";
+import {
+  BUCKET_FOLDER,
+  RemoveFileFromStorage,
+} from "../../../utils/upload-file-to-storage";
+import { environment } from "../../../libs";
 
 export const createSessionService = async (
   { name, classId }: CreateSessionBodyRequest,
@@ -117,4 +125,43 @@ export const getSessionService = async (sessionId: string) => {
   }
 
   return getSessionMapper(session as SessionData);
+};
+
+export const deleteSessionService = async (sessionId: string, userId: string) => {
+  const session = await getDetailSession(sessionId);
+
+  if (!session) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.SESSION,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const modules = await getModulesByClass(session.classId);
+
+  await Promise.all([
+    modules.map(async (module) => {
+      await Promise.all([
+        RemoveFileFromStorage(
+          `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${module.fileModule}`
+        ),
+        (module?.assignment?.submission ?? [])?.map(async (sub) => {
+          if (module?.assignment?.type === "FILE") {
+            await RemoveFileFromStorage(
+              `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.submission}/${sub.file}`
+            );
+          }
+        }),
+      ]);
+    }),
+    historyDeleteFlag({
+      module: HistoryModule.CLASS,
+      title: `Delete Session ${session.name} on class: ${session.class.name}`,
+      actionId: session.class.id,
+      createdBy: userId,
+    }),
+    deleteSessionRepository(session.id)
+  ]);
+  return session;
 };

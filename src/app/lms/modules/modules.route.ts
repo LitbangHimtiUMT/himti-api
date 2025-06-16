@@ -8,6 +8,7 @@ import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { upload } from "../../../utils/upload-file-to-storage";
 import {
   createModuleController,
+  deleteModuleController,
   getDetailModuleController,
   getModulesController,
 } from "./modules.controller";
@@ -33,4 +34,9 @@ moduleRoute
     //   RolesEnum.ANGGOTA,
     // ]),
     CatchWrapper(getDetailModuleController)
+  )
+  .delete(
+    "/:moduleId",
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
+    CatchWrapper(deleteModuleController)
   );

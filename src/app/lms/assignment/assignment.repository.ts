@@ -75,3 +75,11 @@ export const getAssignmentByIdRepository = async (id: string) => {
     },
   });
 };
+
+export const deleteAssignmentRepository = async (id: string) => {
+  return prisma.assignment.delete({
+    where: {
+      id,
+    },
+  });
+};
