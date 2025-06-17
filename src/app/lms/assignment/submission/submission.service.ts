@@ -114,7 +114,7 @@ export const rejectSubmissionService = async (
   }
   await historyRejectFlag({
     module: HistoryModule.CLASS,
-    title: `Submission ${submission.participant.name} of ${submission.assignment.title} is reject${feedback ? ` with feedback: ${feedback}` : ""}`,
+    title: `Reject Submission ${submission.participant.name} of ${submission.assignment.title} ${feedback ? ` with feedback: ${feedback}` : ""}`,
     actionId: classId,
     createdBy: userId,
   });
@@ -165,7 +165,7 @@ export const approveSubmissionService = async (
   );
   await historyApproveFlag({
     module: HistoryModule.CLASS,
-    title: `Submission ${submission.participant.name} of ${submission.assignment.title} is approve`,
+    title: `Approve Submission ${submission.participant.name} of ${submission.assignment.title}`,
     actionId: classId,
     createdBy: userId,
   });
