@@ -36,6 +36,7 @@ export const getSubmissionMapper = (data: SubmissionData) => {
     status: data.status,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
+    feedback: data.feedback,
     assignment: data.assignment,
     actionBy: data.mentor
       ? {
