@@ -34,16 +34,21 @@ export const getClassParticipantByUserIdRepository = async (
   userId: string,
   query: Query
 ) => {
-  const { search } = query;
+  const { search, categoryId } = query;
   return await prisma.classParticipant.findMany({
     where: {
       userId,
-      ...(search && {
+      ...((search ?? categoryId) && {
         class: {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
+          ...(search && {
+            name: {
+              contains: search,
+              mode: "insensitive",
+            },
+          }),
+          ...(categoryId && {
+            categoryId,
+          }),
         },
       }),
     },
@@ -58,10 +63,10 @@ export const getClassParticipantByUserIdRepository = async (
               class: {
                 select: {
                   id: true,
-                  name: true
-                },                
+                  name: true,
+                },
               },
-              userId: true
+              userId: true,
             },
           },
           id: true,
@@ -114,16 +119,21 @@ export const getClassParticipantByUserIdCountRepository = async (
   userId: string,
   query: Query
 ) => {
-  const { search } = query;
+  const { search, categoryId } = query;
   return await prisma.classParticipant.count({
     where: {
       userId,
-      ...(search && {
+      ...((search ?? categoryId) && {
         class: {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
+          ...(search && {
+            name: {
+              contains: search,
+              mode: "insensitive",
+            },
+          }),
+          ...(categoryId && {
+            categoryId,
+          }),
         },
       }),
     },
@@ -167,8 +177,8 @@ export const getClassParticipantByClassIdRepository = async (
     include: {
       user: {
         include: {
-          mentor: true
-        }
+          mentor: true,
+        },
       },
     },
     ...queryPagination(query),
@@ -218,4 +228,3 @@ export const getExistingClassParticipantRepository = async (
     },
   });
 };
-
