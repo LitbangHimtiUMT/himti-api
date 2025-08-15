@@ -159,9 +159,9 @@ export const getDetailClassController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { userId, params } = req;
+  const { userId, params, query } = req;
   const { classId } = params;
-  const result = await getDetailClassService(classId, userId);
+  const result = await getDetailClassService(query, classId, userId);
   if (result instanceof ErrorApp) {
     next(result);
     return;
@@ -171,7 +171,8 @@ export const getDetailClassController = async (
     200,
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.CLASS.GET,
-    result
+    result.data,
+    result.meta
   );
 };
 

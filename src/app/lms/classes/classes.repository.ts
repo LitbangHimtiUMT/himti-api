@@ -5,7 +5,12 @@ import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../../utils/pagination";
 import { stringToBool } from "../../../utils/string-to-bool";
 
-export const getClassById = async (classId: string, userId?: string) => {
+export const getClassById = async (
+  classId: string,
+  userId?: string,
+  query?: Query
+) => {
+  const {search} = query || {}
   return await prisma.class.findUnique({
     where: {
       id: classId,
@@ -14,6 +19,17 @@ export const getClassById = async (classId: string, userId?: string) => {
       user: true,
       category: true,
       session: {
+        ...(query && {
+          ...queryPagination(query),
+        }),
+        where: {
+          ...search && {
+            name: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+        },
         include: {
           module: {
             include: {

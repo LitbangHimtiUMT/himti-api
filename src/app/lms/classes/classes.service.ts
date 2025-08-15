@@ -45,7 +45,12 @@ import {
   updateStatusClass,
 } from "./classes.repository";
 import { createClassValidate } from "./classes.validate";
-import { historyCreateFlag, historyDeleteFlag, historyUpdateFlag } from "../../history/history.repository";
+import {
+  historyCreateFlag,
+  historyDeleteFlag,
+  historyUpdateFlag,
+} from "../../history/history.repository";
+import { getSessionsCountRepository } from "../sessions/sessions.repository";
 
 export const createClassService = async (
   {
@@ -208,7 +213,7 @@ export const updateClassService = async (
       thumbnail: fileName ? fileName : undefined,
       categoryId,
       price,
-      level
+      level,
     });
 
     return createClass;
@@ -369,10 +374,12 @@ export const userJoinClassService = async (userId: string, classId: string) => {
 };
 
 export const getDetailClassService = async (
+  query: Query,
   classId: string,
   userId?: string
 ) => {
-  const classess = await getClassById(classId, userId);
+  const { page = "1", perPage = "10" } = query;
+  const classess = await getClassById(classId, userId, query);
   if (!classess) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.CLASS,
@@ -380,7 +387,15 @@ export const getDetailClassService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  return await getDetailClassMapper(classess as ClassData);
+  const session = await getSessionsCountRepository({
+    ...query,
+    classId,
+  });
+  const meta = Meta(Number(page), Number(perPage), session);
+  return {
+    data: await getDetailClassMapper(classess as ClassData),
+    meta,
+  };
 };
 
 export const getDetailClassByCodeService = async (
@@ -485,7 +500,7 @@ export const publishClassService = async (classId: string, userId: string) => {
     title: `Publish class ${classess.name}`,
     actionId: classess.id,
     createdBy: userId,
-  })
+  });
   return await updateStatusClass(classess.id, ClassStatus.PUBLISH);
 };
 
@@ -513,6 +528,6 @@ export const deleteClassessService = async (
     title: `Delete class ${classess.name}`,
     actionId: classess.id,
     createdBy: userId,
-  })
+  });
   return await deleteClassRepository(classess.id);
 };
