@@ -22,6 +22,9 @@ export const getClassById = async (
         ...(query && {
           ...queryPagination(query),
         }),
+        orderBy: {
+          createdAt: 'asc'
+        },
         where: {
           ...search && {
             name: {
