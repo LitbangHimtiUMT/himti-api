@@ -36,6 +36,7 @@ model User {
   EventRegistration     EventRegistration[]
   History               History[]
   ClassMentor           ClassMentor[]
+  TicketSuport          TicketSuport[]
 
   @@index([memberId], map: "user_fk_1")
   @@index([email], map: "user_fk_2")
@@ -565,6 +566,21 @@ model History {
 
   @@index([createdBy], map: "history_created_by_fk_1")
   @@map("histories")
+}
+
+model TicketSuport {
+  id          String   @id @unique @default(uuid()) @db.Char(36)
+  title       String
+  description String   @db.Text
+  file        String
+  reportBy    String   @map("report_by")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  reporter User @relation(fields: [reportBy], references: [id])
+
+  @@index([reportBy], map: "ticket_support_report_by_fk_1")
+  @@map("ticket_suport")
 }
 
 enum HistoryModule {

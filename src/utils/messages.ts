@@ -25,6 +25,7 @@ export const MESSAGES = {
     COMPLETED_MODULE: "Completed Module created successfully",
     COMPLETED_CLASS: "Completed Class created successfully",
     ASSIGNMENT: "Assignment created successfully",
+    TICKET_SUPPORT: "Ticket support submitted successfully",
   },
   ERROR: {
     NOT_FOUND: {
@@ -90,6 +91,7 @@ export const MESSAGES = {
       USER_MENTOR: "User has become a mentor",
       CATEGORY: "Category is already exist",
       SESSION_CLASS: "Session already exists in this class",
+      TICKET_SUPPORT_TODAY: `You're already submit ticket support today, please submit again tomorrow`,
     },
     INVALID: {
       GLOBAL: {
