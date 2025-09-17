@@ -13,7 +13,29 @@ export const VerifySuperAdmin = (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.headers.authorization) {
+  const key = req.header(environment.HEADER_KEY) as string;
+  const auth = req.headers.authorization;
+  if (!key && !auth) {
+    return HandleResponse(
+      res,
+      403,
+      MESSAGE_CODE.FORBIDDEN,
+      MESSAGES.ERROR.UNAUTHORIZED.ACCESS
+    );
+  }
+
+  if (key) {
+    if (atob(key) !== environment.SECRET_KEY) {
+      return HandleResponse(
+        res,
+        403,
+        MESSAGE_CODE.FORBIDDEN,
+        MESSAGES.ERROR.UNAUTHORIZED.ACCESS
+      );
+    }
+  }
+
+  if (!auth) {
     return HandleResponse(
       res,
       401,
@@ -21,7 +43,7 @@ export const VerifySuperAdmin = (
       MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
     );
   }
-  const token = req.headers.authorization.replace("Bearer ", "");
+  const token = auth.replace("Bearer ", "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   verify(token, environment.JWT_SECRET as string, async (err: any) => {
     if (err) {

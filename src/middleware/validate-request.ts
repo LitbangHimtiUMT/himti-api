@@ -4,6 +4,7 @@ import { historyErrorSystem } from "../app/history/history.repository";
 import { RequestWithAccessToken } from "../interface/Request";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { HandleResponse } from "../utils/handle-response";
+import { ErrorApp } from "../utils/http-error";
 
 export const validateRequest = (
   body: Joi.ObjectSchema,
@@ -48,3 +49,17 @@ export const validateRequest = (
     next();
   };
 };
+
+export const validateCombineRequest = <T = unknown>(schema: Joi.ObjectSchema, body: T, next: NextFunction) => {
+  const validate = schema.validate(body);
+    if (validate.error) {
+      next(
+        new ErrorApp(
+          validate.error.message.replace(/"/g, ""),
+          400,
+          MESSAGE_CODE.BAD_REQUEST
+        )
+      );
+      return;
+    }
+}
