@@ -47,6 +47,8 @@ export const verifyToken = async (
         MESSAGES.ERROR.UNAUTHORIZED.ACCESS
       );
     }
+    next()
+    return
   }
 
   if (!auth) {
