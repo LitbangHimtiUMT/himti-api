@@ -1,7 +1,7 @@
-import { Mentor, MentorTransactionHistory, User } from "@prisma/client";
-import { MentorDTO } from "./mentor.dto";
+import { Mentor, User } from "@prisma/client";
 import { ImagePath } from "../../../utils/image-path";
 import { BUCKET_FOLDER } from "../../../utils/upload-file-to-storage";
+import { MentorDTO } from "./mentor.dto";
 
 export interface MentorData extends Mentor {
   user: User | null;
@@ -25,19 +25,21 @@ export const getMentorsDTOMapper = (data: MentorData[]): MentorDTO[] => {
 };
 
 export const getDetailMentorDTOMapper = (
-  data: MentorData,
-  mentorTransaction: MentorTransactionHistory[]
+  data: MentorData
+  // mentorTransaction: MentorTransactionHistory[]
 ) => {
   return {
     id: data.id,
     name: data?.user?.name ?? "",
     email: data?.user?.email ?? "",
     balance: Number(data?.balance),
-    totalExpend: mentorTransaction
-      .filter((item) => item.type === "EXPEND")
-      .reduce((a, b) => Number(a) + Number(b.amount), 0),
-    totalIncome: mentorTransaction
-      .filter((item) => item.type === "EXPEND")
-      .reduce((a, b) => Number(a) + Number(b.amount), 0),
+    // totalExpend: mentorTransaction
+    //   .filter((item) => item.type === "EXPEND")
+    //   .reduce((a, b) => Number(a) + Number(b.amount), 0),
+    totalExpend: 0,
+    // totalIncome: mentorTransaction
+    //   .filter((item) => item.type === "EXPEND")
+    //   .reduce((a, b) => Number(a) + Number(b.amount), 0),
+    totalIncome: 0,
   };
 };

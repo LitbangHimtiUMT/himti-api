@@ -4,7 +4,7 @@ import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
 import { getUserById } from "../../authentication/auth.repository";
 import { getClassById } from "../classes/classes.repository";
-import { getMentorTransactionsByMentorIdRepository } from "../mentor-transactions/mentor-transactions.repository";
+// import { getMentorTransactionsByMentorIdRepository } from "../mentor-transactions/mentor-transactions.repository";
 import { CreateMentorDAO } from "./mentor.dao";
 import { QueryMentor } from "./mentor.interface";
 import { getDetailMentorDTOMapper, getMentorsDTOMapper } from "./mentor.mapper";
@@ -100,9 +100,9 @@ export const getMentorByIdService = async (mentorId: string) => {
     );
   }
 
-  const mentorTransactions = await getMentorTransactionsByMentorIdRepository(
-    mentor.id
-  );
+  // const mentorTransactions = await getMentorTransactionsByMentorIdRepository(
+  //   mentor.id
+  // );
 
-  return getDetailMentorDTOMapper(mentor, mentorTransactions);
+  return getDetailMentorDTOMapper(mentor);
 };

@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import prestasiRoute from "../app/achievements/achievements.route";
 import absensiRoute from "../app/attendances/attendances.route";
+import registrationTypeRoute from "../app/registration-type/registration-type.routes";
 import authRoute from "../app/authentication/auth.route";
 import businessRoute from "../app/business/business.route";
 import eventMeetingRoute from "../app/event-meeting/event-meeting.route";
@@ -42,6 +43,7 @@ route.use("/histories", historyRoute);
 route.use("/acara", acaraRoute);
 route.use("/event-meeting", eventMeetingRoute);
 route.use("/event-registration", eventRegistrationRoute);
+route.use("/registration-type", registrationTypeRoute);
 route.use("/meeting", meetingRoute);
 route.use("/points", pointsRoute);
 route.use("/business", businessRoute);
@@ -141,7 +143,7 @@ route.get("/", async (req: Request, res: Response) => {
 });
 
 route.get("/scheduler", async (req: Request, res: Response) => {
-  console.log('himti scheduler...')
+  console.log("himti scheduler...");
   return res.json({ message: "himti scheduler" });
 });
 

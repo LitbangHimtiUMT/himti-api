@@ -70,15 +70,15 @@ export const updateTransactionWithCreateClassParticipant = async (
           userId: trx.userId,
         },
       });
-      if (trx.class.user.mentor?.id) {
-        await tx.mentorTransactionHistory.create({
-          data: {
-            amount: Number(trx.amount),
-            type: "INCOME",
-            mentorId: trx.class.user.mentor.id,
-          },
-        });
-      }
+      // if (trx.class.user.mentor?.id) {
+      //   await tx.mentorTransactionHistory.create({
+      //     data: {
+      //       amount: Number(trx.amount),
+      //       type: "INCOME",
+      //       mentorId: trx.class.user.mentor.id,
+      //     },
+      //   });
+      // }
     }
 
     return trx;
