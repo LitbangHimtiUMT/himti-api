@@ -1,72 +1,144 @@
-import { NextFunction, Response } from "express";
-import { RequestWithAccessToken } from "../../interface/Request";
+import { Request, Response, NextFunction } from "express";
+import * as EventRegistrationService from "./event-registration.service";
+import { HandleResponse } from "../../utils/handle-response";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
-import { EventRegistrationCreationDTO } from "./event-registration.dto";
-import { createEventRegistrationSchema } from "./event-registration.request";
-import {
-  createEventRegistrationService,
-  getHistoryEventRegistrationService,
-} from "./event-registration.service";
-import { HandleResponse } from "../../utils/handle-response";
-import { MESSAGES } from "../../utils/messages";
 
-export const createEventRegistrationController = async (
-  req: RequestWithAccessToken & { file: Express.Multer.File },
+export const createEventRegistration = async (
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { userId, params, body } = req;
-  const { eventId } = params;
-
-  const file = req.file;
-  const combine: EventRegistrationCreationDTO = { ...body, eventId, userId };
-  if (file) {
-    combine.image = file;
-  }
-  const validate = createEventRegistrationSchema.validate(combine);
-  console.log(validate);
-  if (validate.error) {
-    next(
-      new ErrorApp(
-        validate.error.message.replace(/"/g, ""),
-        400,
-        MESSAGE_CODE.BAD_REQUEST
-      )
+  try {
+    const eventRegistration = await EventRegistrationService.create(req.body);
+    HandleResponse(
+      res,
+      201,
+      MESSAGE_CODE.SUCCESS,
+      "Event registration created successfully",
+      eventRegistration
     );
-    return;
+  } catch (error) {
+    if (error instanceof ErrorApp) {
+      return next(error);
+    }
+    HandleResponse(
+      res,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
+      "Failed to create event registration"
+    );
   }
-
-  const result = await createEventRegistrationService(combine);
-
-  if (result instanceof ErrorApp) {
-    next(result);
-    return;
-  }
-  HandleResponse(
-    res,
-    201,
-    MESSAGE_CODE.SUCCESS,
-    MESSAGES.SUCCESS.EVENT_REGISTRATION.CREATE
-  );
 };
 
-export const getHistoryEventRegistrationController = async (
-  req: RequestWithAccessToken,
+export const getEventRegistrations = async (
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { userId } = req;
-  const result = await getHistoryEventRegistrationService(userId as string);
-  if (result instanceof ErrorApp) {
-    next(result);
-    return;
+  try {
+    const eventRegistrations = await EventRegistrationService.findAll();
+    HandleResponse(
+      res,
+      200,
+      MESSAGE_CODE.SUCCESS,
+      "Event registrations retrieved successfully",
+      eventRegistrations
+    );
+  } catch (error) {
+    if (error instanceof ErrorApp) {
+      return next(error);
+    }
+    HandleResponse(
+      res,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
+      "Failed to retrieve event registrations"
+    );
   }
-  HandleResponse(
-    res,
-    200,
-    MESSAGE_CODE.SUCCESS,
-    MESSAGES.SUCCESS.EVENT_REGISTRATION.HISTORY,
-    result
-  );
+};
+
+export const getEventRegistrationById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const eventRegistration = await EventRegistrationService.findById(
+      req.params.id
+    );
+    HandleResponse(
+      res,
+      200,
+      MESSAGE_CODE.SUCCESS,
+      "Event registration retrieved successfully",
+      eventRegistration
+    );
+  } catch (error) {
+    if (error instanceof ErrorApp) {
+      return next(error);
+    }
+    HandleResponse(
+      res,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
+      "Failed to retrieve event registration"
+    );
+  }
+};
+
+export const updateEventRegistration = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const updatedEventRegistration = await EventRegistrationService.update(
+      req.params.id,
+      req.body
+    );
+    HandleResponse(
+      res,
+      200,
+      MESSAGE_CODE.SUCCESS,
+      "Event registration updated successfully",
+      updatedEventRegistration
+    );
+  } catch (error) {
+    if (error instanceof ErrorApp) {
+      return next(error);
+    }
+    HandleResponse(
+      res,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
+      "Failed to update event registration"
+    );
+  }
+};
+
+export const deleteEventRegistration = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    await EventRegistrationService.remove(req.params.id);
+    HandleResponse(
+      res,
+      204,
+      MESSAGE_CODE.SUCCESS,
+      "Event registration deleted successfully"
+    );
+  } catch (error) {
+    if (error instanceof ErrorApp) {
+      return next(error);
+    }
+    HandleResponse(
+      res,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
+      "Failed to delete event registration"
+    );
+  }
 };

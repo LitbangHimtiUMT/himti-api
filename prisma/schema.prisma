@@ -529,19 +529,25 @@ model RegistrationType {
   event     Event?   @relation(fields: [eventId], references: [id])
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("registration_type")
 }
 
 model EventRegistration {
-  id        String   @id @unique @default(uuid())
-  eventId   String   @map("event_id") @db.Char(36)
-  userId    String   @map("user_id")
-  material  String?
-  image     String?
-  class     String
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
-  event     Event    @relation(fields: [eventId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  id                 String   @id @unique @default(cuid())
+  name               String
+  nim                String?
+  class              String?
+  generation         Int?
+  categoryId         String?   @map("category_id")
+  image              String?
+  registrationTypeId String? @map("registration_type_id")
+  userId             String?  @map("user_id")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  user               User?    @relation(fields: [userId], references: [id])
+  Event              Event?   @relation(fields: [eventId], references: [id])
+  eventId            String?
 
   @@map("event_registration")
 }

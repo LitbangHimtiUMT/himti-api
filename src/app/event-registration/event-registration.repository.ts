@@ -1,17 +1,37 @@
 import { prisma } from "../../config";
-import { EventRegistrationCreationDTO } from "./event-registration.dto";
+import { EventRegistrationCreationDTO } from "./event-registration.interface";
 
-export const registerEventRepository = async (
-  data: Omit<EventRegistrationCreationDTO, "image"> & { image: string }
+export const createEventRegistrationRepository = async (
+  data: EventRegistrationCreationDTO
 ) => {
   return await prisma.eventRegistration.create({
-    data: {
-      eventId: data.eventId,
-      userId: data.userId,
-      image: data.image,
-      material: data.material,
-      class: data.class,
-    },
+    data,
+  });
+};
+
+export const getEventRegistrationsRepository = async () => {
+  return await prisma.eventRegistration.findMany();
+};
+
+export const getEventRegistrationByIdRepository = async (id: string) => {
+  return await prisma.eventRegistration.findUnique({
+    where: { id },
+  });
+};
+
+export const updateEventRegistrationRepository = async (
+  id: string,
+  data: Partial<EventRegistrationCreationDTO>
+) => {
+  return await prisma.eventRegistration.update({
+    where: { id },
+    data,
+  });
+};
+
+export const deleteEventRegistrationRepository = async (id: string) => {
+  return await prisma.eventRegistration.delete({
+    where: { id },
   });
 };
 
@@ -21,7 +41,6 @@ export const getEventRegistrationByUserId = async (userId: string) => {
       userId: userId,
     },
     include: {
-      event: true,
       user: {
         include: {
           Member: {
@@ -33,11 +52,14 @@ export const getEventRegistrationByUserId = async (userId: string) => {
   });
 };
 
-export const getExistEventRegistration = async(userId: string, eventId: string) => {
+export const getExistEventRegistration = async (
+  userId: string,
+  eventId: string
+) => {
   return await prisma.eventRegistration.findFirst({
     where: {
       userId: userId,
-      eventId: eventId
-    }
-  })
-}
+      eventId: eventId,
+    },
+  });
+};

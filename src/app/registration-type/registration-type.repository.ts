@@ -1,5 +1,8 @@
 import { prisma } from "../../config";
-import { RegistrationTypeCreationDTO } from "./registration-type.interface";
+import {
+  RegistrationTypeCreationDTO,
+  RegistrationTypeQuery,
+} from "./registration-type.interface";
 
 export const createRegistrationTypeRepository = async (
   data: RegistrationTypeCreationDTO
@@ -10,17 +13,40 @@ export const createRegistrationTypeRepository = async (
       type: data.type,
       year: data.year,
       isActive: typeof data.isActive === "boolean" ? data.isActive : true,
+      eventId: data.eventId,
     },
   });
 };
 
-export const getRegistrationTypesRepository = async () => {
-  return await prisma.registrationType.findMany();
+export const getRegistrationTypesRepository = async (
+  query: RegistrationTypeQuery = {}
+) => {
+  const { type, isActive, eventId } = query;
+  return await prisma.registrationType.findMany({
+    where: {
+      ...(type && { type }),
+      ...(typeof isActive === "boolean" && { isActive }),
+      ...(eventId && { eventId }),
+    },
+  });
 };
 
 export const getRegistrationTypeByIdRepository = async (id: string) => {
   return await prisma.registrationType.findUnique({
     where: { id },
+  });
+};
+
+export const getRegistrationTypesByIdsRepository = async (ids: string[]) => {
+  if (!ids.length) {
+    return [];
+  }
+  return await prisma.registrationType.findMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
   });
 };
 

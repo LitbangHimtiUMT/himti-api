@@ -1,7 +1,9 @@
+import { RegistrationEventTypeEnum } from "@prisma/client";
 import * as registrationTypeRepository from "./registration-type.repository";
 import {
   RegistrationTypeCreationDTO,
   RegistrationTypeDTO,
+  RegistrationTypeQuery,
 } from "./registration-type.interface";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGE_CODE } from "../../utils/error-code";
@@ -15,9 +17,11 @@ export const create = async (
   return registrationTypeMapper(registrationType);
 };
 
-export const getAll = async (): Promise<RegistrationTypeDTO[]> => {
+export const getAll = async (
+  query: RegistrationTypeQuery = {}
+): Promise<RegistrationTypeDTO[]> => {
   const registrationTypes =
-    await registrationTypeRepository.getRegistrationTypesRepository();
+    await registrationTypeRepository.getRegistrationTypesRepository(query);
   return registrationTypes.map(registrationTypeMapper);
 };
 
@@ -40,13 +44,7 @@ export const update = async (
 ): Promise<RegistrationTypeDTO> => {
   const updatedRegistrationType =
     await registrationTypeRepository.updateRegistrationTypeRepository(id, data);
-  return {
-    id: updatedRegistrationType.id,
-    name: updatedRegistrationType.name,
-    isActive: updatedRegistrationType.isActive,
-    year: updatedRegistrationType.year,
-    type: updatedRegistrationType.type,
-  };
+  return registrationTypeMapper(updatedRegistrationType);
 };
 
 export const remove = async (id: string) => {
@@ -55,4 +53,15 @@ export const remove = async (id: string) => {
   return await registrationTypeRepository.deleteRegistrationTypeRepository(
     registrationType.id
   );
+};
+
+export const getEventTypeOptions = () => {
+  return Object.values(RegistrationEventTypeEnum).map((value) => ({
+    value,
+    label: value
+      .toLowerCase()
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" "),
+  }));
 };

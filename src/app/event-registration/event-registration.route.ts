@@ -1,21 +1,33 @@
 import { Router } from "express";
-import { verifyToken } from "../../middleware/verify-token";
+import * as EventRegistrationController from "./event-registration.controller";
+import { validateRequest } from "../../middleware/validate-request";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
-  createEventRegistrationController,
-  getHistoryEventRegistrationController,
-} from "./event-registration.controller";
-import { upload } from "../../utils/upload-file-to-storage";
+  createEventRegistrationSchema,
+  updateEventRegistrationSchema,
+} from "./event-registration.request";
 
-const route = Router();
+const router = Router();
 
-route
-  .use(verifyToken)
+router
   .post(
-    "/:eventId",
-    CatchWrapper(upload.single("image")),
-    CatchWrapper(createEventRegistrationController)
+    "/",
+    validateRequest(createEventRegistrationSchema),
+    CatchWrapper(EventRegistrationController.createEventRegistration)
   )
-  .get("/history", CatchWrapper(getHistoryEventRegistrationController));
+  .get("/", CatchWrapper(EventRegistrationController.getEventRegistrations))
+  .get(
+    "/:id",
+    CatchWrapper(EventRegistrationController.getEventRegistrationById)
+  )
+  .put(
+    "/:id",
+    validateRequest(updateEventRegistrationSchema),
+    CatchWrapper(EventRegistrationController.updateEventRegistration)
+  )
+  .delete(
+    "/:id",
+    CatchWrapper(EventRegistrationController.deleteEventRegistration)
+  );
 
-export default route;
+export default router;

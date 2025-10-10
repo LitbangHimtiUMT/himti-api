@@ -10,6 +10,10 @@ import {
 const router = Router();
 
 router
+  .get(
+    "/options/event-types",
+    CatchWrapper(RegistrationTypeController.getRegistrationTypeOptions)
+  )
   .post(
     "/",
     validateRequest(createRegistrationTypeSchema),

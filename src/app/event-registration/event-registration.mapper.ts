@@ -1,8 +1,12 @@
-import { Event, EventRegistration } from "@prisma/client";
+import { Event, EventRegistration, RegistrationType } from "@prisma/client";
 import { UserData } from "../point/point.mapper";
 import { generateOpen } from "../../utils/generate-open";
 import { ImagePath } from "../../utils/image-path";
 import { BUCKET_FOLDER } from "../../utils/upload-file-to-storage";
+import {
+  EventRegistrationDTO,
+  RegistrationTypeSummaryDTO,
+} from "./event-registration.interface";
 
 export interface EventRegistrationData extends EventRegistration {
   event: Event;
@@ -18,7 +22,7 @@ export const getHistoryEventRegistrationDTOMapper = (
       ? ImagePath(`${BUCKET_FOLDER.eventRegistration}/${item.image}`)
       : null,
     class: item.class,
-    material: item.material,
+    // material: item.material,
     event: {
       id: item.event.id,
       name: item.event.name,
@@ -40,4 +44,34 @@ export const getHistoryEventRegistrationDTOMapper = (
       },
     },
   }));
+};
+
+export const eventRegistrationMapper = (
+  eventRegistration: EventRegistration,
+  registrationType?: RegistrationType | null
+): EventRegistrationDTO => {
+  return {
+    id: eventRegistration.id,
+    name: eventRegistration.name,
+    class: eventRegistration.class,
+    generation: eventRegistration.generation,
+    registrationTypeId: eventRegistration.registrationTypeId,
+    eventId: eventRegistration.eventId,
+    registrationType: mapRegistrationTypeSummary(registrationType),
+  };
+};
+
+const mapRegistrationTypeSummary = (
+  registrationType?: RegistrationType | null
+): RegistrationTypeSummaryDTO | null => {
+  if (!registrationType) {
+    return null;
+  }
+  return {
+    id: registrationType.id,
+    name: registrationType.name,
+    type: registrationType.type,
+    year: registrationType.year,
+    isActive: registrationType.isActive,
+  };
 };

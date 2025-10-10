@@ -5,6 +5,7 @@ export interface RegistrationTypeCreationDTO {
   type: RegistrationEventTypeEnum;
   year: number;
   isActive: boolean;
+  eventId?: string | null;
 }
 
 export interface RegistrationTypeDTO {
@@ -13,4 +14,11 @@ export interface RegistrationTypeDTO {
   year: number;
   type: RegistrationEventTypeEnum;
   isActive: boolean;
+  eventId?: string | null;
+}
+
+export interface RegistrationTypeQuery {
+  type?: RegistrationEventTypeEnum;
+  isActive?: boolean;
+  eventId?: string;
 }

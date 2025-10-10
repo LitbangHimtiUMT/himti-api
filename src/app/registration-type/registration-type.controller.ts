@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { RegistrationEventTypeEnum } from "@prisma/client";
 import * as RegistrationTypeService from "./registration-type.service";
 import { HandleResponse } from "../../utils/handle-response";
 import { MESSAGE_CODE } from "../../utils/error-code";
@@ -31,13 +32,38 @@ export const createRegistrationType = async (
   }
 };
 
+export const getRegistrationTypeOptions = async (
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
+  const options = RegistrationTypeService.getEventTypeOptions();
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    "Registration type enums retrieved successfully",
+    options
+  );
+};
+
 export const getRegistrationTypes = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const registrationTypes = await RegistrationTypeService.getAll();
+    const { type, isActive, eventId } = req.query;
+    const filters = {
+      ...(typeof type === "string" && type
+        ? { type: type as RegistrationEventTypeEnum }
+        : {}),
+      ...(typeof isActive === "string" && isActive !== ""
+        ? { isActive: isActive === "true" }
+        : {}),
+      ...(typeof eventId === "string" && eventId ? { eventId } : {}),
+    };
+    const registrationTypes = await RegistrationTypeService.getAll(filters);
     HandleResponse(
       res,
       200,
@@ -129,12 +155,11 @@ export const deleteRegistrationType = async (
     await RegistrationTypeService.remove(req.params.id);
     HandleResponse(
       res,
-      200,
+      204,
       MESSAGE_CODE.SUCCESS,
       "Registration type deleted successfully"
     );
   } catch (error) {
-    console.log({ error });
     if (error instanceof ErrorApp) {
       next(error);
       return;

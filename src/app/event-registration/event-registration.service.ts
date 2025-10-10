@@ -1,98 +1,193 @@
-import { EventType } from "@prisma/client";
-import sharp from "sharp";
-import { environment } from "../../libs";
-import { MESSAGE_CODE } from "../../utils/error-code";
+import { RegistrationEventTypeEnum, RegistrationType } from "@prisma/client";
+import * as eventRegistrationRepository from "./event-registration.repository";
+import {
+  EventRegistrationCreationDTO,
+  EventRegistrationDTO,
+  EventRegistrationUpdateDTO,
+} from "./event-registration.interface";
 import { ErrorApp } from "../../utils/http-error";
-import { MESSAGES } from "../../utils/messages";
-import {
-  BUCKET_FOLDER,
-  FileType,
-  UploadFileToStorage,
-} from "../../utils/upload-file-to-storage";
-import { getUserById } from "../authentication/auth.repository";
-import { getEventById } from "../event/event.repository";
-import { EventRegistrationCreationDTO } from "./event-registration.dto";
-import {
-  EventRegistrationData,
-  getHistoryEventRegistrationDTOMapper,
-} from "./event-registration.mapper";
-import {
-  getEventRegistrationByUserId,
-  registerEventRepository
-} from "./event-registration.repository";
+import { MESSAGE_CODE } from "../../utils/error-code";
+import * as registrationTypeRepository from "../registration-type/registration-type.repository";
+import { eventRegistrationMapper } from "./event-registration.mapper";
 
-export const createEventRegistrationService = async (
-  data: EventRegistrationCreationDTO
-) => {
-  let filename: string = "";
-  const event = await getEventById(data.eventId);
-  if (!event) {
-    return new ErrorApp(
-      MESSAGES.ERROR.NOT_FOUND.ACARA,
-      404,
-      MESSAGE_CODE.NOT_FOUND
+export const create = async (
+  payload: EventRegistrationCreationDTO
+): Promise<EventRegistrationDTO> => {
+  const registrationType = await getRegistrationTypeOrThrow(
+    payload.registrationTypeId
+  );
+  await assertUniqueRegistration(payload.userId, payload.eventId);
+  const normalizedData = normalizePayload(payload, registrationType);
+  const eventRegistration =
+    await eventRegistrationRepository.createEventRegistrationRepository(
+      normalizedData
     );
-  }
-  // const registered = await getExistEventRegistration(data.userId, data.eventId)
-
-  // if(registered) {
-  //   return new ErrorApp(
-  //     MESSAGES.ERROR.INVALID.REGISTERED_EVENT,
-  //     400,
-  //     MESSAGE_CODE.BAD_REQUEST
-  //   );
-  // }
-  if (event.type === EventType.COMMON) {
-    return new ErrorApp(
-      MESSAGES.ERROR.INVALID.COMMONT_EVENT,
-      404,
-      MESSAGE_CODE.NOT_FOUND
-    );
-  }
-  const user = await getUserById(data.userId);
-  if (!user) {
-    return new ErrorApp(
-      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
-      404,
-      MESSAGE_CODE.NOT_FOUND
-    );
-  }
-  if (data.image) {
-    const img = data.image;
-    filename =
-      `${img?.originalname.replace(FileType[img.mimetype], "")}-${+new Date()}.webp`.replace(
-        " ",
-        ""
-      );
-    const quality = (data.image?.size as number) > 5 * 1024 * 1024 ? 75 : 100;
-    const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
-
-    await UploadFileToStorage({
-      Bucket: environment.STORAGE.BUCKET,
-      Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.eventRegistration}/${filename}`,
-      Body: compress,
-      ContentType: FileType["image/webp"],
-      ACL: "public-read",
-    });
-
-    const result = await registerEventRepository({
-      ...data,
-      image: filename,
-    });
-    return result;
-  }
+  return eventRegistrationMapper(eventRegistration, registrationType);
 };
 
-export const getHistoryEventRegistrationService = async (userId: string) => {
-  if (!userId) {
-    return new ErrorApp(
-      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+export const findAll = async (): Promise<EventRegistrationDTO[]> => {
+  const eventRegistrations =
+    await eventRegistrationRepository.getEventRegistrationsRepository();
+  const registrationTypeMap = await buildRegistrationTypeMap(
+    eventRegistrations
+      .map((item) => item.registrationTypeId)
+      .filter((id): id is string => Boolean(id))
+  );
+  return eventRegistrations.map((eventRegistration) =>
+    eventRegistrationMapper(
+      eventRegistration,
+      registrationTypeMap.get(eventRegistration.registrationTypeId ?? "") ||
+        null
+    )
+  );
+};
+
+export const findById = async (id: string): Promise<EventRegistrationDTO> => {
+  const eventRegistration =
+    await eventRegistrationRepository.getEventRegistrationByIdRepository(id);
+  if (!eventRegistration) {
+    throw new ErrorApp(
+      "Event registration not found",
       404,
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  const result = await getEventRegistrationByUserId(userId);
-  return getHistoryEventRegistrationDTOMapper(
-    result as unknown as EventRegistrationData[]
+  const registrationType = eventRegistration.registrationTypeId
+    ? await registrationTypeRepository.getRegistrationTypeByIdRepository(
+        eventRegistration.registrationTypeId
+      )
+    : null;
+  return eventRegistrationMapper(eventRegistration, registrationType ?? null);
+};
+
+export const update = async (
+  id: string,
+  payload: EventRegistrationUpdateDTO
+): Promise<EventRegistrationDTO> => {
+  const existing =
+    await eventRegistrationRepository.getEventRegistrationByIdRepository(id);
+  if (!existing) {
+    throw new ErrorApp(
+      "Event registration not found",
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  const registrationTypeId =
+    payload.registrationTypeId ?? existing.registrationTypeId;
+  if (!registrationTypeId) {
+    throw new ErrorApp(
+      "Registration type is required",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  const registrationType = await getRegistrationTypeOrThrow(registrationTypeId);
+  const normalizedData = normalizePayload(
+    {
+      ...payload,
+      registrationTypeId,
+    },
+    registrationType,
+    existing
   );
+  const updatedEventRegistration =
+    await eventRegistrationRepository.updateEventRegistrationRepository(
+      id,
+      normalizedData
+    );
+  return eventRegistrationMapper(updatedEventRegistration, registrationType);
+};
+
+export const remove = async (id: string): Promise<boolean> => {
+  await eventRegistrationRepository.deleteEventRegistrationRepository(id);
+  return true;
+};
+
+const getRegistrationTypeOrThrow = async (
+  registrationTypeId: string
+): Promise<RegistrationType> => {
+  const registrationType =
+    await registrationTypeRepository.getRegistrationTypeByIdRepository(
+      registrationTypeId
+    );
+  if (!registrationType) {
+    throw new ErrorApp(
+      "Registration type not found",
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  if (!registrationType.isActive) {
+    throw new ErrorApp(
+      "Registration type is inactive",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  return registrationType;
+};
+
+const normalizePayload = (
+  payload: EventRegistrationUpdateDTO | EventRegistrationCreationDTO,
+  registrationType: RegistrationType,
+  existing?: { class?: string | null; registrationTypeId?: string | null }
+) => {
+  const normalizedClass = resolveClassValue(
+    registrationType,
+    payload.class,
+    existing?.class
+  );
+  return {
+    ...payload,
+    class: normalizedClass,
+    registrationTypeId: registrationType.id,
+  } as EventRegistrationUpdateDTO;
+};
+
+const resolveClassValue = (
+  registrationType: RegistrationType,
+  candidateClass?: string | null,
+  fallbackClass?: string | null
+) => {
+  if (registrationType.type === RegistrationEventTypeEnum.SEMINAR) {
+    return null;
+  }
+  const resolved =
+    typeof candidateClass !== "undefined" ? candidateClass : fallbackClass;
+  if (!resolved || resolved.trim() === "") {
+    throw new ErrorApp(
+      "Class is required for bootcamp and learning group registrations",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  return resolved.trim();
+};
+
+const buildRegistrationTypeMap = async (registrationTypeIds: string[]) => {
+  const uniqueIds = Array.from(new Set(registrationTypeIds));
+  const registrationTypes =
+    await registrationTypeRepository.getRegistrationTypesByIdsRepository(
+      uniqueIds
+    );
+  return new Map(registrationTypes.map((item) => [item.id, item]));
+};
+
+const assertUniqueRegistration = async (
+  userId?: string,
+  eventId?: string
+) => {
+  if (!userId || !eventId) {
+    return;
+  }
+  const existingRegistration =
+    await eventRegistrationRepository.getExistEventRegistration(userId, eventId);
+  if (existingRegistration) {
+    throw new ErrorApp(
+      "User has already registered for this event",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
 };
