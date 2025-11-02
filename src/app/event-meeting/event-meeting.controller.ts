@@ -11,7 +11,7 @@ import { ErrorApp } from "../../utils/http-error";
 import { HandleResponse } from "../../utils/handle-response";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { MESSAGES } from "../../utils/messages";
-import { RequestWithAccessToken } from "interface/Request";
+import { RequestWithAccessToken } from "../../interface/Request";
 
 export const createEventMeetingController = async (
   req: RequestWithAccessToken,

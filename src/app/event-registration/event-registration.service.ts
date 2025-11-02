@@ -20,7 +20,7 @@ export const create = async (
   const normalizedData = normalizePayload(payload, registrationType);
   const eventRegistration =
     await eventRegistrationRepository.createEventRegistrationRepository(
-      normalizedData
+      normalizedData as EventRegistrationCreationDTO
     );
   return eventRegistrationMapper(eventRegistration, registrationType);
 };

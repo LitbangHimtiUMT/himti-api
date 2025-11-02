@@ -1,5 +1,5 @@
 import { NextFunction, type Request, type Response } from "express";
-import { TokenDecodeInterface } from "interface";
+import { TokenDecodeInterface } from "../interface";
 import { TokenExpiredError, decode, verify } from "jsonwebtoken";
 import { getUserById } from "../app/authentication/auth.repository";
 import { environment } from "../libs";

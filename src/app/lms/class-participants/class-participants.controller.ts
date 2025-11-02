@@ -1,5 +1,5 @@
 import { NextFunction, Request, type Response } from "express";
-import { RequestWithAccessToken } from "interface/Request";
+import { RequestWithAccessToken } from "../../../interface/Request";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
