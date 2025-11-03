@@ -26,6 +26,7 @@ export interface RegistrationTypeSummaryDTO {
 export interface EventRegistrationDTO {
   id: string;
   name: string;
+  image?: string | null;
   class?: string | null;
   generation?: number | null;
   registrationTypeId?: string | null;

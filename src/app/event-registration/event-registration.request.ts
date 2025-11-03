@@ -6,7 +6,8 @@ export const createEventRegistrationSchema = Joi.object({
   class: Joi.string().optional().allow(null, ""),
   generation: Joi.number().optional(),
   categoryId: Joi.string().optional(),
-  image: Joi.string().optional(),
+  // allow file merged by controller (multer), keep optional
+  image: Joi.any().optional(),
   registrationTypeId: Joi.string().required(),
   userId: Joi.string().optional(),
   eventId: Joi.string().optional(),

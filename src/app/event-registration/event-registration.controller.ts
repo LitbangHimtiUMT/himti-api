@@ -5,12 +5,18 @@ import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
 
 export const createEventRegistration = async (
-  req: Request,
+  req: Request & { file?: Express.Multer.File },
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const eventRegistration = await EventRegistrationService.create(req.body);
+    const combine = { ...req.body } as Record<string, unknown>;
+    if (req.file) {
+      combine.image = req.file;
+    }
+    const eventRegistration = await EventRegistrationService.create(
+      combine as never
+    );
     HandleResponse(
       res,
       201,

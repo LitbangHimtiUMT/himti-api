@@ -1,4 +1,5 @@
 import { RegistrationEventTypeEnum, RegistrationType } from "@prisma/client";
+import sharp from "sharp";
 import * as eventRegistrationRepository from "./event-registration.repository";
 import {
   EventRegistrationCreationDTO,
@@ -9,20 +10,78 @@ import { ErrorApp } from "../../utils/http-error";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import * as registrationTypeRepository from "../registration-type/registration-type.repository";
 import { eventRegistrationMapper } from "./event-registration.mapper";
+import {
+  BUCKET_FOLDER,
+  FileType,
+  RemoveFileFromStorage,
+  UploadFileToStorage,
+} from "../../utils/upload-file-to-storage";
+import { environment } from "../../libs";
 
 export const create = async (
-  payload: EventRegistrationCreationDTO
-): Promise<EventRegistrationDTO> => {
+  payload:
+    | EventRegistrationCreationDTO
+    | (EventRegistrationCreationDTO & { image?: Express.Multer.File | string })
+) => {
   const registrationType = await getRegistrationTypeOrThrow(
     payload.registrationTypeId
   );
-  await assertUniqueRegistration(payload.userId, payload.eventId);
+  const unique = await assertUniqueRegistration(
+    payload.userId,
+    payload.eventId
+  );
+  if (unique instanceof ErrorApp) return unique;
+  let filename: string | undefined;
   const normalizedData = normalizePayload(payload, registrationType);
-  const eventRegistration =
-    await eventRegistrationRepository.createEventRegistrationRepository(
-      normalizedData as EventRegistrationCreationDTO
+  try {
+    const maybeFile = (payload as unknown as { image?: unknown }).image as
+      | Express.Multer.File
+      | string
+      | undefined;
+
+    if (maybeFile && typeof maybeFile !== "string") {
+      const file = maybeFile as Express.Multer.File;
+      if ((file.size as number) > 3 * 1024 * 1024) {
+        throw new ErrorApp(
+          "Image size exceeds 3MB",
+          400,
+          MESSAGE_CODE.BAD_REQUEST
+        );
+      }
+      filename = `${file.originalname.replace(
+        FileType[file.mimetype],
+        ""
+      )} - ${+new Date()}.webp`;
+      const quality = file.size > 5 * 1024 * 1024 ? 75 : 100;
+      const compress = await sharp(file.buffer).webp({ quality }).toBuffer();
+      await UploadFileToStorage({
+        Bucket: environment.STORAGE.BUCKET,
+        Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.eventRegistration}/${filename}`,
+        Body: compress,
+        ContentType: FileType["image/webp"],
+        ACL: "public-read",
+      });
+      (normalizedData as EventRegistrationCreationDTO).image = filename;
+    }
+
+    const eventRegistration =
+      await eventRegistrationRepository.createEventRegistrationRepository(
+        normalizedData as EventRegistrationCreationDTO
+      );
+    return eventRegistrationMapper(eventRegistration, registrationType);
+  } catch (error) {
+    if (filename) {
+      await RemoveFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.eventRegistration}/${filename}`
+      );
+    }
+    if (error instanceof ErrorApp) throw error;
+    throw new ErrorApp(
+      "Failed to create registration",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
     );
-  return eventRegistrationMapper(eventRegistration, registrationType);
+  }
 };
 
 export const findAll = async (): Promise<EventRegistrationDTO[]> => {
@@ -174,17 +233,17 @@ const buildRegistrationTypeMap = async (registrationTypeIds: string[]) => {
   return new Map(registrationTypes.map((item) => [item.id, item]));
 };
 
-const assertUniqueRegistration = async (
-  userId?: string,
-  eventId?: string
-) => {
+const assertUniqueRegistration = async (userId?: string, eventId?: string) => {
   if (!userId || !eventId) {
     return;
   }
   const existingRegistration =
-    await eventRegistrationRepository.getExistEventRegistration(userId, eventId);
+    await eventRegistrationRepository.getExistEventRegistration(
+      userId,
+      eventId
+    );
   if (existingRegistration) {
-    throw new ErrorApp(
+    return new ErrorApp(
       "User has already registered for this event",
       400,
       MESSAGE_CODE.BAD_REQUEST
