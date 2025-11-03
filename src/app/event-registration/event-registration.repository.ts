@@ -5,7 +5,10 @@ export const createEventRegistrationRepository = async (
   data: EventRegistrationCreationDTO
 ) => {
   return await prisma.eventRegistration.create({
-    data,
+    data: {
+      ...data,
+      generation: data.generation ? Number(data.generation) : undefined,
+    },
   });
 };
 

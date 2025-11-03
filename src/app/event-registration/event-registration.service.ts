@@ -31,14 +31,19 @@ export const create = async (
     payload.eventId
   );
   if (unique instanceof ErrorApp) return unique;
+
+  // Extract image file for validation
+  const maybeFile = (payload as unknown as { image?: unknown }).image as
+    | Express.Multer.File
+    | string
+    | undefined;
+
+  // Validate bootcamp-specific requirements
+  validateBootcampRequirements(registrationType, payload.generation, maybeFile);
+
   let filename: string | undefined;
   const normalizedData = normalizePayload(payload, registrationType);
   try {
-    const maybeFile = (payload as unknown as { image?: unknown }).image as
-      | Express.Multer.File
-      | string
-      | undefined;
-
     if (maybeFile && typeof maybeFile !== "string") {
       const file = maybeFile as Express.Multer.File;
       if ((file.size as number) > 3 * 1024 * 1024) {
@@ -70,6 +75,7 @@ export const create = async (
       );
     return eventRegistrationMapper(eventRegistration, registrationType);
   } catch (error) {
+    console.log({ error, filename });
     if (filename) {
       await RemoveFileFromStorage(
         `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.eventRegistration}/${filename}`
@@ -248,5 +254,31 @@ const assertUniqueRegistration = async (userId?: string, eventId?: string) => {
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
+  }
+};
+
+const validateBootcampRequirements = (
+  registrationType: RegistrationType,
+  generation?: number,
+  imageFile?: Express.Multer.File | string
+) => {
+  if (registrationType.type === RegistrationEventTypeEnum.BOOTCAMP) {
+    // Validate generation is required for bootcamp
+    if (!generation || generation <= 0) {
+      throw new ErrorApp(
+        "Generation is required for bootcamp registration",
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
+    // Validate image is required for bootcamp
+    if (!imageFile) {
+      throw new ErrorApp(
+        "Image is required for bootcamp registration",
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
   }
 };

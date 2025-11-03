@@ -539,9 +539,9 @@ model EventRegistration {
   nim                String?
   class              String?
   generation         Int?
-  categoryId         String?   @map("category_id")
+  categoryId         String?  @map("category_id")
   image              String?
-  registrationTypeId String? @map("registration_type_id")
+  registrationTypeId String?  @map("registration_type_id")
   userId             String?  @map("user_id")
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
