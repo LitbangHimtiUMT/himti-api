@@ -62,6 +62,7 @@ export const eventRegistrationMapper = (
     generation: eventRegistration.generation,
     registrationTypeId: eventRegistration.registrationTypeId,
     eventId: eventRegistration.eventId,
+    createdAt: eventRegistration.createdAt,
     registrationType: mapRegistrationTypeSummary(registrationType),
   };
 };

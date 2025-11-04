@@ -31,5 +31,6 @@ export interface EventRegistrationDTO {
   generation?: number | null;
   registrationTypeId?: string | null;
   eventId?: string | null;
+  createdAt: Date;
   registrationType?: RegistrationTypeSummaryDTO | null;
 }
