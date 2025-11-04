@@ -3,6 +3,8 @@ import * as EventRegistrationService from "./event-registration.service";
 import { HandleResponse } from "../../utils/handle-response";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
+import { validateCombineRequest } from "../../middleware/validate-request";
+import { createEventRegistrationSchema } from "./event-registration.request";
 
 export const createEventRegistration = async (
   req: Request & { file?: Express.Multer.File },
@@ -10,13 +12,25 @@ export const createEventRegistration = async (
   next: NextFunction
 ) => {
   try {
-    const combine = { ...req.body } as Record<string, unknown>;
-    if (req.file) {
-      combine.image = req.file;
-    }
-    const eventRegistration = await EventRegistrationService.create(
-      combine as never
+    const combine = {
+      ...req.body,
+      ...(req.file && {
+        image: req.file,
+      }),
+    };
+
+    const validate = validateCombineRequest(
+      createEventRegistrationSchema,
+      combine
     );
+    if (validate instanceof ErrorApp) {
+      return next(validate);
+    }
+    const eventRegistration = await EventRegistrationService.create(combine);
+    if (eventRegistration instanceof ErrorApp) {
+      next(eventRegistration);
+      return;
+    }
     HandleResponse(
       res,
       201,

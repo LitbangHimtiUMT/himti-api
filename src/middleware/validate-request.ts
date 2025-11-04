@@ -50,16 +50,16 @@ export const validateRequest = (
   };
 };
 
-export const validateCombineRequest = <T = unknown>(schema: Joi.ObjectSchema, body: T, next: NextFunction) => {
+export const validateCombineRequest = <T = unknown>(
+  schema: Joi.ObjectSchema,
+  body: T
+) => {
   const validate = schema.validate(body);
-    if (validate.error) {
-      next(
-        new ErrorApp(
-          validate.error.message.replace(/"/g, ""),
-          400,
-          MESSAGE_CODE.BAD_REQUEST
-        )
-      );
-      return;
-    }
-}
+  if (validate.error) {
+    return new ErrorApp(
+      validate.error.message.replace(/"/g, ""),
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+};

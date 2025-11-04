@@ -20,12 +20,21 @@ export const createTicketSupportController = async (
     ...body,
     file: req.file,
   };
-  validateCombineRequest(createTicketSupportSchema, combine, next);
+  const validate = validateCombineRequest(createTicketSupportSchema, combine);
+  if (validate) {
+    next(validate);
+    return;
+  }
   const result = await createTicketSupportService(userId, combine);
 
   if (result instanceof ErrorApp) {
     next(result);
     return;
   }
-  HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.TICKET_SUPPORT);
+  HandleResponse(
+    res,
+    201,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.CREATED.TICKET_SUPPORT
+  );
 };

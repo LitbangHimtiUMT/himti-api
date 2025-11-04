@@ -39,8 +39,12 @@ export const create = async (
     | undefined;
 
   // Validate bootcamp-specific requirements
-  validateBootcampRequirements(registrationType, payload.generation, maybeFile);
-
+  const validateBootcamp = validateBootcampRequirements(
+    registrationType,
+    payload.generation,
+    maybeFile
+  );
+  if (validateBootcamp instanceof ErrorApp) return validateBootcamp;
   let filename: string | undefined;
   const normalizedData = normalizePayload(payload, registrationType);
   try {
@@ -265,7 +269,7 @@ const validateBootcampRequirements = (
   if (registrationType.type === RegistrationEventTypeEnum.BOOTCAMP) {
     // Validate generation is required for bootcamp
     if (!generation || generation <= 0) {
-      throw new ErrorApp(
+      return new ErrorApp(
         "Generation is required for bootcamp registration",
         400,
         MESSAGE_CODE.BAD_REQUEST
@@ -274,7 +278,7 @@ const validateBootcampRequirements = (
 
     // Validate image is required for bootcamp
     if (!imageFile) {
-      throw new ErrorApp(
+      return new ErrorApp(
         "Image is required for bootcamp registration",
         400,
         MESSAGE_CODE.BAD_REQUEST
