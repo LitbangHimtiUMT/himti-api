@@ -54,7 +54,7 @@ export const eventRegistrationMapper = (
     id: eventRegistration.id,
     name: eventRegistration.name,
     phoneNumber: eventRegistration.phoneNumber,
-    link: eventRegistration.link,
+    link: registrationType?.link,
     nim: eventRegistration.nim,
     image: eventRegistration.image
       ? ImagePath(

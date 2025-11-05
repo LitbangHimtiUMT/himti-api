@@ -522,33 +522,35 @@ model RegistrationType {
   id       String                    @id @unique @default(cuid())
   name     String
   year     Int
+  link     String?
   type     RegistrationEventTypeEnum @default(LEARNING_GROUP)
   isActive Boolean                   @map("is_active")
   eventId  String?                   @map("event_id")
 
-  event     Event?   @relation(fields: [eventId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  event             Event?              @relation(fields: [eventId], references: [id])
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamp(0)
+  EventRegistration EventRegistration[]
 
   @@map("registration_type")
 }
 
 model EventRegistration {
-  id                 String   @id @unique @default(cuid())
+  id                 String            @id @unique @default(cuid())
   name               String
   nim                String?
   class              String?
   generation         Int?
-  link               String?
   phoneNumber        String?
-  categoryId         String?  @map("category_id")
+  categoryId         String?           @map("category_id")
   image              String?
-  registrationTypeId String?  @map("registration_type_id")
-  userId             String?  @map("user_id")
-  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
-  user               User?    @relation(fields: [userId], references: [id])
-  Event              Event?   @relation(fields: [eventId], references: [id])
+  registrationTypeId String?           @map("registration_type_id")
+  userId             String?           @map("user_id")
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
+  user               User?             @relation(fields: [userId], references: [id])
+  Event              Event?            @relation(fields: [eventId], references: [id])
+  registrationType   RegistrationType? @relation(fields: [registrationTypeId], references: [id])
   eventId            String?
 
   @@map("event_registration")
