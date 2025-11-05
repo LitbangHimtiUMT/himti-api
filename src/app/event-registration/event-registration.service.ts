@@ -38,6 +38,22 @@ export const create = async (
     | string
     | undefined;
 
+  if (payload.nim && (payload.registrationTypeId || payload.eventId)) {
+    const existing =
+      await eventRegistrationRepository.getEventRegistrationByNIM(
+        payload.nim,
+        payload.registrationTypeId,
+        payload.eventId
+      );
+    if (existing) {
+      throw new ErrorApp(
+        "NIM already registered",
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+  }
+
   // Validate bootcamp-specific requirements
   const validateBootcamp = validateBootcampRequirements(
     registrationType,

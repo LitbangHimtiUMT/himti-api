@@ -12,6 +12,20 @@ export const createEventRegistrationRepository = async (
   });
 };
 
+export const getEventRegistrationByNIM = async (
+  nim: string,
+  registrationTypeId: string,
+  eventId?: string
+) => {
+  return prisma.eventRegistration.findFirst({
+    where: {
+      nim,
+      eventId,
+      registrationTypeId,
+    },
+  });
+};
+
 export const getEventRegistrationsRepository = async () => {
   return await prisma.eventRegistration.findMany();
 };
