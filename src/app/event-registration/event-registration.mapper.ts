@@ -53,6 +53,9 @@ export const eventRegistrationMapper = (
   return {
     id: eventRegistration.id,
     name: eventRegistration.name,
+    phoneNumber: eventRegistration.phoneNumber,
+    link: eventRegistration.link,
+    nim: eventRegistration.nim,
     image: eventRegistration.image
       ? ImagePath(
           `${BUCKET_FOLDER.eventRegistration}/${eventRegistration.image}`

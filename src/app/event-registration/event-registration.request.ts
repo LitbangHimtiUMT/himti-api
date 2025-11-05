@@ -3,6 +3,7 @@ import Joi from "joi";
 export const createEventRegistrationSchema = Joi.object({
   name: Joi.string().required(),
   nim: Joi.string().optional().allow(null, ""),
+  phoneNumber: Joi.string().optional().allow(null, ""),
   class: Joi.string().optional().allow(null, ""),
   generation: Joi.number().optional(),
   categoryId: Joi.string().optional(),

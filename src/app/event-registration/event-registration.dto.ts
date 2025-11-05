@@ -5,4 +5,6 @@ export interface EventRegistrationCreationDTO {
   material?: string;
   class: string;
   name: string;
+  phoneNumber?: string | null;
+  nim?: string | null;
 }

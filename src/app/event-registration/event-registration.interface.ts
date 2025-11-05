@@ -27,7 +27,10 @@ export interface EventRegistrationDTO {
   id: string;
   name: string;
   image?: string | null;
+  link?: string | null;
   class?: string | null;
+  nim?: string | null;
+  phoneNumber?: string | null;
   generation?: number | null;
   registrationTypeId?: string | null;
   eventId?: string | null;
