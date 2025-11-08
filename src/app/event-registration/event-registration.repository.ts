@@ -1,4 +1,6 @@
 import { prisma } from "../../config";
+import { Query } from "../../interface/Query";
+import { queryPagination } from "../../utils/pagination";
 import { EventRegistrationCreationDTO } from "./event-registration.interface";
 
 export const createEventRegistrationRepository = async (
@@ -79,4 +81,28 @@ export const getExistEventRegistration = async (
       eventId: eventId,
     },
   });
+};
+
+export const getEventRegistrationsByRegistrationTypeRepository = async (
+  registrationTypeId: string,
+  query: Query
+) => {
+  const [data, total] = await Promise.all([
+    prisma.eventRegistration.findMany({
+      where: {
+        registrationTypeId,
+      },
+      ...queryPagination(query),
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.eventRegistration.count({
+      where: {
+        registrationTypeId,
+      },
+    }),
+  ]);
+
+  return { data, total };
 };

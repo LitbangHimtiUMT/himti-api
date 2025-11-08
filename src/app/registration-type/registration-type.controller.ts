@@ -35,9 +35,13 @@ export const createRegistrationType = async (
 export const getRegistrationTypeOptions = async (
   _req: Request,
   res: Response,
-  _next: NextFunction
+  next: NextFunction
 ) => {
   const options = RegistrationTypeService.getEventTypeOptions();
+  if (options instanceof ErrorApp) {
+    next(options);
+    return;
+  }
   HandleResponse(
     res,
     200,
@@ -69,7 +73,8 @@ export const getRegistrationTypes = async (
       200,
       MESSAGE_CODE.SUCCESS,
       "Registration types retrieved successfully",
-      registrationTypes
+      registrationTypes.data,
+      registrationTypes.meta
     );
   } catch (error) {
     if (error instanceof ErrorApp) {

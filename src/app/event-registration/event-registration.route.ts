@@ -16,6 +16,12 @@ router
   )
   .get("/", CatchWrapper(EventRegistrationController.getEventRegistrations))
   .get(
+    "/registration-type/:registrationTypeId",
+    CatchWrapper(
+      EventRegistrationController.getEventRegistrationsByRegistrationType
+    )
+  )
+  .get(
     "/:id",
     CatchWrapper(EventRegistrationController.getEventRegistrationById)
   )

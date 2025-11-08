@@ -1,4 +1,5 @@
 import { RegistrationEventTypeEnum } from "@prisma/client";
+import { Query } from "../../interface/Query";
 
 export interface RegistrationTypeCreationDTO {
   name: string;
@@ -12,12 +13,13 @@ export interface RegistrationTypeDTO {
   id: string;
   name: string;
   year: number;
+  createdAt: Date;
   type: RegistrationEventTypeEnum;
   isActive: boolean;
   eventId?: string | null;
 }
 
-export interface RegistrationTypeQuery {
+export interface RegistrationTypeQuery extends Query {
   type?: RegistrationEventTypeEnum;
   isActive?: boolean;
   eventId?: string;

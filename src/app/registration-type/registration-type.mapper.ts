@@ -10,6 +10,7 @@ export const registrationTypeMapper = (
     name: registrationType.name,
     year: registrationType.year,
     type: registrationType.type,
+    createdAt: registrationType.createdAt,
     isActive: registrationType.isActive,
     eventId: registrationType.eventId,
   };

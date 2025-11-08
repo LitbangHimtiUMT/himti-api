@@ -17,6 +17,8 @@ import {
   UploadFileToStorage,
 } from "../../utils/upload-file-to-storage";
 import { environment } from "../../libs";
+import { Meta } from "../../utils/meta";
+import { Query } from "../../interface/Query";
 
 export const create = async (
   payload:
@@ -301,4 +303,40 @@ const validateBootcampRequirements = (
       );
     }
   }
+};
+
+export const findByRegistrationType = async (
+  registrationTypeId: string,
+  query: Query
+) => {
+  const { page = "1", perPage = "10" } = query;
+  // Validate registration type exists
+  const registrationType =
+    await registrationTypeRepository.getRegistrationTypeByIdRepository(
+      registrationTypeId
+    );
+  if (!registrationType) {
+    throw new ErrorApp(
+      "Registration type not found",
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const result =
+    await eventRegistrationRepository.getEventRegistrationsByRegistrationTypeRepository(
+      registrationTypeId,
+      query
+    );
+
+  const mappedData = result.data.map((eventRegistration) =>
+    eventRegistrationMapper(eventRegistration, registrationType)
+  );
+
+  const meta = Meta(Number(page), Number(perPage), result.total);
+
+  return {
+    data: mappedData,
+    meta,
+  };
 };

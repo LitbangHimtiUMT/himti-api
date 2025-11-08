@@ -162,3 +162,37 @@ export const deleteEventRegistration = async (
     );
   }
 };
+
+export const getEventRegistrationsByRegistrationType = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { registrationTypeId } = req.params;
+
+    const result = await EventRegistrationService.findByRegistrationType(
+      registrationTypeId,
+      req.query
+    );
+
+    HandleResponse(
+      res,
+      200,
+      MESSAGE_CODE.SUCCESS,
+      "Event registrations by registration type retrieved successfully",
+      result.data,
+      result.meta
+    );
+  } catch (error) {
+    if (error instanceof ErrorApp) {
+      return next(error);
+    }
+    HandleResponse(
+      res,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
+      "Failed to retrieve event registrations by registration type"
+    );
+  }
+};

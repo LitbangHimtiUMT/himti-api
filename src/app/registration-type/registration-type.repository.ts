@@ -1,4 +1,5 @@
 import { prisma } from "../../config";
+import { queryPagination } from "../../utils/pagination";
 import {
   RegistrationTypeCreationDTO,
   RegistrationTypeQuery,
@@ -21,9 +22,25 @@ export const createRegistrationTypeRepository = async (
 export const getRegistrationTypesRepository = async (
   query: RegistrationTypeQuery = {}
 ) => {
-  const { type, isActive, eventId } = query;
-  return await prisma.registrationType.findMany({
+  const { type, isActive, eventId, search } = query;
+  return prisma.registrationType.findMany({
     where: {
+      ...(search && { name: { contains: search, mode: "insensitive" } }),
+      ...(type && { type }),
+      ...(typeof isActive === "boolean" && { isActive }),
+      ...(eventId && { eventId }),
+    },
+    ...queryPagination(query),
+  });
+};
+
+export const getRegistrationTypesCountRepository = async (
+  query: RegistrationTypeQuery = {}
+) => {
+  const { type, isActive, eventId, search } = query;
+  return prisma.registrationType.count({
+    where: {
+      ...(search && { name: { contains: search, mode: "insensitive" } }),
       ...(type && { type }),
       ...(typeof isActive === "boolean" && { isActive }),
       ...(eventId && { eventId }),

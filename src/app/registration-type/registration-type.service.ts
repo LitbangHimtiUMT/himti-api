@@ -8,6 +8,7 @@ import {
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { registrationTypeMapper } from "./registration-type.mapper";
+import { Meta } from "../../utils/meta";
 
 export const create = async (
   data: RegistrationTypeCreationDTO
@@ -17,12 +18,17 @@ export const create = async (
   return registrationTypeMapper(registrationType);
 };
 
-export const getAll = async (
-  query: RegistrationTypeQuery = {}
-): Promise<RegistrationTypeDTO[]> => {
-  const registrationTypes =
-    await registrationTypeRepository.getRegistrationTypesRepository(query);
-  return registrationTypes.map(registrationTypeMapper);
+export const getAll = async (query: RegistrationTypeQuery = {}) => {
+  const { page = "1", perPage = "10" } = query;
+  const [registrationTypes, total] = await Promise.all([
+    registrationTypeRepository.getRegistrationTypesRepository(query),
+    registrationTypeRepository.getRegistrationTypesCountRepository(query),
+  ]);
+  const meta = Meta(Number(page), Number(perPage), total);
+  return {
+    meta,
+    data: registrationTypes.map(registrationTypeMapper),
+  };
 };
 
 export const getById = async (id: string): Promise<RegistrationTypeDTO> => {
