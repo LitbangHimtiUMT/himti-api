@@ -1,0 +1,154 @@
+name: Discord Notifications
+
+on:
+  push:
+    branches:
+      - "**"
+
+concurrency:
+  group: deploy-vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  notify-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      SERVICE_NAME: "HIMTI API"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Commits
+        id: commits
+        run: |
+          COMMITS=$(echo '${{ toJson(github.event.commits) }}' | jq -r '.[] | "• `\(.id[0:7])` \(.message)"' | head -10)
+          echo "list<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Notify Discord - Push
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: "${{ env.SERVICE_NAME }}"
+          embed-description: |
+            **📝 New Push to `${{ github.ref_name }}`**
+
+            **Changes:**
+            ${{ steps.commits.outputs.list }}
+
+            **Author:** ${{ github.event.head_commit.author.name }}
+          embed-color: 3447003
+          embed-url: ${{ github.event.head_commit.url }}
+
+      - name: Notify Discord - Deployment Start
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: "${{ env.SERVICE_NAME }}"
+          embed-description: |
+            **Pipeline Start**
+
+            **Branch:** `${{ github.ref_name }}`
+            **Changes:**
+            ${{ steps.commits.outputs.list }}
+
+            **Author:** ${{ github.event.head_commit.author.name }}
+          embed-color: 16776960
+          embed-url: ${{ github.event.head_commit.url }}
+
+      - name: Wait for Vercel Deployment
+        id: deployment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "🚀 Waiting for Vercel deployment..."
+
+          # Maximum wait time: 10 minutes (600 seconds)
+          MAX_WAIT=600
+          ELAPSED=0
+          INTERVAL=15
+
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            # Get latest deployment for this commit
+            RESPONSE=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+              "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&teamId=$VERCEL_ORG_ID&limit=1&meta-githubCommitSha=$COMMIT_SHA")
+            
+            # Check if deployment exists
+            DEPLOYMENT_COUNT=$(echo "$RESPONSE" | jq '.deployments | length')
+            
+            if [ "$DEPLOYMENT_COUNT" -gt 0 ]; then
+              DEPLOYMENT=$(echo "$RESPONSE" | jq -r '.deployments[0]')
+              STATE=$(echo "$DEPLOYMENT" | jq -r '.state')
+              DEPLOYMENT_URL=$(echo "$DEPLOYMENT" | jq -r '.url')
+              DEPLOYMENT_ID=$(echo "$DEPLOYMENT" | jq -r '.uid')
+              
+              echo "📦 Deployment found. State: $STATE"
+              
+              if [ "$STATE" == "READY" ]; then
+                echo "url=https://$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+                echo "id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+                echo "status=success" >> $GITHUB_OUTPUT
+                echo "✅ Deployment completed successfully!"
+                exit 0
+              elif [ "$STATE" == "ERROR" ] || [ "$STATE" == "CANCELED" ]; then
+                # Get error details if available
+                ERROR_MESSAGE=$(echo "$DEPLOYMENT" | jq -r '.error.message // "Deployment failed"')
+                echo "error=$ERROR_MESSAGE" >> $GITHUB_OUTPUT
+                echo "status=failed" >> $GITHUB_OUTPUT
+                echo "❌ Deployment failed: $ERROR_MESSAGE"
+                exit 1
+              fi
+            fi
+            
+            echo "⏳ Waiting for deployment... ($ELAPSED seconds elapsed)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          # Timeout reached
+          echo "status=timeout" >> $GITHUB_OUTPUT
+          echo "error=Deployment check timed out after 10 minutes" >> $GITHUB_OUTPUT
+          echo "⏱️ Deployment timeout!"
+          exit 1
+
+      - name: Notify Discord - Success
+        if: success()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: "${{ env.SERVICE_NAME }}"
+          embed-description: |
+            **Pipeline Success**
+
+            **Branch:** `${{ github.ref_name }}`
+            **Deployment URL:** ${{ steps.deployment.outputs.url }}
+            **Changes:**
+            ${{ steps.commits.outputs.list }}
+
+            **Author:** ${{ github.event.head_commit.author.name }}
+          embed-color: 3066993
+          embed-url: ${{ github.event.head_commit.url }}
+
+      - name: Notify Discord - Failure
+        if: failure()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: "${{ env.SERVICE_NAME }}"
+          embed-description: |
+            **Pipeline Failed**
+
+            **Branch:** `${{ github.ref_name }}`
+            **Error:** ${{ steps.deployment.outputs.error }}
+            **Changes:**
+            ${{ steps.commits.outputs.list }}
+
+            **Author:** ${{ github.event.head_commit.author.name }}
+          embed-color: 15158332
+          embed-url: ${{ github.event.head_commit.url }}
