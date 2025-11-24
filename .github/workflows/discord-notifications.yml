@@ -12,6 +12,7 @@ concurrency:
 jobs:
   notify-and-deploy:
     runs-on: ubuntu-latest
+    environment: Production
     env:
       SERVICE_NAME: "HIMTI API"
     steps:
