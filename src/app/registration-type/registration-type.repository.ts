@@ -22,12 +22,12 @@ export const createRegistrationTypeRepository = async (
 export const getRegistrationTypesRepository = async (
   query: RegistrationTypeQuery = {}
 ) => {
-  const { type, eventId, search } = query;
+  const { type, eventId, search, isActive = true } = query;
   return prisma.registrationType.findMany({
     where: {
       ...(search && { name: { contains: search, mode: "insensitive" } }),
       ...(type && { type }),
-      isActive: true,
+      isActive: isActive === true || isActive === "true",
       ...(eventId && { eventId }),
     },
     ...queryPagination(query),
@@ -37,12 +37,12 @@ export const getRegistrationTypesRepository = async (
 export const getRegistrationTypesCountRepository = async (
   query: RegistrationTypeQuery = {}
 ) => {
-  const { type, eventId, search } = query;
+  const { type, eventId, search, isActive = true } = query;
   return prisma.registrationType.count({
     where: {
       ...(search && { name: { contains: search, mode: "insensitive" } }),
       ...(type && { type }),
-      isActive: true,
+      isActive: isActive === true || isActive === "true",
       ...(eventId && { eventId }),
     },
   });

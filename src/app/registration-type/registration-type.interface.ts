@@ -21,6 +21,6 @@ export interface RegistrationTypeDTO {
 
 export interface RegistrationTypeQuery extends Query {
   type?: RegistrationEventTypeEnum;
-  isActive?: boolean;
+  isActive?: boolean | string;
   eventId?: string;
 }
