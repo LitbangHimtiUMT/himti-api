@@ -196,3 +196,44 @@ export const getEventRegistrationsByRegistrationType = async (
     );
   }
 };
+// ed47c31f-78a3-4f6d-a2ce-798792d8931f
+export const importMembersFromRegistration = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { registrationTypeId } = req.params;
+    const { generationId } = req.body;
+
+    if (!generationId) {
+      throw new ErrorApp(
+        "generationId is required in body",
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+
+    const result = await EventRegistrationService.importMembers(
+      registrationTypeId,
+      generationId
+    );
+    HandleResponse(
+      res,
+      200,
+      MESSAGE_CODE.SUCCESS,
+      "Members imported successfully",
+      result
+    );
+  } catch (error) {
+    if (error instanceof ErrorApp) {
+      return next(error);
+    }
+    HandleResponse(
+      res,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
+      "Failed to import members"
+    );
+  }
+};

@@ -9,6 +9,7 @@ import {
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import * as registrationTypeRepository from "../registration-type/registration-type.repository";
+import * as memberRepository from "../members/members.repository";
 import { eventRegistrationMapper } from "./event-registration.mapper";
 import {
   BUCKET_FOLDER,
@@ -338,5 +339,55 @@ export const findByRegistrationType = async (
   return {
     data: mappedData,
     meta,
+  };
+};
+
+export const importMembers = async (
+  registrationTypeId: string,
+  generationId: string
+) => {
+  const registrations =
+    await eventRegistrationRepository.getEventRegistrationsByRegistrationTypeNoPaginationRepository(
+      registrationTypeId
+    );
+
+  let success = 0;
+  let skipped = 0;
+  let failed = 0;
+
+  for (const reg of registrations) {
+    try {
+      if (!reg.nim || !reg.name) {
+        skipped++;
+        continue;
+      }
+
+      // Check if member already exists
+      const existingMember = await memberRepository.getMemberByNIM(reg.nim);
+      if (existingMember) {
+        skipped++;
+        continue;
+      }
+
+      // Create Member
+      await memberRepository.createMember({
+        name: reg.name,
+        nim: reg.nim,
+        generationId,
+        isActive: true,
+      });
+
+      success++;
+    } catch (error) {
+      console.error(`Failed to import member from reg ${reg.id}:`, error);
+      failed++;
+    }
+  }
+
+  return {
+    success,
+    skipped,
+    failed,
+    totalProcessed: registrations.length,
   };
 };

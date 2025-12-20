@@ -33,6 +33,10 @@ router
   .delete(
     "/:id",
     CatchWrapper(EventRegistrationController.deleteEventRegistration)
+  )
+  .post(
+    "/registration/:registrationTypeId/member/import",
+    CatchWrapper(EventRegistrationController.importMembersFromRegistration)
   );
 
 export default router;

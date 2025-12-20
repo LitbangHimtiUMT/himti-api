@@ -106,3 +106,15 @@ export const getEventRegistrationsByRegistrationTypeRepository = async (
 
   return { data, total };
 };
+
+export const getEventRegistrationsByRegistrationTypeNoPaginationRepository =
+  async (registrationTypeId: string) => {
+    return await prisma.eventRegistration.findMany({
+      where: {
+        registrationTypeId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  };
