@@ -5,8 +5,26 @@ import {
 } from "./potential-users.dto";
 
 export const findAllPotentialUsers = async () => {
-  return await prisma.potentialUsers.findMany({
-    
+  return await prisma.user.findMany({
+    where: {
+      potentialUsers: {
+        some: {},
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      nim: true,
+      potentialUsers: {
+        select: {
+          id: true,
+          role: true,
+          company: true,
+          experienceYear: true,
+          isActive: true,
+        },
+      },
+    },
   });
 };
 

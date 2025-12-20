@@ -9,7 +9,13 @@ import {
 } from "./potential-users.dto";
 
 export const getAllPotentialUsersService = async () => {
-  return await findAllPotentialUsers();
+  const users = await findAllPotentialUsers();
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    nim: user.nim,
+    experience: user.potentialUsers,
+  }));
 };
 
 export const createPotentialUserService = async (
