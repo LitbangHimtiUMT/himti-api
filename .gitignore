@@ -18,3 +18,4 @@
 # Storage backup files
 himti-storage-backup-*.zip
 storage-backup/
+.agents

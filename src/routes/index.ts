@@ -21,6 +21,7 @@ import strukturalRoute from "../app/struktural/struktural.route";
 import userFcmRoute from "../app/user-fcm/user-fcm.route";
 import userRoute from "../app/user/user.route";
 import versionRoute from "../app/version/version.route";
+import potentialUsersRoute from "../app/potential-users/potential-users.route";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { MESSAGES } from "../utils/messages";
 import path from "path";
@@ -58,6 +59,7 @@ route.use("/user-fcm", userFcmRoute);
 route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
+route.use("/potential-users", potentialUsersRoute);
 
 route.use("/scheduling-notification-meeting", schedulingNotification);
 

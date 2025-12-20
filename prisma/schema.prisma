@@ -37,6 +37,7 @@ model User {
   History               History[]
   ClassMentor           ClassMentor[]
   TicketSuport          TicketSuport[]
+  potentialUsers        PotentialUsers[]
 
   @@index([memberId], map: "user_fk_1")
   @@index([email], map: "user_fk_2")
@@ -671,4 +672,19 @@ enum RegistrationEventTypeEnum {
   BOOTCAMP
   SEMINAR
   LEARNING_GROUP
+}
+
+model PotentialUsers {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  role           String
+  company        String
+  experienceYear Int      @map("experience_year")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  isActive       Boolean  @default(true) @map("is_active")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("potential_users")
 }
