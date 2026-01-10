@@ -15,6 +15,7 @@ export const findAllPotentialUsers = async () => {
       id: true,
       name: true,
       nim: true,
+      photo: true,
       potentialUsers: {
         select: {
           id: true,

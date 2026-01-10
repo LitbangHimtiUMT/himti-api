@@ -7,6 +7,8 @@ import {
   CreatePotentialUserDTO,
   UpdatePotentialUserDTO,
 } from "./potential-users.dto";
+import { ImagePath } from "../../utils/image-path";
+import { BUCKET_FOLDER } from "../../utils/upload-file-to-storage";
 
 export const getAllPotentialUsersService = async () => {
   const users = await findAllPotentialUsers();
@@ -14,6 +16,9 @@ export const getAllPotentialUsersService = async () => {
     id: user.id,
     name: user.name,
     nim: user.nim,
+    photo: user.photo
+      ? ImagePath(`${BUCKET_FOLDER.user}/${user.photo}`)
+      : null,
     experience: user.potentialUsers,
   }));
 };
