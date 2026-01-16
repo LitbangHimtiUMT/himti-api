@@ -10,6 +10,7 @@ import {
   getMembersService,
   getMemberByIdService,
   updateAnggotaService,
+  exportMembersService,
 } from "./members.service";
 import { AnggotaModelTypes } from "./members.types";
 
@@ -35,13 +36,14 @@ export const getMemberController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { page, perPage, search, angkatan, status } = req.query;
+  const { page, perPage, search, angkatan, generationId, status } = req.query;
 
   const anggota = await getMembersService({
     page: page ? Number(page) : undefined,
     perPage: perPage ? Number(perPage) : undefined,
     search: search as string,
     year: angkatan as string,
+    generationId: generationId as string,
     status: status as string,
   });
 
@@ -125,4 +127,31 @@ export const getMemberByIdController = async (
     MESSAGES.SUCCESS.ANGGOTA.GET,
     member
   );
+};
+
+export const exportMembersController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { generationId } = req.query;
+
+  const result = await exportMembersService({
+    generationId: generationId as string,
+  });
+
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+
+  // Set headers for file download
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader("Content-Disposition", `attachment; filename="${result.filename}"`);
+
+  // Send the buffer
+  res.send(result.buffer);
 };

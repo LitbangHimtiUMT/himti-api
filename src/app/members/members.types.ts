@@ -21,6 +21,7 @@ export interface AnggotaModelTypes {
 
 export interface IFilterAnggota {
     year?: string
+    generationId?: string
     status?: string | boolean
     search?: string
     page?: number,

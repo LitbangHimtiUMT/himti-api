@@ -8,6 +8,7 @@ import {
   getMemberByIdController,
   getMemberController,
   updateMemberController,
+  exportMembersController,
 } from "./members.controller";
 import { createMemberSchema } from "./members.request";
 
@@ -20,6 +21,7 @@ route.post(
   CatchWrapper(createMemberController)
 );
 route.get("/", verifyToken, CatchWrapper(getMemberController));
+route.get("/export/excel", verifyToken, CatchWrapper(exportMembersController));
 route.get("/:id", verifyToken, CatchWrapper(getMemberByIdController));
 route.delete("/:id", CatchWrapper(deleteMemberController));
 route.put("/:id", CatchWrapper(updateMemberController));

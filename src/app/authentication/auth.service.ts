@@ -237,7 +237,7 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
       id: user.id,
     },
     environment.JWT_SECRET as string,
-    { expiresIn: environment.JWT_EXPIRES }
+    { expiresIn: environment.JWT_EXPIRES as string | number }
   );
 
   const refreshToken = jwt.sign(
@@ -505,7 +505,7 @@ export const biometricAuthService = async (
       id: user.id,
     },
     environment.JWT_SECRET as string,
-    { expiresIn: environment.JWT_EXPIRES }
+    { expiresIn: environment.JWT_EXPIRES as string | number }
   );
   const userInfo = {
     name: user.name,
@@ -561,7 +561,7 @@ export const refreshTokenService = async (token: string) => {
       id: user.id,
     },
     environment.JWT_SECRET as string,
-    { expiresIn: environment.JWT_EXPIRES }
+    { expiresIn: environment.JWT_EXPIRES as string | number }
   );
 
   const refreshToken = jwt.sign(

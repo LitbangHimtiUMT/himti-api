@@ -30,11 +30,13 @@ export const getAllMember = async ({
   perPage,
   search,
   year,
+  generationId,
   status,
 }: IFilterAnggota) => {
   const filter = {} as {
     OR: Prisma.MemberWhereInput[];
     Generation: Prisma.GenerationWhereInput;
+    generationId: string;
     isActive: boolean;
   };
 
@@ -63,7 +65,9 @@ export const getAllMember = async ({
     ];
   }
 
-  if (year) {
+  if (generationId) {
+    filter.generationId = generationId;
+  } else if (year) {
     filter.Generation = {
       year,
     };
@@ -97,12 +101,13 @@ export const getAllMember = async ({
 };
 
 export const getMemberCount = async (
-  { search, year }: IFilterAnggota,
+  { search, year, generationId }: IFilterAnggota,
   status?: boolean
 ) => {
   const filter = {} as {
     OR: Prisma.MemberWhereInput[];
     Generation: Prisma.GenerationWhereInput;
+    generationId: string;
   };
 
   if (search) {
@@ -130,7 +135,9 @@ export const getMemberCount = async (
     ];
   }
 
-  if (year) {
+  if (generationId) {
+    filter.generationId = generationId;
+  } else if (year) {
     filter.Generation = {
       year,
     };

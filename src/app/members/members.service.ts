@@ -17,8 +17,9 @@ import {
   updateMember,
   updateMemberNonActive,
 } from "./members.repository";
-import { IFilterAnggota } from "./members.types";
+import { AnggotaModelTypes, IFilterAnggota } from "./members.types";
 import { anggotaValidate } from "./members.validate";
+import { exportMembersToExcel } from "./members.export";
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ export const getMembersService = async ({
   page = 1,
   perPage = 10,
   year,
+  generationId,
   status,
 }: IFilterAnggota) => {
   const memberStatus = statusValue(status as string);
@@ -61,10 +63,11 @@ export const getMembersService = async ({
       page,
       perPage,
       year: gen,
+      generationId,
       status: memberStatus,
     }),
     getMemberCount(
-      { search, year, status: memberStatus as unknown as string },
+      { search, year, generationId, status: memberStatus as unknown as string },
       memberStatus
     ),
   ]);
@@ -145,4 +148,63 @@ export const getMemberByIdService = async (id: string) => {
     );
   }
   return anggota;
+};
+
+export const exportMembersService = async ({
+  generationId,
+}: {
+  generationId?: string;
+}) => {
+  try {
+    // Get members with optional generation filter
+    const members = await getAllMember({
+      generationId,
+      perPage: 10000, // Get all members
+      page: 1,
+    });
+
+    if (!members || members.length === 0) {
+      return new ErrorApp(
+        "No members found to export",
+        404,
+        MESSAGE_CODE.NOT_FOUND
+      );
+    }
+
+    // Map to AnggotaModelTypes format
+    const mappedMembers: AnggotaModelTypes[] = members.map((member: any) => ({
+      id: member.id,
+      nim: member.nim,
+      name: member.name,
+      email: member.User?.email || member.email,
+      angkatanId: member.generationId,
+      angkatan: {
+        id: member.Generation?.id || "",
+        year: member.Generation?.year || "",
+        isActive: member.Generation?.isActive || false,
+      },
+      instagram: member.instagram,
+      facebook: member.facebook,
+      twitter: member.twitter,
+      linkedin: member.linkedin,
+      isActive: member.isActive,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+    }));
+
+    // Get generation year for filename
+    const generationYear = members[0]?.Generation?.year;
+
+    // Generate Excel file
+    const result = await exportMembersToExcel(mappedMembers, generationYear);
+
+    return result;
+  } catch (error) {
+    console.error("Error exporting members:", error);
+    return new ErrorApp(
+      "Failed to export members",
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
 };
