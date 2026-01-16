@@ -1,6 +1,20 @@
 import ExcelJS from "exceljs";
 import { AnggotaModelTypes } from "./members.types";
 
+// Format date to Indonesian format: "12 Januari 2025"
+const formatDateIndonesian = (date: Date): string => {
+  const months = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+};
+
 export const exportMembersToExcel = async (
   members: AnggotaModelTypes[],
   generationYear?: string
@@ -29,7 +43,7 @@ export const exportMembersToExcel = async (
   headerRow.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FF4472C4" },
+    fgColor: { argb: "FF404040" },
   };
   headerRow.alignment = { vertical: "middle", horizontal: "center" };
   headerRow.height = 25;
@@ -47,7 +61,7 @@ export const exportMembersToExcel = async (
       linkedin: member.linkedin || "-",
       twitter: member.twitter || "-",
       status: member.isActive ? "Active" : "Inactive",
-      createdAt: new Date(member.createdAt).toLocaleDateString("id-ID"),
+      createdAt: formatDateIndonesian(new Date(member.createdAt)),
     });
 
     // Style data rows
