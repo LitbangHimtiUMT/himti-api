@@ -18,13 +18,10 @@ export const messageOtp = (name: string, otp: number) => {
 export const transporter = nodemailer.createTransport({
   host: environment.SMTP_HOST,
   port: Number(environment.SMTP_PORT),
-  secure: true,
+  secure: false,
   auth: {
-    user: environment.SMTP_USER,
+    user: environment.SMTP_LOGIN,
     pass: environment.SMTP_PASSWORD,
-  },
-  tls: {
-    rejectUnauthorized: false,
   },
 });
 
