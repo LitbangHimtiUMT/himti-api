@@ -181,7 +181,6 @@ export const GetFileFromStorage = async (key: string) => {
   try {
     const buffer = await StorageS3Client.send(command);
     return { exists: true, error: null,  buffer};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.name === "NotFound") {
       console.log(`File does not exist: ${key}`);
