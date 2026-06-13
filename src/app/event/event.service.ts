@@ -100,7 +100,7 @@ export const createEventService = async (
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.event}/${filename}`,
       Body: compress,
-      ContentType: FileType["image/webp"],
+      ContentType: "image/webp",
       ACL: "public-read",
     });
 
