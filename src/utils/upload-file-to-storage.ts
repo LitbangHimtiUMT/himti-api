@@ -97,7 +97,7 @@ export const MulterFileFilter = (
   callBack: FileFilterCallback
 ): void => {
   console.log("ur file =>", file);
-  const values = Object.values(FileType);
+  const values = Object.keys(FileType);
   const fileType = file.mimetype;
 
   const isAllowed = values.includes(fileType);
