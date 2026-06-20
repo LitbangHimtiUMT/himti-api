@@ -382,3 +382,5 @@ Delete Acara
     path: "/acara/:id",
     method: DELETE
 ```
+
+Edit dan Delete
