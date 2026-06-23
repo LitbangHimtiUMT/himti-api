@@ -101,10 +101,9 @@ export const MulterFileFilter = (
   const fileType = file.mimetype;
 
   const isAllowed = values.includes(fileType);
-  if (file.mimetype && !isAllowed) {
+  if (file.mimetype && isAllowed) {
     callBack(null, true);
   } else {
-    callBack(null, false);
     callBack(
       new ErrorApp(
         `Format File is not allowed`,
