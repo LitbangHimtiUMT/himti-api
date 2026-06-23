@@ -1,7 +1,7 @@
 import { prisma } from "../../../config";
 import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../../utils/pagination";
-import { CreateCategoryDAO } from "./categories.dao";
+import { CreateCategoryDAO, UpdateCategoryDAO } from "./categories.dao";
 
 export const getCategoryById = async (CategoryId: string) => {
   return await prisma.category.findUnique({
@@ -11,6 +11,46 @@ export const getCategoryById = async (CategoryId: string) => {
     select: {
       id: true,
       name: true,
+      _count: true,
+    },
+  });
+};
+
+export const updateCategoryRepository = async (
+  categoryId: string,
+  data: UpdateCategoryDAO
+) => {
+  return await prisma.category.update({
+    where: {
+      id: categoryId,
+    },
+    data: {
+      name: data.name,
+    },
+  });
+};
+
+export const deleteCategoryRepository = async (categoryId: string) => {
+  return await prisma.category.delete({
+    where: {
+      id: categoryId,
+    },
+  });
+};
+
+export const getCategoryNameExcludeIdRepository = async (
+  name: string,
+  excludeId: string
+) => {
+  return await prisma.category.findFirst({
+    where: {
+      name: {
+        equals: name,
+        mode: "insensitive",
+      },
+      NOT: {
+        id: excludeId,
+      },
     },
   });
 };

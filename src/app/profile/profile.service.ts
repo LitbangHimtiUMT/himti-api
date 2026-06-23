@@ -158,8 +158,7 @@ export const updateProfileService = async (
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.user}/${photoName}`,
       Body: compress,
-      ContentType: FileType["image/webp"],
-      ACL: "public-read",
+      ContentType: "image/webp",
     });
   }
 

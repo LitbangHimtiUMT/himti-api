@@ -13,7 +13,7 @@ import { ErrorApp } from "./http-error";
 export interface FileInterface {
   ContentType: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ACL: any;
+  ACL?: any;
   Bucket: string;
   Key: string;
   Body: Buffer;
@@ -97,14 +97,13 @@ export const MulterFileFilter = (
   callBack: FileFilterCallback
 ): void => {
   console.log("ur file =>", file);
-  const values = Object.values(FileType);
+  const values = Object.keys(FileType);
   const fileType = file.mimetype;
 
   const isAllowed = values.includes(fileType);
-  if (file.mimetype && !isAllowed) {
+  if (file.mimetype && isAllowed) {
     callBack(null, true);
   } else {
-    callBack(null, false);
     callBack(
       new ErrorApp(
         `Format File is not allowed`,
@@ -181,7 +180,6 @@ export const GetFileFromStorage = async (key: string) => {
   try {
     const buffer = await StorageS3Client.send(command);
     return { exists: true, error: null,  buffer};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.name === "NotFound") {
       console.log(`File does not exist: ${key}`);

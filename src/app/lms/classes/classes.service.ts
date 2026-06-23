@@ -102,8 +102,7 @@ export const createClassService = async (
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`,
       Body: compress,
-      ContentType: FileType["image/webp"],
-      ACL: "public-read",
+      ContentType: "image/webp",
     });
     const code = generateBalancedRandomString();
     const createClass = await createClassRepository(
@@ -203,8 +202,7 @@ export const updateClassService = async (
         Bucket: environment.STORAGE.BUCKET,
         Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.class}/${fileName}`,
         Body: compress,
-        ContentType: FileType["image/webp"],
-        ACL: "public-read",
+        ContentType: "image/webp",
       });
     }
     const createClass = await updateClassRepository(classess.id, {

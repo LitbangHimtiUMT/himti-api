@@ -91,8 +91,7 @@ export const createAttendanceService = async (
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.attendance}/${filename}`,
       Body: compress,
-      ContentType: FileType["image/webp"],
-      ACL: "public-read",
+      ContentType: "image/webp",
     });
 
     console.log({
