@@ -13,7 +13,7 @@ import { ErrorApp } from "./http-error";
 export interface FileInterface {
   ContentType: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ACL: any;
+  ACL?: any;
   Bucket: string;
   Key: string;
   Body: Buffer;

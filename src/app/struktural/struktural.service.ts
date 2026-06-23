@@ -75,7 +75,6 @@ export const createStrukturalService = async ({
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.structural}/${filename}`,
       Body: compress,
       ContentType: "image/webp",
-      ACL: "public-read",
     });
   }
 
@@ -200,7 +199,6 @@ export const updateStrukturalService = async ({
         Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.structural}/${filename}`,
         Body: compress,
         ContentType: "image/webp",
-        ACL: "public-read",
       }),
     ]);
   }

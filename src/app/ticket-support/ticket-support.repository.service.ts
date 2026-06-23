@@ -33,7 +33,6 @@ export const createTicketSupportService = async (
     Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.ticketSupport}/${fileName}`,
     Body: data.file.buffer,
     ContentType: mimetype,
-    ACL: "public-read",
   });
   return createTicketSupportRepository(reportBy, {
     ...data,

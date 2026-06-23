@@ -69,7 +69,6 @@ export const createModuleService = async (
         Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${fileName}`,
         Body: buffer,
         ContentType: fileModule.mimetype,
-        ACL: "public-read",
       });
     }
 

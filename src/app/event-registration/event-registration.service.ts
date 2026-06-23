@@ -87,7 +87,6 @@ export const create = async (
         Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.eventRegistration}/${filename}`,
         Body: compress,
         ContentType: "image/webp",
-        ACL: "public-read",
       });
       (normalizedData as EventRegistrationCreationDTO).image = filename;
     }

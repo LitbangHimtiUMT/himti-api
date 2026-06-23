@@ -71,7 +71,6 @@ export const uploadImageBusinessService = async (
     Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.business.merchandise}/${fileName}`,
     Body: compress,
     ContentType: "image/webp",
-    ACL: "public-read",
   });
 
   const response = await createBusinessImage(business.id, fileName);

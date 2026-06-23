@@ -290,7 +290,6 @@ export const submitAssignmentService = async (
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.submission}/${fileName}`,
       Body: data.file.buffer,
       ContentType: data.file.mimetype,
-      ACL: "public-read",
     });
   } else {
     fileName = data.file as string;
