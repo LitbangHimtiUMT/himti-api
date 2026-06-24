@@ -22,6 +22,10 @@ import userFcmRoute from "../app/user-fcm/user-fcm.route";
 import userRoute from "../app/user/user.route";
 import versionRoute from "../app/version/version.route";
 import potentialUsersRoute from "../app/potential-users/potential-users.route";
+import potentialUserKeysRoute from "../app/potential-users/potential-user-keys.route";
+import prodiStructuralRoute from "../app/prodi-structural/prodi-structural.route";
+import periodeRoute from "../app/periode/periode.route";
+import contactInfoRoute from "../app/contact-info/contact-info.route";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { MESSAGES } from "../utils/messages";
 import path from "path";
@@ -60,6 +64,10 @@ route.use("/lms", lmsRoute);
 route.use("/initial", initialRoute);
 route.use("/version", versionRoute);
 route.use("/potential-users", potentialUsersRoute);
+route.use("/potential-user-keys", potentialUserKeysRoute);
+route.use("/prodi-structural", prodiStructuralRoute);
+route.use("/periode", periodeRoute);
+route.use("/contact-info", contactInfoRoute);
 
 route.use("/scheduling-notification-meeting", schedulingNotification);
 
