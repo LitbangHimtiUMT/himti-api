@@ -7078,6 +7078,1003 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Potential Users Key Management",
+      "item": [
+        {
+          "name": "Create Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"TALENTA-01\",\n  \"maxUsage\": 10,\n  \"allowedGen\": [\n    \"2023\",\n    \"2024\"\n  ],\n  \"expiredAt\": \"2026-12-31T23:59:59.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/potential-user-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "potential-user-keys"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 201,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success create data\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"key\": \"TALENTA-01\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Keys",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/potential-user-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "potential-user-keys"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success get data\",\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Key",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/potential-user-keys/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "potential-user-keys",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "key-uuid"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success delete data\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Potential Users Profiles",
+      "item": [
+        {
+          "name": "Parse CV with AI",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"John Doe, 2 years Web Dev, skills: React, Node.js. Education UMT.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/potential-users/parse-cv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "potential-users",
+                "parse-cv"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success parse CV\",\n  \"data\": {\n    \"role\": \"Web Developer\",\n    \"skills\": [\n      \"React\",\n      \"Node.js\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register Potential User (Form Data)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nim",
+                  "value": "24552010142",
+                  "type": "text"
+                },
+                {
+                  "key": "keyUsed",
+                  "value": "TALENTA-01",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "Frontend Developer",
+                  "type": "text"
+                },
+                {
+                  "key": "company",
+                  "value": "Tokopedia",
+                  "type": "text"
+                },
+                {
+                  "key": "experienceYear",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "summary",
+                  "value": "React Developer",
+                  "type": "text"
+                },
+                {
+                  "key": "skills",
+                  "value": "[\"React.js\",\"Figma\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "projects",
+                  "value": "[]",
+                  "type": "text"
+                },
+                {
+                  "key": "education",
+                  "value": "[]",
+                  "type": "text"
+                },
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/potential-users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "potential-users"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 201,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success create data\",\n  \"data\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Potential Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/potential-users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "potential-users"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success get data\",\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Potential User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"profile-uuid\",\n  \"role\": \"Senior Frontend Developer\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/potential-users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "potential-users"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success update data\",\n  \"data\": {}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prodi Structural",
+      "item": [
+        {
+          "name": "Get All Prodi Structural",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/prodi-structural",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prodi-structural"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success get prodi structural list\",\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Prodi Structural",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Arief Herdiansah, M.TI",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "Ketua Prodi Teknik Informatika",
+                  "type": "text"
+                },
+                {
+                  "key": "bio",
+                  "value": "Kaprodi periode 2026-2030",
+                  "type": "text"
+                },
+                {
+                  "key": "sequence",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/prodi-structural",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prodi-structural"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 201,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success create prodi structural\",\n  \"data\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Prodi Structural",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Arief Herdiansah, M.TI (Edited)",
+                  "type": "text"
+                },
+                {
+                  "key": "sequence",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/prodi-structural/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prodi-structural",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "record-uuid"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success update prodi structural\",\n  \"data\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Prodi Structural",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/prodi-structural/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "prodi-structural",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "record-uuid"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success delete prodi structural\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tenure Period Vision & Mission",
+      "item": [
+        {
+          "name": "Get Active Period Vision",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/periode/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periode",
+                "active"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success get active period\",\n  \"data\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Periods",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/periode",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periode"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success get all periods\",\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Period",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "period",
+                  "value": "2024/2025",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Kepengurusan Angkatan 24",
+                  "type": "text"
+                },
+                {
+                  "key": "vision",
+                  "value": "Mewujudkan HIMTI yang unggul...",
+                  "type": "text"
+                },
+                {
+                  "key": "mission",
+                  "value": "[{\"title\": \"Misi 1\", \"description\": \"Detail misi\"}]",
+                  "type": "text"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "logo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/periode",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periode"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 201,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success create period\",\n  \"data\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Period",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "vision",
+                  "value": "Visi baru...",
+                  "type": "text"
+                },
+                {
+                  "key": "logo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/periode/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periode",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "period-uuid"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success update period\",\n  \"data\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Period",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/periode/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periode",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "period-uuid"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success delete period\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dynamic Contact Info",
+      "item": [
+        {
+          "name": "Get All Contacts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/contact-info",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contact-info"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success get contacts\",\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"youtube\",\n  \"value\": \"https://youtube.com\",\n  \"group\": \"social_media\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/contact-info",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contact-info"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 201,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success create contact\",\n  \"data\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Batch Upsert Contacts",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"key\": \"address\",\n    \"value\": \"Bekasi\",\n    \"group\": \"office_info\"\n  },\n  {\n    \"key\": \"youtube\",\n    \"value\": \"https://youtube.com\",\n    \"group\": \"social_media\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/contact-info/batch",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contact-info",
+                "batch"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success batch update contacts\",\n  \"data\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Contact",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"Bandung\",\n  \"group\": \"office_info\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/contact-info/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contact-info",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "contact-uuid"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success update contact\",\n  \"data\": {}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Contact",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contact-info/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contact-info",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "contact-uuid"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Success delete contact\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
