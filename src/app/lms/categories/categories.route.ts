@@ -30,7 +30,7 @@ categoriesRoute
   )
   .get("/", CatchWrapper(getCategoriesController))
   .get("/:categoryId", CatchWrapper(getCategoryByIdController))
-  .patch(
+  .put(
     "/:categoryId",
     verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     validateRequest(updateCategorySchema),
