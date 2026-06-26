@@ -3,6 +3,7 @@ import {
   HistoryModule,
   SubmissionStatus,
 } from "@prisma/client";
+import path from "path";
 import { environment } from "../../../libs";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { checkDueDate } from "../../../utils/generate-open";
@@ -276,8 +277,11 @@ export const submitAssignmentService = async (
         MESSAGE_CODE.BAD_REQUEST
       );
     }
-    const ext = getFileExtension(data.file.mimetype, data.file.originalname);
-    if (assignment?.allowedFile && assignment?.allowedFile !== ext) {
+    const ext = path.extname(data.file.originalname).toLowerCase();
+    if (
+      assignment.allowedFile &&
+      assignment.allowedFile.toLowerCase() !== ext
+    ) {
       return new ErrorApp(
         `Format File is invalid, allowed file is ${assignment.allowedFile} extension`,
         400,

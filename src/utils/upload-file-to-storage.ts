@@ -6,6 +6,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { Request } from "express";
 import multer, { FileFilterCallback } from "multer";
+import path from "path";
 import { environment } from "../libs";
 import { MESSAGE_CODE } from "./error-code";
 import { ErrorApp } from "./http-error";
@@ -37,29 +38,44 @@ export const BUCKET_FOLDER = {
 };
 
 export const FileType: Record<string, string> = {
-  "image/pdf": ".pdf",
+  // Images
   "image/png": ".png",
   "image/jpeg": ".jpeg",
   "image/jpg": ".jpg",
   "image/webp": ".webp",
+
+  // PDF
   "application/pdf": ".pdf",
-  "application/octet-stream": ".jpg",
+
+  // Word
+  "application/msword": ".doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    ".docx",
 
   // PowerPoint
   "application/vnd.ms-powerpoint": ".ppt",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation":
     ".pptx",
-  "application/vnd.oasis.opendocument.presentation": ".odp",
-  "application/x-iwork-keynote-sffkey": ".key",
 
-  // Word Documents
-  "application/msword": ".doc",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-    ".docx",
+  // OpenDocument
+  "application/vnd.oasis.opendocument.presentation": ".odp",
   "application/vnd.oasis.opendocument.text": ".odt",
-  "application/x-iwork-pages-sffpages": ".pages", // optional for Apple Pages
-  'application/zip': '.zip',
-  "application/vnd.rar": ".rar"
+
+  // Apple
+  "application/x-iwork-keynote-sffkey": ".key",
+  "application/x-iwork-pages-sffpages": ".pages",
+
+  // ZIP
+  "application/zip": ".zip",
+  "application/x-zip-compressed": ".zip",
+  "multipart/x-zip": ".zip",
+
+  // RAR
+  "application/vnd.rar": ".rar",
+  "application/x-rar-compressed": ".rar",
+
+  // Generic Binary
+  "application/octet-stream": ".bin",
 };
 
 export const ImageType: Record<string, string> = {
@@ -69,24 +85,18 @@ export const ImageType: Record<string, string> = {
   "image/webp": ".webp",
 };
 
-export const getFileExtension = (mimeType: string, fileName?: string): string => {
-  // Coba dapatkan ekstensi dari mimeType yang diketahui
-  const extensionFromMime = FileType[mimeType];
-  
-  if (extensionFromMime && mimeType !== "application/octet-stream") {
-    return extensionFromMime;
-  }
-  
-  // Jika mimeType adalah octet-stream, coba deteksi dari nama file
+export const getFileExtension = (
+  mimeType: string,
+  fileName?: string
+): string => {
   if (fileName) {
-    const lastDotIndex = fileName.lastIndexOf('.');
-    if (lastDotIndex !== -1) {
-      return fileName.substring(lastDotIndex).toLowerCase();
+    const ext = path.extname(fileName).toLowerCase();
+    if (ext) {
+      return ext;
     }
   }
-  
-  // Fallback default jika tidak bisa dideteksi
-  return ".bin"; // atau "" jika ingin tanpa ekstensi
+
+  return FileType[mimeType] || ".bin";
 };
 
 export const storage = multer.memoryStorage();
@@ -96,22 +106,49 @@ export const MulterFileFilter = (
   file: Express.Multer.File,
   callBack: FileFilterCallback
 ): void => {
-  console.log("ur file =>", file);
-  const values = Object.keys(FileType);
-  const fileType = file.mimetype;
+  console.log("========== FILE UPLOAD ==========");
+  console.log({
+    originalname: file.originalname,
+    mimetype: file.mimetype,
+    size: file.size,
+  });
 
-  const isAllowed = values.includes(fileType);
-  if (file.mimetype && isAllowed) {
-    callBack(null, true);
-  } else {
-    callBack(
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  const allowedExtensions = [
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".ppt",
+    ".pptx",
+    ".odp",
+    ".odt",
+    ".key",
+    ".pages",
+    ".zip",
+    ".rar",
+  ];
+
+  console.log({
+    detectedExtension: ext,
+    allowed: allowedExtensions.includes(ext),
+  });
+
+  if (!allowedExtensions.includes(ext)) {
+    return callBack(
       new ErrorApp(
-        `Format File is not allowed`,
+        "Format File is not allowed",
         400,
         MESSAGE_CODE.BAD_REQUEST
       )
     );
   }
+
+  callBack(null, true);
 };
 
 export const StorageS3Client = new S3({
