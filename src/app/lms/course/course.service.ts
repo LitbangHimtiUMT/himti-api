@@ -81,7 +81,38 @@ Output Schema (must be exact JSON, no markdown code blocks, no additional text):
 
     const resultText = Array.isArray(output) ? output.join("") : output;
     const cleanJson = resultText.trim().replace(/^```json\s*/i, "").replace(/\s*```$/i, "");
-    return JSON.parse(cleanJson);
+    
+    // Sanitize control characters (like newlines) inside double-quoted JSON strings
+    let inString = false;
+    let escaped = false;
+    let sanitizedText = "";
+    for (let i = 0; i < cleanJson.length; i++) {
+      const char = cleanJson[i];
+      if (char === '"' && !escaped) {
+        inString = !inString;
+        sanitizedText += char;
+      } else if (inString) {
+        if (char === '\n') {
+          sanitizedText += '\\n';
+        } else if (char === '\r') {
+          sanitizedText += '\\r';
+        } else if (char === '\t') {
+          sanitizedText += '\\t';
+        } else {
+          sanitizedText += char;
+        }
+      } else {
+        sanitizedText += char;
+      }
+      
+      if (char === '\\' && !escaped) {
+        escaped = true;
+      } else {
+        escaped = false;
+      }
+    }
+
+    return JSON.parse(sanitizedText);
   } catch (error: any) {
     console.error("AI Evaluation Service Error:", error?.response?.data || error.message);
     if (error instanceof ErrorApp) {
