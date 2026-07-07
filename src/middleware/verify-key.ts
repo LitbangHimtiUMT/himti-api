@@ -9,8 +9,9 @@ export const verifyKey = async (
   res: Response,
   next: NextFunction
 ) => {
-  const key = req.header(environment.HEADER_KEY) as string;
-  if (!key) {
+  const key = req.headers[environment.HEADER_KEY.toLowerCase()];
+  const apiKeyStr = (Array.isArray(key) ? key[0] : key) || "";
+  if (!apiKeyStr) {
     return HandleResponse(
       res,
       403,
@@ -19,7 +20,7 @@ export const verifyKey = async (
     );
   }
 
-  if (atob(key) !== environment.SECRET_KEY) {
+  if (atob(apiKeyStr) !== environment.SECRET_KEY) {
     return HandleResponse(
       res,
       403,

@@ -16,13 +16,13 @@ import { verifyKey } from "../../../middleware/verify-key";
 export const mentorsRoute = Router();
 
 mentorsRoute
+  .get("/", verifyKey, CatchWrapper(getMentorsController))
   .use(verifyToken)
   .post(
     "/:userId",
     verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),
     CatchWrapper(createMentorController)
   )
-  .get("/", verifyKey, CatchWrapper(getMentorsController))
   .get(
     "/:mentorId",
     verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),

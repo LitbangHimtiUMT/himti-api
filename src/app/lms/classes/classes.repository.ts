@@ -10,7 +10,7 @@ export const getClassById = async (
   userId?: string,
   query?: Query
 ) => {
-  const {search} = query || {}
+  const { search } = query || {}
   return await prisma.class.findUnique({
     where: {
       id: classId,
@@ -125,19 +125,26 @@ export const getClassRepository = async (
       }),
       ...(userId &&
         !ignoreUserBool && {
-          OR: [
-            {
-              createdBy: userId,
-            },
-            {
-              ClassMentor: {
-                some: {
-                  userId,
-                },
+        OR: [
+          {
+            createdBy: userId,
+          },
+          {
+            ClassMentor: {
+              some: {
+                userId,
               },
             },
-          ],
-        }),
+          },
+          {
+            classParticipant: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
+      }),
       status: userId ? undefined : "PUBLISH",
     },
     include: {
@@ -183,19 +190,26 @@ export const getClassCountRepository = async (
       }),
       ...(userId &&
         !ignoreUserBool && {
-          OR: [
-            {
-              createdBy: userId,
-            },
-            {
-              ClassMentor: {
-                some: {
-                  userId,
-                },
+        OR: [
+          {
+            createdBy: userId,
+          },
+          {
+            ClassMentor: {
+              some: {
+                userId,
               },
             },
-          ],
-        }),
+          },
+          {
+            classParticipant: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
+      }),
       status: userId ? undefined : "PUBLISH",
     },
   });

@@ -389,9 +389,16 @@ export const getDetailClassService = async (
     ...query,
     classId,
   });
+  const alreadyJoin = userId
+    ? await getExistingClassParticipantRepository(classess.id, userId)
+    : null;
+
   const meta = Meta(Number(page), Number(perPage), session);
   return {
-    data: await getDetailClassMapper(classess as ClassData),
+    data: await getDetailClassMapper({
+      ...classess,
+      isAlreadyJoin: !!alreadyJoin,
+    } as ClassData),
     meta,
   };
 };

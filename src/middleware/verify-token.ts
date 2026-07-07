@@ -26,8 +26,17 @@ export const verifyToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  const key = req.header(environment.HEADER_KEY) as string;
+  const headerKey = environment.HEADER_KEY || "X-Api-Key";
+  const key = (req.headers[headerKey.toLowerCase()] || req.header(headerKey)) as string;
   const auth = req.headers.authorization;
+
+  console.log("verifyToken Debug:", {
+    headerKey,
+    reqHeaders: req.headers,
+    key,
+    auth,
+    envSecret: environment.SECRET_KEY
+  });
 
   if (!key && !auth) {
     return HandleResponse(
@@ -39,7 +48,13 @@ export const verifyToken = async (
   }
 
   if (key) {
-    if (atob(key) !== environment.SECRET_KEY) {
+    let decodedKey = key;
+    try {
+      decodedKey = atob(key);
+    } catch (e) {
+      // Ignore if it's not base64 encoded
+    }
+    if (decodedKey !== environment.SECRET_KEY && key !== environment.SECRET_KEY) {
       return HandleResponse(
         res,
         403,
@@ -106,12 +121,8 @@ export const decodeToken = async (
   next: NextFunction
 ) => {
   if (!req.headers.authorization) {
-    return HandleResponse(
-      res,
-      401,
-      MESSAGE_CODE.UNAUTHORIZED,
-      MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
-    );
+    next();
+    return;
   }
   const token = req.headers.authorization.replace("Bearer ", "");
   const decodeToken = decode(token) as TokenDecodeInterface;

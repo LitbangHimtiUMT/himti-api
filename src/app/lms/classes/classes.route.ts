@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { environment } from "../../../libs";
 import { validateRequest } from "../../../middleware/validate-request";
 import {
   decodeToken,
@@ -30,8 +31,31 @@ import { inviteMentorSchema } from "../class-mentor/class-mentor.request";
 export const classRoute = Router();
 
 classRoute
+  .get("/", (req, res, next) => {
+    // If authorization header is present, always decode token first to enforce user visibility (e.g. mentor class isolation)
+    if (req.headers.authorization) {
+      return decodeToken(req, res, () => CatchWrapper(getClassController)(req, res, next));
+    }
+    
+    // Otherwise, check for API Key for public/guest access
+    const apiKey = req.headers[environment.HEADER_KEY.toLowerCase()];
+    const apiKeyStr = (Array.isArray(apiKey) ? apiKey[0] : apiKey) || "";
+    if (apiKeyStr && atob(apiKeyStr) === environment.SECRET_KEY) {
+      return CatchWrapper(getClassController)(req, res, next);
+    }
+    // Fallback
+    return decodeToken(req, res, () => CatchWrapper(getClassController)(req, res, next));
+  })
+  .get("/user", decodeToken, verifyToken, CatchWrapper(getClassUserController))
+  .get("/:classId", (req, res, next) => {
+    const apiKey = req.headers[environment.HEADER_KEY.toLowerCase()];
+    const apiKeyStr = (Array.isArray(apiKey) ? apiKey[0] : apiKey) || "";
+    if (apiKeyStr && atob(apiKeyStr) === environment.SECRET_KEY) {
+      return CatchWrapper(getDetailClassController)(req, res, next);
+    }
+    return decodeToken(req, res, () => CatchWrapper(getDetailClassController)(req, res, next));
+  })
   .use(decodeToken)
-  .get("/", CatchWrapper(getClassController))
   .use(verifyToken)
   .post(
     "/invite",
@@ -51,7 +75,6 @@ classRoute
     CatchWrapper(upload.single("thumbnail")),
     CatchWrapper(updateClassController)
   )
-  .get("/user", CatchWrapper(getClassUserController))
   .post(
     "/join/invitation",
     validateRequest(joinInvitationClassSchema),
@@ -64,5 +87,4 @@ classRoute
     verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     CatchWrapper(publishClassController)
   )
-  .delete("/:classId", CatchWrapper(deleteClassessController))
-  .get("/:classId", CatchWrapper(getDetailClassController));
+  .delete("/:classId", CatchWrapper(deleteClassessController));

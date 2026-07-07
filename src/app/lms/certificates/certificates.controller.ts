@@ -10,6 +10,8 @@ import {
   getCertificatesService,
 } from "./certificates.service";
 
+import { prisma } from "../../../config";
+
 export const generateCertificateController = async (
   req: RequestWithAccessToken,
   res: Response,
@@ -59,29 +61,47 @@ export const getFileCertificateController = async (
   res: Response,
   next: NextFunction
 ) => {
-  next
-  // const certificateData = {
-  //   studentName: req.body.studentName || 'John Doe',
-  //   courseName: req.body.courseName || 'Advanced TypeScript',
-  //   completionDate: req.body.completionDate || new Date().toLocaleDateString(),
-  //   certificateId: req.body.certificateId || `CERT-${Date.now()}`,
-  //   issuerName: req.body.issuerName,
-  //   additionalText: req.body.additionalText,
-  // };
+  const { code, id } = req.query;
+
+  if (!code && !id) {
+    next(new ErrorApp("Certificate code or ID is required", 400, MESSAGE_CODE.BAD_REQUEST));
+    return;
+  }
+
+  const certificate = await prisma.certificate.findFirst({
+    where: {
+      OR: [
+        ...(id ? [{ id: id as string }] : []),
+        ...(code ? [{ code: code as string }] : []),
+      ]
+    },
+    include: {
+      user: true,
+      class: {
+        include: {
+          user: true,
+        }
+      }
+    }
+  });
+
+  if (!certificate) {
+    next(new ErrorApp("Certificate not found", 404, MESSAGE_CODE.NOT_FOUND));
+    return;
+  }
+
   const certificateData = {
-    studentName: "Jane Doe",
-    courseName: "Advanced Web Development",
-    completionDate: new Date().toLocaleDateString("en-US", {
+    studentName: certificate.user.name,
+    courseName: certificate.class.name,
+    completionDate: new Date(certificate.createdAt).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     }),
-    certificateId: `CERT-${Date.now()}`,
-    issuerName: "Tech Education Institute",
-    hoursCompleted: 120,
-    instructorName: "Dr. John Smith",
-    additionalText:
-      "This certificate verifies the completion of all course requirements and final project assessment.",
+    certificateId: certificate.code,
+    issuerName: "HIMTI UMT",
+    instructorName: certificate.class.user.name,
+    additionalText: `This certificate verifies the completion of all course requirements for "${certificate.class.name}".`,
   };
 
   const pdfBytes = await generateCertificateAdvancedBuffer(certificateData);
