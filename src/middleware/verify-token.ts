@@ -62,6 +62,15 @@ export const verifyToken = async (
         MESSAGES.ERROR.UNAUTHORIZED.ACCESS
       );
     }
+    // If there's also a Bearer token, decode it to get userId
+    // (x-api-key = client auth, JWT = user identity — both can coexist)
+    if (auth) {
+      const token = auth.replace("Bearer ", "");
+      const decoded = decode(token) as TokenDecodeInterface;
+      if (decoded?.id) {
+        (req as RequestWithAccessToken).userId = decoded.id;
+      }
+    }
     next()
     return
   }
