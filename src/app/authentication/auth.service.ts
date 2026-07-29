@@ -31,6 +31,8 @@ import {
   getUserByNIM,
   userLogin,
   verifiedOtp,
+  deleteOtp,
+  incrementOtpAttempts,
 } from "./auth.repository";
 import { Query } from "../../interface/Query";
 import { decryptAES } from "../../utils/decrypt";
@@ -341,13 +343,13 @@ export const requestOtpService = async (email: string) => {
   const expired = new Date(Date.now() + 3 * 60 * 1000);
 
   const randomOtp = random();
+  console.log(`[DEBUG] OTP Code for ${email} is: ${randomOtp}`); // <-- Tambahkan log OTP untuk testing lokal
   const hashOtp = await bcrypt.hash(randomOtp.toString(), 10);
   const otp = await createOtp(hashOtp, email, expired);
 
   await sendOtp(user.email, user.name, randomOtp);
   const data = {
     key: otp.id,
-    otp: hashOtp,
     isVerified: otp.isVerified,
     expired,
   };
@@ -374,20 +376,30 @@ export const validateOtpService = async ({ key, otp }: ValidateOtpDTO) => {
     );
   }
 
-  const matchOtp = await bcrypt.compare(otp.toString(), findOtp.otp);
-
-  if (!matchOtp) {
+  const isExpired = new Date(findOtp.expired as Date) < new Date(Date.now());
+  if (isExpired) {
+    await deleteOtp(key);
     return new ErrorApp(
-      MESSAGES.ERROR.INVALID.OTP_NUMBER,
+      MESSAGES.ERROR.INVALID.OTP_EXPIRED,
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
   }
 
-  const isExpired = new Date(findOtp.expired as Date) < new Date(Date.now());
-  if (isExpired) {
+  const matchOtp = await bcrypt.compare(otp.toString(), findOtp.otp);
+
+  if (!matchOtp) {
+    const updatedOtp = await incrementOtpAttempts(key);
+    if (updatedOtp.attempts >= 3) {
+      await deleteOtp(key);
+      return new ErrorApp(
+        "Batas percobaan habis, silakan request OTP baru",
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
     return new ErrorApp(
-      MESSAGES.ERROR.INVALID.OTP_EXPIRED,
+      MESSAGES.ERROR.INVALID.OTP_NUMBER,
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
@@ -440,6 +452,9 @@ export const forgotPasswordService = async ({
 
   const hashPassword = await bcrypt.hash(password, 10);
   const response = await changePassword(user.id, hashPassword);
+  
+  await deleteOtp(key);
+
   return response;
 };
 

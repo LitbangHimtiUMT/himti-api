@@ -1,3 +1,5 @@
-export const random = () => {
-    return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+import crypto from "crypto";
+
+export const random = (): number => {
+    return crypto.randomInt(100000, 1000000);
 }

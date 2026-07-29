@@ -23,6 +23,19 @@ import {
 } from "./auth.request";
 import { VerifyTokenWithoutExp } from "../../middleware/verify-token-without-exp";
 
+import rateLimit from "express-rate-limit";
+
+const otpRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 menit
+  max: 3, // Maksimal 3 permintaan per IP address per windowMs
+  message: {
+    status: 429,
+    message: "Terlalu banyak permintaan OTP dari IP ini. Silakan coba lagi dalam 15 menit.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 const route = Router();
 
 route.post(
@@ -42,6 +55,7 @@ route.post(
 );
 route.post(
   "/otp",
+  otpRateLimiter,
   validateRequest(requestOtpSchema),
   CatchWrapper(requestOtpController)
 );

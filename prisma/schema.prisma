@@ -236,6 +236,7 @@ model OTP {
   email      String    @db.VarChar(50)
   otp        String    @db.VarChar(500)
   isVerified Boolean   @default(false) @map("is_verified")
+  attempts   Int       @default(0)
   expired    DateTime? @db.Timestamp(0)
   createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamp()
