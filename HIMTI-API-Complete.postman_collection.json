@@ -212,8 +212,8 @@
           "response": [
             {
               "name": "Success Response",
-              "status": "Created",
-              "code": 201,
+              "status": "OK",
+              "code": 200,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -221,7 +221,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"status\": 201,\n  \"code\": \"CREATED\",\n  \"message\": \"Resource created successfully\",\n  \"data\": {\n    \"id\": \"new-uuid\"\n  }\n}"
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"OTP sent successfully\",\n  \"data\": {\n    \"key\": \"otp-key-uuid\",\n    \"isVerified\": false,\n    \"expired\": \"2026-07-29T01:45:00.000Z\"\n  }\n}"
             },
             {
               "name": "Validation Error",
@@ -250,7 +250,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\"\n}"
+              "raw": "{\n  \"key\": \"otp-key-uuid\",\n  \"otp\": 123456\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/otp/validate",
@@ -267,8 +267,8 @@
           "response": [
             {
               "name": "Success Response",
-              "status": "Created",
-              "code": 201,
+              "status": "OK",
+              "code": 200,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -276,7 +276,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"status\": 201,\n  \"code\": \"CREATED\",\n  \"message\": \"Resource created successfully\",\n  \"data\": {\n    \"id\": \"new-uuid\"\n  }\n}"
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"OTP verified successfully\",\n  \"data\": {\n    \"key\": \"otp-key-uuid\",\n    \"isVerified\": true\n  }\n}"
             },
             {
               "name": "Validation Error",
@@ -305,7 +305,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\",\n  \"newPassword\": \"newPassword123\"\n}"
+              "raw": "{\n  \"key\": \"otp-key-uuid\",\n  \"password\": \"newPassword123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/forgot-password",
@@ -330,7 +330,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Resource updated successfully\"\n}"
+              "body": "{\n  \"status\": 200,\n  \"code\": \"SUCCESS\",\n  \"message\": \"Password changed successfully\"\n}"
             }
           ]
         },
