@@ -237,3 +237,43 @@ export const importMembersFromRegistration = async (
     );
   }
 };
+
+export const exportAbsensiByRegistrationType = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { registrationTypeId } = req.params;
+    const { format = "docx", category = "MAHASISWA" } = req.query;
+
+    const buffer = await EventRegistrationService.generateAbsensiDocument(
+      registrationTypeId,
+      format as "docx" | "pdf",
+      category as "MAHASISWA" | "UMUM"
+    );
+
+    const ext = format === "pdf" ? "pdf" : "docx";
+    const contentType =
+      format === "pdf"
+        ? "application/pdf"
+        : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Absensi-${category}-${registrationTypeId}.${ext}`
+    );
+    res.send(buffer);
+  } catch (error) {
+    if (error instanceof ErrorApp) {
+      return next(error);
+    }
+    HandleResponse(
+      res,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR,
+      "Failed to generate absensi document"
+    );
+  }
+};

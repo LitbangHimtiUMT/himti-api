@@ -524,6 +524,7 @@ model RegistrationType {
   id       String                    @id @unique @default(cuid())
   name     String
   year     Int
+  image    String?                   @db.VarChar(255)
   link     String?
   type     RegistrationEventTypeEnum @default(LEARNING_GROUP)
   isActive Boolean                   @map("is_active")
@@ -542,6 +543,8 @@ model EventRegistration {
   name               String
   nim                String?
   class              String?
+  prodi              String?
+  institution        String?
   generation         Int?
   phoneNumber        String?
   categoryId         String?           @map("category_id")

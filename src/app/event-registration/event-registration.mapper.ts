@@ -62,6 +62,8 @@ export const eventRegistrationMapper = (
         )
       : null,
     class: eventRegistration.class,
+    prodi: eventRegistration.prodi,
+    institution: eventRegistration.institution,
     generation: eventRegistration.generation,
     registrationTypeId: eventRegistration.registrationTypeId,
     eventId: eventRegistration.eventId,
@@ -82,5 +84,6 @@ const mapRegistrationTypeSummary = (
     type: registrationType.type,
     year: registrationType.year,
     isActive: registrationType.isActive,
+    link: registrationType.link,
   };
 };

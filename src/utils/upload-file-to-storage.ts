@@ -24,6 +24,7 @@ export const BUCKET_FOLDER = {
   attendance: "attendance",
   event: "event",
   eventRegistration: "event-registration",
+  registrationType: "registration-type",
   business: {
     service: "business/service",
     merchandise: "business/merchandise",

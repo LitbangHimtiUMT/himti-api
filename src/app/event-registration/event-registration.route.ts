@@ -34,6 +34,12 @@ router
     "/:id",
     CatchWrapper(EventRegistrationController.deleteEventRegistration)
   )
+  .get(
+    "/registration-type/:registrationTypeId/export-absensi",
+    CatchWrapper(
+      EventRegistrationController.exportAbsensiByRegistrationType
+    )
+  )
   .post(
     "/registration/:registrationTypeId/member/import",
     CatchWrapper(EventRegistrationController.importMembersFromRegistration)

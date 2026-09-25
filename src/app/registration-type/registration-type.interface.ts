@@ -6,6 +6,18 @@ export interface RegistrationTypeCreationDTO {
   type: RegistrationEventTypeEnum;
   year: number;
   isActive: boolean;
+  image?: string | null;
+  link?: string | null;
+  eventId?: string | null;
+}
+
+export interface RegistrationTypeUpdateDTO {
+  name?: string;
+  type?: RegistrationEventTypeEnum;
+  year?: number;
+  isActive?: boolean;
+  image?: string | null;
+  link?: string | null;
   eventId?: string | null;
 }
 
@@ -13,6 +25,8 @@ export interface RegistrationTypeDTO {
   id: string;
   name: string;
   year: number;
+  image?: string | null;
+  link?: string | null;
   createdAt: Date;
   type: RegistrationEventTypeEnum;
   isActive: boolean;

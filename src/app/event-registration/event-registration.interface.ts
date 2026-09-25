@@ -4,6 +4,8 @@ export interface EventRegistrationCreationDTO {
   name: string;
   nim?: string;
   class?: string | null;
+  prodi?: string | null;
+  institution?: string | null;
   generation?: number;
   categoryId?: string;
   image?: string;
@@ -21,6 +23,7 @@ export interface RegistrationTypeSummaryDTO {
   type: RegistrationEventTypeEnum;
   year: number;
   isActive: boolean;
+  link?: string | null;
 }
 
 export interface EventRegistrationDTO {
@@ -29,6 +32,8 @@ export interface EventRegistrationDTO {
   image?: string | null;
   link?: string | null;
   class?: string | null;
+  prodi?: string | null;
+  institution?: string | null;
   nim?: string | null;
   phoneNumber?: string | null;
   generation?: number | null;
