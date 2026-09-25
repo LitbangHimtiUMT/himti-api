@@ -77,8 +77,16 @@ function main() {
   // Extract <w:tblPr>, <w:tblGrid> to keep table layout untouched
   const tblPrMatch = originalTable.match(/<w:tblPr>[\s\S]*?<\/w:tblPr>/);
   const tblGridMatch = originalTable.match(/<w:tblGrid>[\s\S]*?<\/w:tblGrid>/);
-  const tblPr = tblPrMatch ? tblPrMatch[0] : "";
+  let tblPr = tblPrMatch ? tblPrMatch[0] : "";
   const tblGrid = tblGridMatch ? tblGridMatch[0] : "";
+
+  // Disable horizontal & vertical row/column banding in tblLook. The original
+  // ABSENSI.docx has w:tblLook w:val="04A0" with w:noHBand="0", meaning the
+  // referenced table style may apply alternating (banded) row formatting -
+  // which visually manifests as a zig-zag alignment on the Ttd number column
+  // even though every paragraph is left-aligned. Clearing the banding bit
+  // (0x80) and forcing noHBand="1" removes that conditional styling.
+  tblPr = disableTableBanding(tblPr);
 
   // Extract all rows
   const rows = [...originalTable.matchAll(/<w:tr\b[\s\S]*?<\/w:tr>/g)].map(
@@ -166,6 +174,11 @@ function main() {
 // odd rows are default/left) which caused a visible "zig-zag" effect on the
 // numbering column after row duplication.
 function replaceCellTextTokens(cellXml, tokenText) {
+  // Strip any <w:cnfStyle .../> conditional-style markers so the row can't be
+  // classified as "odd-band / even-band / first-row" by Word's table style
+  // engine (another source of alignment inconsistency).
+  cellXml = cellXml.replace(/<w:cnfStyle\b[^\/]*\/>/g, "");
+
   const paraMatch = cellXml.match(/<w:p\b[\s\S]*?<\/w:p>/);
   if (!paraMatch) return cellXml;
   const paraXml = paraMatch[0];
@@ -198,6 +211,25 @@ function normalizeParagraphAlignment(pPr) {
   }
   // Insert jc right after <w:pPr> opening tag
   return pPr.replace(/<w:pPr>/, `<w:pPr>${jcElement}`);
+}
+
+// Turn off banded-row formatting on the table so every row renders with the
+// same style. We rewrite <w:tblLook .../> to explicitly set noHBand="1",
+// noVBand="1", and mask off the 0x0080 (band row) + 0x0020 (band col) bits
+// from w:val. Without this, Word's table style engine applies alternating
+// paragraph justification for even/odd rows even when our XML declares
+// jc="left" on every cell (this is the root cause of the visible zig-zag).
+function disableTableBanding(tblPr) {
+  if (!tblPr) return tblPr;
+  return tblPr.replace(/<w:tblLook\b[^\/]*\/>/, (match) => {
+    // Extract w:val hex string and clear banding bits.
+    const valMatch = match.match(/w:val="([0-9A-Fa-f]+)"/);
+    let val = valMatch ? parseInt(valMatch[1], 16) : 0x04a0;
+    val &= ~0x0080; // clear "band row" (horizontal band)
+    val &= ~0x0020; // clear "band col" (vertical band)
+    const newVal = val.toString(16).toUpperCase().padStart(4, "0");
+    return `<w:tblLook w:val="${newVal}" w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/>`;
+  });
 }
 
 // Prepend text inside the <w:t> that currently contains a token (e.g., before {INS ...})
