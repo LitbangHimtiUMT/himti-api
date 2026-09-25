@@ -247,11 +247,12 @@ export const exportAbsensiByRegistrationType = async (
     const { registrationTypeId } = req.params;
     const { format = "docx", category = "MAHASISWA" } = req.query;
 
-    const buffer = await EventRegistrationService.generateAbsensiDocument(
-      registrationTypeId,
-      format as "docx" | "pdf",
-      category as "MAHASISWA" | "UMUM"
-    );
+        const { buffer, eventName } =
+      await EventRegistrationService.generateAbsensiDocument(
+        registrationTypeId,
+        format as "docx" | "pdf",
+        category as "MAHASISWA" | "UMUM"
+      );
 
     const ext = format === "pdf" ? "pdf" : "docx";
     const contentType =
@@ -259,10 +260,19 @@ export const exportAbsensiByRegistrationType = async (
         ? "application/pdf"
         : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
+    // Sanitize event name for use in HTTP header filename
+    const safeEventName = (eventName || "Event")
+      .replace(/[\\/:*?"<>|\r\n]+/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
+    const filename = `Absensi-${category}-${safeEventName}.${ext}`;
+
     res.setHeader("Content-Type", contentType);
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=Absensi-${category}-${registrationTypeId}.${ext}`
+      `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(
+        filename
+      )}`
     );
     res.send(buffer);
   } catch (error) {

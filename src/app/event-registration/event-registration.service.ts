@@ -1,17 +1,12 @@
 import { RegistrationEventTypeEnum, RegistrationType } from "@prisma/client";
 import sharp from "sharp";
-import PDFDocument from "pdfkit";
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
-  AlignmentType,
-} from "docx";
+import * as fs from "fs";
+import * as path from "path";
+import { createReport } from "docx-templates";
+import { promisify } from "util";
+// libreoffice-convert has no bundled types; require via CJS
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const libreOfficeConvert = require("libreoffice-convert");
 import * as eventRegistrationRepository from "./event-registration.repository";
 import {
   EventRegistrationCreationDTO,
@@ -33,6 +28,34 @@ import { environment } from "../../libs";
 import { Meta } from "../../utils/meta";
 import { Query } from "../../interface/Query";
 
+// Prefer the `.convertWithOptions` signature so we can pass a custom
+// soffice binary path via the LIBREOFFICE_PATH environment variable.
+// Fallback silently to auto-discovery when the variable is not set.
+const libreConvertRaw: (
+  input: Buffer,
+  format: string,
+  filter: string | undefined,
+  options: Record<string, unknown> | undefined,
+  cb: (err: Error | null, buf: Buffer) => void
+) => void = libreOfficeConvert.convertWithOptions;
+
+const libreConvertAsync = (
+  input: Buffer,
+  format: string,
+  filter: string | undefined
+): Promise<Buffer> => {
+  const overridePath = process.env.LIBREOFFICE_PATH;
+  const options = overridePath
+    ? { sofficeBinaryPaths: [overridePath] }
+    : undefined;
+  return new Promise((resolve, reject) => {
+    libreConvertRaw(input, format, filter, options, (err, buf) => {
+      if (err) reject(err);
+      else resolve(buf);
+    });
+  });
+};
+
 export const create = async (
   payload:
     | EventRegistrationCreationDTO
@@ -47,13 +70,17 @@ export const create = async (
   );
   if (unique instanceof ErrorApp) return unique;
 
-  // Extract image file for validation
   const maybeFile = (payload as unknown as { image?: unknown }).image as
     | Express.Multer.File
     | string
     | undefined;
 
-  if (payload.nim && payload.nim.trim() !== "" && payload.nim.trim() !== "-" && (payload.registrationTypeId || payload.eventId)) {
+  if (
+    payload.nim &&
+    payload.nim.trim() !== "" &&
+    payload.nim.trim() !== "-" &&
+    (payload.registrationTypeId || payload.eventId)
+  ) {
     const existing =
       await eventRegistrationRepository.getEventRegistrationByNIM(
         payload.nim,
@@ -69,7 +96,6 @@ export const create = async (
     }
   }
 
-  // Validate bootcamp-specific requirements
   const validateBootcamp = validateBootcampRequirements(
     registrationType,
     payload.generation,
@@ -183,10 +209,7 @@ export const update = async (
   }
   const registrationType = await getRegistrationTypeOrThrow(registrationTypeId);
   const normalizedData = normalizePayload(
-    {
-      ...payload,
-      registrationTypeId,
-    },
+    { ...payload, registrationTypeId },
     registrationType,
     existing
   );
@@ -271,9 +294,7 @@ const buildRegistrationTypeMap = async (registrationTypeIds: string[]) => {
 };
 
 const assertUniqueRegistration = async (userId?: string, eventId?: string) => {
-  if (!userId || !eventId) {
-    return;
-  }
+  if (!userId || !eventId) return;
   const existingRegistration =
     await eventRegistrationRepository.getExistEventRegistration(
       userId,
@@ -294,7 +315,6 @@ const validateBootcampRequirements = (
   imageFile?: Express.Multer.File | string
 ) => {
   if (registrationType.type === RegistrationEventTypeEnum.BOOTCAMP) {
-    // Validate generation is required for bootcamp
     if (!generation || generation <= 0) {
       return new ErrorApp(
         "Generation is required for bootcamp registration",
@@ -302,8 +322,6 @@ const validateBootcampRequirements = (
         MESSAGE_CODE.BAD_REQUEST
       );
     }
-
-    // Validate image is required for bootcamp
     if (!imageFile) {
       return new ErrorApp(
         "Image is required for bootcamp registration",
@@ -319,7 +337,6 @@ export const findByRegistrationType = async (
   query: Query
 ) => {
   const { page = "1", perPage = "10" } = query;
-  // Validate registration type exists
   const registrationType =
     await registrationTypeRepository.getRegistrationTypeByIdRepository(
       registrationTypeId
@@ -344,10 +361,7 @@ export const findByRegistrationType = async (
 
   const meta = Meta(Number(page), Number(perPage), result.total);
 
-  return {
-    data: mappedData,
-    meta,
-  };
+  return { data: mappedData, meta };
 };
 
 export const importMembers = async (
@@ -369,22 +383,17 @@ export const importMembers = async (
         skipped++;
         continue;
       }
-
-      // Check if member already exists
       const existingMember = await memberRepository.getMemberByNIM(reg.nim);
       if (existingMember) {
         skipped++;
         continue;
       }
-
-      // Create Member
       await memberRepository.createMember({
         name: reg.name,
         nim: reg.nim,
         generationId,
         isActive: true,
       });
-
       success++;
     } catch (error) {
       console.error(`Failed to import member from reg ${reg.id}:`, error);
@@ -392,19 +401,161 @@ export const importMembers = async (
     }
   }
 
-  return {
-    success,
-    skipped,
-    failed,
-    totalProcessed: registrations.length,
-  };
+  return { success, skipped, failed, totalProcessed: registrations.length };
+};
+
+// ============================================================================
+// ABSENSI DOCUMENT GENERATION
+// ----------------------------------------------------------------------------
+// This module fills the static template file `ABSENSI.template.docx` located
+// at the project root. The template is generated once from the original
+// `ABSENSI.docx` via `scripts/prepare-absensi-template.js` and contains
+// docx-templates tokens ({INS eventTitle}, {FOR row IN rows} ... {END-FOR row},
+// {INS $row.no}, {INS $row.name}, {INS $row.detail}, {INS $row.ttd},
+// {INS columnHeader}).
+//
+// We DO NOT regenerate the document layout in code - only participant data is
+// injected so the output preserves the HIMTI kop surat, decoration lines,
+// header/footer images and table styling defined in the template.
+//
+// PDF output is produced by first rendering the DOCX and then converting it
+// with LibreOffice via `libreoffice-convert`. LibreOffice (soffice) must be
+// installed on the server host for PDF conversion to work.
+// ============================================================================
+
+type AbsensiRow = {
+  no: string;
+  name: string;
+  detail: string;
+  ttd: string;
+};
+
+const ABSENSI_TEMPLATE_PATH = path.join(
+  process.cwd(),
+  "ABSENSI.template.docx"
+);
+
+const isUmumRegistration = (reg: {
+  nim?: string | null;
+  class?: string | null;
+  institution?: string | null;
+}): boolean => {
+  const institutionLower = (reg.institution ?? "").toLowerCase();
+  const isUmtInstitution =
+    institutionLower === "universitas muhammadiyah tangerang" ||
+    institutionLower === "umt";
+  return (
+    reg.nim === "-" ||
+    !reg.nim ||
+    (reg.class ?? "").toLowerCase().includes("umum") ||
+    (!!reg.institution && !isUmtInstitution)
+  );
+};
+
+const buildAbsensiRows = (
+  registrations: Array<Record<string, unknown>>,
+  category: "MAHASISWA" | "UMUM"
+): AbsensiRow[] => {
+  // Match the template's default of 20 rows so blank signature slots are kept
+  // when participants < 20 (identical to the original ABSENSI.docx look).
+  const minRows = 20;
+  const rowsCount = Math.max(registrations.length, minRows);
+  const rows: AbsensiRow[] = [];
+
+  for (let i = 0; i < rowsCount; i++) {
+    const reg = (registrations[i] ?? {}) as {
+      name?: string;
+      nim?: string;
+      prodi?: string;
+      institution?: string;
+      class?: string;
+    };
+    const hasData = i < registrations.length;
+    let detail = "";
+    if (hasData) {
+      if (category === "MAHASISWA") {
+        const nim = reg.nim && reg.nim !== "-" ? reg.nim : "";
+        const prodi = reg.prodi ?? "";
+        detail = [nim, prodi].filter(Boolean).join(" - ") || "-";
+      } else {
+        detail = reg.institution || reg.class || "-";
+      }
+    }
+    rows.push({
+      no: String(i + 1),
+      name: hasData ? reg.name ?? "" : "",
+      detail,
+      ttd: `${i + 1}.`,
+    });
+  }
+
+  return rows;
+};
+
+const getColumnHeader = (category: "MAHASISWA" | "UMUM") =>
+  category === "MAHASISWA"
+    ? "NIM & Prodi"
+    : "Instansi / Asal Sekolah / Kampus";
+
+const generateDocxFromTemplate = async (
+  eventTitle: string,
+  registrations: Array<Record<string, unknown>>,
+  category: "MAHASISWA" | "UMUM"
+): Promise<Buffer> => {
+  if (!fs.existsSync(ABSENSI_TEMPLATE_PATH)) {
+    throw new ErrorApp(
+      `Absensi template not found at ${ABSENSI_TEMPLATE_PATH}. Run 'node scripts/prepare-absensi-template.js' to generate it.`,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+
+  const template = fs.readFileSync(ABSENSI_TEMPLATE_PATH);
+  const rows = buildAbsensiRows(registrations, category);
+
+  const output = await createReport({
+    template,
+    data: {
+      eventTitle: eventTitle.toUpperCase(),
+      columnHeader: getColumnHeader(category),
+      rows,
+    },
+    cmdDelimiter: ["{", "}"],
+  });
+
+  return Buffer.from(output);
+};
+
+const convertDocxBufferToPdf = async (docxBuffer: Buffer): Promise<Buffer> => {
+  try {
+    return await libreConvertAsync(docxBuffer, ".pdf", undefined);
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Unknown conversion error";
+    const hint =
+      process.platform === "win32"
+        ? [
+            "LibreOffice was not found. Install it or set the LIBREOFFICE_PATH env var.",
+            "Windows install (winget): winget install -e --id TheDocumentFoundation.LibreOffice",
+            "Default install path checked: C:\\Program Files\\LibreOffice\\program\\soffice.exe",
+            "Or set env: LIBREOFFICE_PATH=C:\\path\\to\\soffice.exe",
+          ].join(" | ")
+        : process.platform === "linux"
+        ? "LibreOffice was not found. Install with: sudo apt-get install -y libreoffice --no-install-recommends. Or set LIBREOFFICE_PATH=/path/to/soffice."
+        : "LibreOffice was not found. Install it or set the LIBREOFFICE_PATH env var to the soffice binary path.";
+    throw new ErrorApp(
+      `Failed to convert DOCX to PDF via LibreOffice. ${hint} Details: ${message}`,
+      500,
+      MESSAGE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
 };
 
 export const generateAbsensiDocument = async (
   registrationTypeId: string,
   format: "docx" | "pdf",
   category: "MAHASISWA" | "UMUM"
-): Promise<Buffer> => {
+): Promise<{ buffer: Buffer; eventName: string }> => {
   const registrationType =
     await registrationTypeRepository.getRegistrationTypeByIdRepository(
       registrationTypeId
@@ -422,339 +573,22 @@ export const generateAbsensiDocument = async (
       registrationTypeId
     );
 
-  // Filter registrations based on category
   const filteredRegistrations = registrations.filter((reg) => {
-    const isUmum =
-      reg.nim === "-" ||
-      !reg.nim ||
-      reg.class?.toLowerCase().includes("umum") ||
-      (reg.institution && reg.institution.toLowerCase() !== "universitas muhammadiyah tangerang" && reg.institution.toLowerCase() !== "umt");
-    return category === "UMUM" ? isUmum : !isUmum;
+    const umum = isUmumRegistration(reg);
+    return category === "UMUM" ? umum : !umum;
   });
 
   const eventTitle = registrationType.name;
 
+  const docxBuffer = await generateDocxFromTemplate(
+    eventTitle,
+    filteredRegistrations as Array<Record<string, unknown>>,
+    category
+  );
+
   if (format === "pdf") {
-    return generatePdfAbsensi(eventTitle, filteredRegistrations, category);
-  } else {
-    return generateDocxAbsensi(eventTitle, filteredRegistrations, category);
+    const pdf = await convertDocxBufferToPdf(docxBuffer);
+    return { buffer: pdf, eventName: eventTitle };
   }
-};
-
-const generatePdfAbsensi = (
-  eventTitle: string,
-  registrations: any[],
-  category: "MAHASISWA" | "UMUM"
-): Promise<Buffer> => {
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 40, size: "A4" });
-    const buffers: Buffer[] = [];
-
-    doc.on("data", (chunk) => buffers.push(chunk));
-    doc.on("end", () => resolve(Buffer.concat(buffers)));
-    doc.on("error", (err) => reject(err));
-
-    // Header Text
-    doc
-      .fontSize(14)
-      .font("Helvetica-Bold")
-      .text("HIMPUNAN MAHASISWA TEKNIK INFORMATIKA", { align: "center" });
-    doc
-      .fontSize(13)
-      .font("Helvetica-Bold")
-      .text("UNIVERSITAS MUHAMMADIYAH TANGERANG", { align: "center" });
-    doc
-      .fontSize(9)
-      .font("Helvetica")
-      .text(
-        "Jl. Perintis Kemerdekaan I No. 33 Kel. Babakan, Kec. Tangerang,\nKota Tangerang, Banten 15118 | No. Telp: 085136392300 (Kominfo)\nwww.himtiumt.or.id",
-        { align: "center" }
-      );
-
-    doc.moveDown(0.5);
-
-    // Header Lines (Yellow & Green/Gray)
-    const yLine = doc.y;
-    doc.lineWidth(2).strokeColor("#EAB308").moveTo(40, yLine).lineTo(555, yLine).stroke();
-    doc.lineWidth(2).strokeColor("#22C55E").moveTo(40, yLine + 3).lineTo(555, yLine + 3).stroke();
-
-    doc.moveDown(1.5);
-
-    // Title
-    doc
-      .fontSize(12)
-      .font("Helvetica-Bold")
-      .fillColor("#000000")
-      .text(`ABSENSI ACARA ${eventTitle.toUpperCase()}`, { align: "center" });
-
-    doc.moveDown(1);
-
-    // Table Setup
-    const startX = 40;
-    let currentY = doc.y;
-
-    // Define Columns based on Category
-    // MAHASISWA: No (30), Nama Lengkap (180), NIM (80), Prodi (95), Ttd (90) = 475
-    // UMUM: No (30), Nama Lengkap (200), Instansi (155), Ttd (90) = 475
-    const isMhs = category === "MAHASISWA";
-    const headers = isMhs
-      ? ["No", "Nama Lengkap", "NIM", "Prodi", "Ttd"]
-      : ["No", "Nama Lengkap", "Instansi / Asal Sekolah / Kampus", "Ttd"];
-
-    const colWidths = isMhs ? [30, 180, 80, 95, 90] : [30, 200, 155, 90];
-
-    const drawHeader = () => {
-      doc.rect(startX, currentY, 475, 25).fillAndStroke("#D1E7DD", "#000000");
-
-      let xPos = startX;
-      doc.fillColor("#000000").fontSize(10).font("Helvetica-Bold");
-
-      headers.forEach((header, idx) => {
-        doc.text(header, xPos + 5, currentY + 7, {
-          width: colWidths[idx] - 10,
-          align: idx === 0 ? "center" : "left",
-        });
-        xPos += colWidths[idx];
-      });
-
-      currentY += 25;
-    };
-
-    drawHeader();
-
-    // Draw Rows (Include empty rows up to 20 if less than 20)
-    const rowCount = Math.max(registrations.length, 20);
-
-    for (let i = 0; i < rowCount; i++) {
-      if (currentY > 750) {
-        doc.addPage();
-        currentY = 40;
-        drawHeader();
-      }
-
-      const item = registrations[i] || {};
-      const noStr = `${i + 1}.`;
-      const ttdStr = `${i + 1}.`;
-      const ttdIndent = i % 2 === 1 ? 40 : 5; // Zig-zag signature layout matching template
-
-      doc.rect(startX, currentY, 475, 24).strokeColor("#000000").lineWidth(0.5).stroke();
-
-      let xPos = startX;
-      doc.fillColor("#000000").fontSize(9).font("Helvetica");
-
-      // Column 0: No
-      doc.text(`${i + 1}`, xPos, currentY + 7, {
-        width: colWidths[0],
-        align: "center",
-      });
-      xPos += colWidths[0];
-
-      // Column 1: Nama Lengkap
-      doc.text(item.name || "", xPos + 5, currentY + 7, {
-        width: colWidths[1] - 10,
-        align: "left",
-      });
-      xPos += colWidths[1];
-
-      if (isMhs) {
-        // Column 2: NIM
-        doc.text(item.nim || "-", xPos + 5, currentY + 7, {
-          width: colWidths[2] - 10,
-          align: "left",
-        });
-        xPos += colWidths[2];
-
-        // Column 3: Prodi
-        doc.text(item.prodi || "-", xPos + 5, currentY + 7, {
-          width: colWidths[3] - 10,
-          align: "left",
-        });
-        xPos += colWidths[3];
-      } else {
-        // Column 2: Instansi
-        doc.text(item.institution || item.class || "-", xPos + 5, currentY + 7, {
-          width: colWidths[2] - 10,
-          align: "left",
-        });
-        xPos += colWidths[2];
-      }
-
-      // Column Ttd (Zig Zag)
-      doc.fontSize(8).text(ttdStr, xPos + ttdIndent, currentY + 6, {
-        width: colWidths[colWidths.length - 1] - ttdIndent,
-        align: "left",
-      });
-
-      currentY += 24;
-    }
-
-    doc.end();
-  });
-};
-
-const generateDocxAbsensi = async (
-  eventTitle: string,
-  registrations: any[],
-  category: "MAHASISWA" | "UMUM"
-): Promise<Buffer> => {
-  const isMhs = category === "MAHASISWA";
-  const rowCount = Math.max(registrations.length, 20);
-
-  const headerCells = isMhs
-    ? ["No", "Nama Lengkap", "NIM", "Prodi", "Ttd"]
-    : ["No", "Nama Lengkap", "Instansi / Asal Sekolah / Kampus", "Ttd"];
-
-  const colWidths = isMhs ? [600, 3000, 1500, 2000, 1900] : [600, 3500, 3000, 1900];
-
-  const tableRows = [
-    // Header Row
-    new TableRow({
-      children: headerCells.map(
-        (text, idx) =>
-          new TableCell({
-            children: [
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text, bold: true, size: 20 })],
-              }),
-            ],
-            shading: { fill: "D1E7DD" },
-            width: { size: colWidths[idx], type: WidthType.DXA },
-          })
-      ),
-    }),
-  ];
-
-  for (let i = 0; i < rowCount; i++) {
-    const item = registrations[i] || {};
-    const ttdIndent = i % 2 === 1 ? "      " : "";
-    const cells = [
-      new TableCell({
-        children: [
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: `${i + 1}`, size: 18 })],
-          }),
-        ],
-        width: { size: colWidths[0], type: WidthType.DXA },
-      }),
-      new TableCell({
-        children: [
-          new Paragraph({
-            children: [new TextRun({ text: item.name || "", size: 18 })],
-          }),
-        ],
-        width: { size: colWidths[1], type: WidthType.DXA },
-      }),
-    ];
-
-    if (isMhs) {
-      cells.push(
-        new TableCell({
-          children: [
-            new Paragraph({
-              children: [new TextRun({ text: item.nim || "-", size: 18 })],
-            }),
-          ],
-          width: { size: colWidths[2], type: WidthType.DXA },
-        }),
-        new TableCell({
-          children: [
-            new Paragraph({
-              children: [new TextRun({ text: item.prodi || "-", size: 18 })],
-            }),
-          ],
-          width: { size: colWidths[3], type: WidthType.DXA },
-        })
-      );
-    } else {
-      cells.push(
-        new TableCell({
-          children: [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: item.institution || item.class || "-",
-                  size: 18,
-                }),
-              ],
-            }),
-          ],
-          width: { size: colWidths[2], type: WidthType.DXA },
-        })
-      );
-    }
-
-    // Ttd Cell
-    cells.push(
-      new TableCell({
-        children: [
-          new Paragraph({
-            children: [
-              new TextRun({ text: `${ttdIndent}${i + 1}.`, size: 16 }),
-            ],
-          }),
-        ],
-        width: { size: colWidths[colWidths.length - 1], type: WidthType.DXA },
-      })
-    );
-
-    tableRows.push(new TableRow({ children: cells }));
-  }
-
-  const doc = new Document({
-    sections: [
-      {
-        children: [
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({
-                text: "HIMPUNAN MAHASISWA TEKNIK INFORMATIKA",
-                bold: true,
-                size: 24,
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({
-                text: "UNIVERSITAS MUHAMMADIYAH TANGERANG",
-                bold: true,
-                size: 22,
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [
-              new TextRun({
-                text: "Jl. Perintis Kemerdekaan I No. 33 Kel. Babakan, Kec. Tangerang, Kota Tangerang, Banten 15118 | No. Telp: 085136392300 (Kominfo)\nwww.himtiumt.or.id",
-                size: 16,
-              }),
-            ],
-          }),
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            spacing: { after: 300 },
-            children: [
-              new TextRun({
-                text: `ABSENSI ACARA ${eventTitle.toUpperCase()}`,
-                bold: true,
-                size: 24,
-              }),
-            ],
-          }),
-          new Table({
-            rows: tableRows,
-            alignment: AlignmentType.CENTER,
-            width: { size: 9000, type: WidthType.DXA },
-          }),
-        ],
-      },
-    ],
-  });
-
-  return await Packer.toBuffer(doc);
+  return { buffer: docxBuffer, eventName: eventTitle };
 };
