@@ -61,6 +61,7 @@ model Lecturer {
   email       String?  @unique @db.VarChar(50)
   numberPhone String?  @map("number_phone") @db.VarChar(50)
   lesson      String?  @db.VarChar(50)
+  sintaId     String?  @map("sinta_id") @db.VarChar(50)
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamp(0)

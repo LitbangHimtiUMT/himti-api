@@ -20,8 +20,25 @@ import {
 import { AnggotaModelTypes, IFilterAnggota } from "./members.types";
 import { anggotaValidate } from "./members.validate";
 import { exportMembersToExcel } from "./members.export";
+import { prisma } from "../../config";
 
 dotenv.config();
+
+export const getGenerationsListService = async () => {
+  // "Angkatan aktif" = angkatan yang punya minimal 1 anggota isActive: true.
+  // Ini lebih akurat daripada Generation.isActive (yang di DB semuanya true).
+  const generations = await prisma.generation.findMany({
+    where: {
+      isActive: true,
+            member: {
+        some: { isActive: true },
+      },
+    },
+    select: { id: true, year: true },
+    orderBy: { year: "asc" },
+  });
+  return { data: generations };
+};
 
 export const createAnggotaService = async ({
   name,

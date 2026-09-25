@@ -11,6 +11,7 @@ import {
   getMemberByIdService,
   updateAnggotaService,
   exportMembersService,
+  getGenerationsListService,
 } from "./members.service";
 import { AnggotaModelTypes } from "./members.types";
 
@@ -36,15 +37,24 @@ export const getMemberController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { page, perPage, search, angkatan, generationId, status } = req.query;
+  const { page, perPage, search, angkatan, year, generationId, status, isActive } = req.query;
+
+  // Support both `angkatan` (legacy) and `year` (public) query params.
+  const resolvedYear = (year as string) || (angkatan as string);
+
+  // Support both `status` and `isActive` (boolean-like) query params.
+  let resolvedStatus = status as string | undefined;
+  if (!resolvedStatus && typeof isActive !== "undefined") {
+    resolvedStatus = String(isActive) === "true" ? "active" : "nonactive";
+  }
 
   const anggota = await getMembersService({
     page: page ? Number(page) : undefined,
     perPage: perPage ? Number(perPage) : undefined,
     search: search as string,
-    year: angkatan as string,
+    year: resolvedYear,
     generationId: generationId as string,
-    status: status as string,
+    status: resolvedStatus,
   });
 
   if (anggota instanceof ErrorApp) {
@@ -126,6 +136,25 @@ export const getMemberByIdController = async (
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.ANGGOTA.GET,
     member
+  );
+};
+
+export const getGenerationsListController = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const result = await getGenerationsListService();
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.ANGKATAN.GET,
+    result.data
   );
 };
 

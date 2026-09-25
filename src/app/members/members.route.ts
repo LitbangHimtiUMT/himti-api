@@ -9,6 +9,7 @@ import {
   getMemberController,
   updateMemberController,
   exportMembersController,
+  getGenerationsListController,
 } from "./members.controller";
 import { createMemberSchema } from "./members.request";
 
@@ -20,7 +21,12 @@ route.post(
   validateRequest(createMemberSchema),
   CatchWrapper(createMemberController)
 );
-route.get("/", verifyToken, CatchWrapper(getMemberController));
+// Public endpoints (no auth) — digunakan website publik.
+// Ditempatkan sebelum "/:id" agar tidak ter-match sebagai id.
+route.get("/generations", CatchWrapper(getGenerationsListController));
+route.get("/public", CatchWrapper(getMemberController));
+
+route.get("/", CatchWrapper(getMemberController));
 route.get("/export/excel", verifyToken, CatchWrapper(exportMembersController));
 route.get("/:id", verifyToken, CatchWrapper(getMemberByIdController));
 route.delete("/:id", CatchWrapper(deleteMemberController));

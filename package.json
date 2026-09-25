@@ -95,6 +95,7 @@
     "pr.migrate": "npx prisma migrate dev",
     "pr.reset": "npx prisma migrate reset",
     "pr.push": "npx prisma db push",
-    "absensi:prepare-template": "node scripts/prepare-absensi-template.js"
+    "absensi:prepare-template": "node scripts/prepare-absensi-template.js",
+    "seed:dosen": "ts-node src/initial/seed-dosen.ts"
   }
 }

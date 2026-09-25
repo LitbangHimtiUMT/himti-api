@@ -12,13 +12,16 @@ import { createDosenSchema } from "./lecturers.request";
 
 const route = Router();
 
+// Public endpoint (no auth) — dipakai halaman publik website.
+route.get("/public", CatchWrapper(getLecturerController));
+
 route.post(
   "/",
   verifyToken,
   validateRequest(createDosenSchema),
   CatchWrapper(createLecturerController)
 );
-route.get("/", verifyToken, CatchWrapper(getLecturerController));
+route.get("/", CatchWrapper(getLecturerController));
 route.delete("/:id", verifyToken, CatchWrapper(deleteLecturerController));
 route.put("/:id", verifyToken, CatchWrapper(updateLecturerController));
 

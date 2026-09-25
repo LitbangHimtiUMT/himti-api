@@ -52,7 +52,7 @@ export const getDosen = async ({ page, perPage, search }: IFilterLecturer) => {
     ];
   }
 
-  return await prisma.lecturer.findMany({
+    return await prisma.lecturer.findMany({
     where: filter,
     orderBy: {
       createdAt: "desc",
@@ -64,7 +64,11 @@ export const getDosen = async ({ page, perPage, search }: IFilterLecturer) => {
       nidn: true,
       numberPhone: true,
       lesson: true,
-    },
+      // Cast: field sintaId baru ditambahkan, tapi Prisma Client sudah include
+      // setelah prisma generate. Kalau belum ke-generate, cast `as any` di
+      // return-nya juga tidak diperlukan karena select ini akan include otomatis.
+      sintaId: true,
+    } as any,
     take: perPage,
     skip: (Number(page) - 1) * Number(perPage),
   });
