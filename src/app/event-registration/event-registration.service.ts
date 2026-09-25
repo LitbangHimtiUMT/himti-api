@@ -526,7 +526,181 @@ const generateDocxFromTemplate = async (
   return Buffer.from(output);
 };
 
+// ----------------------------------------------------------------------------
+// PDF conversion strategy:
+//   1. If CLOUDCONVERT_API_KEY is set -> use CloudConvert (recommended for
+//      serverless / Vercel deployments where LibreOffice cannot be installed).
+//   2. Otherwise -> use local LibreOffice via libreoffice-convert (dev &
+//      self-hosted server deployments).
+// ----------------------------------------------------------------------------
+
+// Minimal typed subset of the CloudConvert v2 Job response we care about.
+type CloudConvertTask = {
+  id: string;
+  name: string;
+  operation: string;
+  status: string;
+  message?: string | null;
+  result?: {
+    form?: { url: string; parameters: Record<string, string> };
+    files?: Array<{ filename: string; url: string }>;
+  } | null;
+};
+type CloudConvertJob = {
+  id: string;
+  status: "waiting" | "processing" | "finished" | "error";
+  tasks: CloudConvertTask[];
+};
+
+const CLOUDCONVERT_API_BASE = "https://api.cloudconvert.com/v2";
+const CLOUDCONVERT_MAX_WAIT_MS = 60_000; // hard cap on total polling time
+const CLOUDCONVERT_POLL_INTERVAL_MS = 1_500;
+
+const convertDocxToPdfViaCloudConvert = async (
+  docxBuffer: Buffer,
+  apiKey: string
+): Promise<Buffer> => {
+  const authHeader = { Authorization: `Bearer ${apiKey}` };
+
+  // 1) Create a job: import-upload -> convert -> export-url
+  const createRes = await fetch(`${CLOUDCONVERT_API_BASE}/jobs`, {
+    method: "POST",
+    headers: {
+      ...authHeader,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      tasks: {
+        "import-doc": { operation: "import/upload" },
+        "convert-doc": {
+          operation: "convert",
+          input: "import-doc",
+          input_format: "docx",
+          output_format: "pdf",
+          engine: "libreoffice",
+        },
+        "export-doc": {
+          operation: "export/url",
+          input: "convert-doc",
+          inline: false,
+          archive_multiple_files: false,
+        },
+      },
+      tag: "absensi",
+    }),
+  });
+
+  if (!createRes.ok) {
+    const text = await createRes.text().catch(() => "");
+    throw new Error(
+      `CloudConvert job creation failed (HTTP ${createRes.status}): ${text.substring(
+        0,
+        300
+      )}`
+    );
+  }
+
+  const createJson = (await createRes.json()) as { data: CloudConvertJob };
+  const job = createJson.data;
+  const importTask = job.tasks.find((t) => t.name === "import-doc");
+  if (!importTask?.result?.form?.url) {
+    throw new Error(
+      "CloudConvert did not return an import upload form. Response: " +
+        JSON.stringify(job).substring(0, 300)
+    );
+  }
+
+  // 2) Upload the docx buffer using the provided multipart form target
+  const { url: uploadUrl, parameters } = importTask.result.form;
+  const uploadForm = new FormData();
+  for (const [k, v] of Object.entries(parameters)) uploadForm.append(k, v);
+  uploadForm.append(
+    "file",
+    new Blob([new Uint8Array(docxBuffer)], {
+      type:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }),
+    "absensi.docx"
+  );
+  const uploadRes = await fetch(uploadUrl, {
+    method: "POST",
+    body: uploadForm,
+  });
+  if (!uploadRes.ok) {
+    const text = await uploadRes.text().catch(() => "");
+    throw new Error(
+      `CloudConvert file upload failed (HTTP ${uploadRes.status}): ${text.substring(
+        0,
+        300
+      )}`
+    );
+  }
+
+  // 3) Poll job status until finished
+  const started = Date.now();
+  let finalJob: CloudConvertJob | null = null;
+  while (Date.now() - started < CLOUDCONVERT_MAX_WAIT_MS) {
+    await new Promise((r) => setTimeout(r, CLOUDCONVERT_POLL_INTERVAL_MS));
+    const pollRes = await fetch(`${CLOUDCONVERT_API_BASE}/jobs/${job.id}`, {
+      headers: authHeader,
+    });
+    if (!pollRes.ok) continue;
+    const pollJson = (await pollRes.json()) as { data: CloudConvertJob };
+    if (pollJson.data.status === "finished") {
+      finalJob = pollJson.data;
+      break;
+    }
+    if (pollJson.data.status === "error") {
+      const failedTask = pollJson.data.tasks.find(
+        (t) => t.status === "error"
+      );
+      throw new Error(
+        `CloudConvert job failed: ${failedTask?.message ?? "unknown error"}`
+      );
+    }
+  }
+
+  if (!finalJob) {
+    throw new Error(
+      `CloudConvert job timed out after ${CLOUDCONVERT_MAX_WAIT_MS}ms`
+    );
+  }
+
+  // 4) Download the resulting PDF
+  const exportTask = finalJob.tasks.find((t) => t.name === "export-doc");
+  const fileUrl = exportTask?.result?.files?.[0]?.url;
+  if (!fileUrl) {
+    throw new Error("CloudConvert export task did not produce a file URL");
+  }
+  const fileRes = await fetch(fileUrl);
+  if (!fileRes.ok) {
+    throw new Error(
+      `CloudConvert result download failed (HTTP ${fileRes.status})`
+    );
+  }
+  const arrayBuf = await fileRes.arrayBuffer();
+  return Buffer.from(arrayBuf);
+};
+
 const convertDocxBufferToPdf = async (docxBuffer: Buffer): Promise<Buffer> => {
+  const cloudApiKey = process.env.CLOUDCONVERT_API_KEY?.trim();
+
+  // Preferred path for serverless / production: CloudConvert
+  if (cloudApiKey) {
+    try {
+      return await convertDocxToPdfViaCloudConvert(docxBuffer, cloudApiKey);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unknown CloudConvert error";
+      throw new ErrorApp(
+        `Failed to convert DOCX to PDF via CloudConvert. Verify CLOUDCONVERT_API_KEY is valid and has task.write / task.read scopes. Details: ${message}`,
+        500,
+        MESSAGE_CODE.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  // Local / self-hosted path: LibreOffice
   try {
     return await libreConvertAsync(docxBuffer, ".pdf", undefined);
   } catch (err) {
@@ -539,10 +713,11 @@ const convertDocxBufferToPdf = async (docxBuffer: Buffer): Promise<Buffer> => {
             "Windows install (winget): winget install -e --id TheDocumentFoundation.LibreOffice",
             "Default install path checked: C:\\Program Files\\LibreOffice\\program\\soffice.exe",
             "Or set env: LIBREOFFICE_PATH=C:\\path\\to\\soffice.exe",
+            "For serverless / Vercel: set CLOUDCONVERT_API_KEY instead.",
           ].join(" | ")
         : process.platform === "linux"
-        ? "LibreOffice was not found. Install with: sudo apt-get install -y libreoffice --no-install-recommends. Or set LIBREOFFICE_PATH=/path/to/soffice."
-        : "LibreOffice was not found. Install it or set the LIBREOFFICE_PATH env var to the soffice binary path.";
+        ? "LibreOffice was not found. On self-hosted: sudo apt-get install -y libreoffice --no-install-recommends. On serverless/Vercel: set CLOUDCONVERT_API_KEY env var to use CloudConvert."
+        : "LibreOffice was not found. Install it or set the LIBREOFFICE_PATH env var, or set CLOUDCONVERT_API_KEY for serverless environments.";
     throw new ErrorApp(
       `Failed to convert DOCX to PDF via LibreOffice. ${hint} Details: ${message}`,
       500,
