@@ -20,4 +20,20 @@ export const updateUserSchema = Joi.object({
   email: Joi.string().optional().email().messages({
     "string.email": MESSAGES.ERROR.INVALID.GLOBAL.EMAIL,
   }),
+  role: Joi.string()
+    .optional()
+    .valid("SUPER_ADMIN", "ADMIN", "USER", "ANGGOTA")
+    .messages({
+      "any.only": "Role must be one of SUPER_ADMIN, ADMIN, USER, ANGGOTA",
+    }),
+});
+
+export const updateUserRoleSchema = Joi.object({
+  role: Joi.string()
+    .required()
+    .valid("SUPER_ADMIN", "ADMIN", "USER", "ANGGOTA")
+    .messages({
+      "any.required": "Role is required",
+      "any.only": "Role must be one of SUPER_ADMIN, ADMIN, USER, ANGGOTA",
+    }),
 });

@@ -20,7 +20,9 @@ import {
   getUserWithoutMentorCountRepository,
   getUserWithoutMentorRepository,
   updateUser,
+  updateUserRole,
 } from "./user.repository";
+import { Role } from "@prisma/client";
 import { Query } from "../../interface/Query";
 
 export const getUsersService = async (query: IFilterUser) => {
@@ -83,6 +85,20 @@ export const updateUserService = async (
   }
 
   const result = await updateUser(userId, data);
+  return result;
+};
+
+export const updateUserRoleService = async (userId: string, role: Role) => {
+  const user = await getUserById(userId);
+  if (!user) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const result = await updateUserRole(userId, role);
   return result;
 };
 

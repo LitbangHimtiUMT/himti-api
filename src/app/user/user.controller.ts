@@ -11,6 +11,7 @@ import {
   getUsersService,
   getUserWithoutMentorService,
   updateUserService,
+  updateUserRoleService,
 } from "./user.service";
 
 export const getUsersController = async (
@@ -87,6 +88,27 @@ export const updateUserController = async (
     200,
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.USER_DATA.UPDATE
+  );
+};
+
+export const updateUserRoleController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.params;
+  const { role } = req.body;
+  const result = await updateUserRoleService(userId, role);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.USER_DATA.UPDATE,
+    result
   );
 };
 
