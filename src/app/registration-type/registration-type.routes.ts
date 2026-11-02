@@ -2,6 +2,8 @@ import { Router } from "express";
 import * as RegistrationTypeController from "./registration-type.controller";
 import { validateRequest } from "../../middleware/validate-request";
 import { CatchWrapper } from "../../utils/catch-wrapper";
+import { VerifyAdmin } from "../../middleware/verify-admin";
+import { upload } from "../../utils/upload-file-to-storage";
 import {
   createRegistrationTypeSchema,
   updateRegistrationTypeSchema,
@@ -16,6 +18,8 @@ router
   )
   .post(
     "/",
+    VerifyAdmin,
+    upload.single("image"),
     validateRequest(createRegistrationTypeSchema),
     CatchWrapper(RegistrationTypeController.createRegistrationType)
   )
@@ -23,11 +27,14 @@ router
   .get("/:id", CatchWrapper(RegistrationTypeController.getRegistrationTypeById))
   .put(
     "/:id",
+    VerifyAdmin,
+    upload.single("image"),
     validateRequest(updateRegistrationTypeSchema),
     CatchWrapper(RegistrationTypeController.updateRegistrationType)
   )
   .delete(
     "/:id",
+    VerifyAdmin,
     CatchWrapper(RegistrationTypeController.deleteRegistrationType)
   );
 

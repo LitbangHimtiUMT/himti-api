@@ -167,7 +167,12 @@ export const updateStrukturalService = async ({
       );
     }
     const jabatanIsAlready = await getStructuralByJabatan(jabatan as Jabatan);
-    if (jabatanIsAlready && jabatanIsAlready.id !== id) {
+    if (
+      jabatanIsAlready &&
+      jabatanIsAlready.id !== id &&
+      jabatanIsAlready.jabatan !== "KETUA_DEPARTMENT" &&
+      jabatanIsAlready.jabatan !== "SEKRETARIS"
+    ) {
       return new ErrorApp(
         MESSAGES.ERROR.ALREADY.JABATAN,
         400,

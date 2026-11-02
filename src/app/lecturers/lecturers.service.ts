@@ -50,17 +50,10 @@ export const getLecturerService = async ({
     getDosenCount({ search }),
   ]);
 
-  const meta = Meta(page, perPage, totalData);
+    const meta = Meta(page, perPage, totalData);
 
-  if (!dosens.length && !meta.totalPages && !meta.totalData) {
-    return new ErrorApp(
-      MESSAGES.ERROR.NOT_FOUND.DOSEN,
-      404,
-      MESSAGE_CODE.NOT_FOUND
-    );
-  }
-
-  return { data: dosens, meta };
+  // Return empty result instead of 404 when no data exists.
+  return { data: dosens || [], meta };
 };
 
 export const deleteLecturerService = async ({ id }: LecturerBodyDTO) => {

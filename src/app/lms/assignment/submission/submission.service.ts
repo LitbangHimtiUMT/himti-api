@@ -12,7 +12,13 @@ import {
   getSubmissionByIdRepository,
   updateStatusSubmission,
 } from "./submission.repository";
-import { getMentorByClassRepository } from "../../class-mentor/class-mentor.repository";
+import {
+  canManageClass,
+  classIdFromAssignment,
+  classIdFromSubmission,
+  requireClassAccess,
+  requireClassManage,
+} from "../../../../utils/lms-access";
 import {
   historyApproveFlag,
   historyRejectFlag,
@@ -20,7 +26,7 @@ import {
 import { getUserById } from "../../../authentication/auth.repository";
 import { rejectEmail } from "./submission.utility";
 
-export const getSubmissionByIdService = async (id: string) => {
+export const getSubmissionByIdService = async (id: string, userId?: string) => {
   const submission = await getSubmissionByIdRepository(id);
   if (!submission) {
     return new ErrorApp(
@@ -29,13 +35,36 @@ export const getSubmissionByIdService = async (id: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
+  if (userId) {
+    // Owner may read their own submission; managers may read any
+    // submission of their class. A participant who is not a manager
+    // and not the owner gets 403 (requireClassAccess alone would
+    // let any participant of the class read anyone's submission).
+    const classId = await classIdFromSubmission(id);
+    const denied = await requireClassAccess(userId, classId ?? "");
+    if (denied) return denied;
+    const isManager = await canManageClass(userId, classId ?? "");
+    if (!isManager && submission.userId !== userId) {
+      return new ErrorApp(
+        MESSAGES.ERROR.FORBIDDEN.ROLE,
+        403,
+        MESSAGE_CODE.FORBIDDEN
+      );
+    }
+  }
   submission.assignment.module;
   return getSubmissionMapper(submission as unknown as SubmissionData);
 };
 
 export const getSubmissionByAssignmentService = async (
-  assignmentId: string
+  assignmentId: string,
+  userId?: string
 ) => {
+  if (userId) {
+    const classId = await classIdFromAssignment(assignmentId);
+    const denied = await requireClassManage(userId, classId ?? "");
+    if (denied) return denied;
+  }
   const submission = await getSubmissionByAssignmentRepository(assignmentId, [
     SubmissionStatus.APPROVE,
     SubmissionStatus.REVIEW,
@@ -66,21 +95,12 @@ export const rejectSubmissionService = async (
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+  const denied = await requireClassManage(
+    userId,
+    submission.assignment?.module?.session.class.id ?? ""
+  );
+  if (denied) return denied;
   const classId = submission.assignment?.module?.session.class.id;
-  if (classId) {
-    const mentors = await getMentorByClassRepository(classId, {});
-    const isJoin = mentors.find((item) => item.userId === userId);
-    if (
-      userId !== submission?.assignment?.module?.session.class.createdBy &&
-      !isJoin
-    ) {
-      return new ErrorApp(
-        MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
-        403,
-        MESSAGE_CODE.FORBIDDEN
-      );
-    }
-  }
 
   const mentor = await getUserById(userId);
 
@@ -142,21 +162,12 @@ export const approveSubmissionService = async (
     );
   }
 
+  const denied = await requireClassManage(
+    userId,
+    submission.assignment?.module?.session.class.id ?? ""
+  );
+  if (denied) return denied;
   const classId = submission.assignment?.module?.session.class.id;
-  if (classId) {
-    const mentors = await getMentorByClassRepository(classId, {});
-    const isJoin = mentors.find((item) => item.userId === userId);
-    if (
-      userId !== submission?.assignment?.module?.session.class.createdBy &&
-      !isJoin
-    ) {
-      return new ErrorApp(
-        MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
-        403,
-        MESSAGE_CODE.FORBIDDEN
-      );
-    }
-  }
 
   const result = await updateStatusSubmission(
     submissionId,

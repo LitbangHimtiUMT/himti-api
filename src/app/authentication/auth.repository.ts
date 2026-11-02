@@ -137,3 +137,16 @@ export const userLogin = async (id: string, isLogin: boolean) => {
         }
     })
 }
+
+export const incrementOtpAttempts = async (id: string) => {
+    return await prisma.oTP.update({
+        where: {
+            id
+        },
+        data: {
+            attempts: {
+                increment: 1
+            }
+        }
+    })
+}

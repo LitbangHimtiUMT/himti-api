@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validateRequest } from "../../../middleware/validate-request";
 import {
-  decodeToken,
+  optionalAuth,
   RolesEnum,
   verifyRole,
   verifyToken,
@@ -29,9 +29,15 @@ import { inviteMentorSchema } from "../class-mentor/class-mentor.request";
 
 export const classRoute = Router();
 
+// Public catalog: optionalAuth sets a VERIFIED userId when a valid
+// token is present (so mentor/participant visibility still works),
+// and leaves it empty for guests (published classes only, decided by
+// the service). The old handlers trusted an unverified decode() and
+// a header secret here; both are removed.
 classRoute
-  .use(decodeToken)
-  .get("/", CatchWrapper(getClassController))
+  .get("/", optionalAuth, CatchWrapper(getClassController))
+  .get("/user", verifyToken, CatchWrapper(getClassUserController))
+  .get("/:classId", optionalAuth, CatchWrapper(getDetailClassController))
   .use(verifyToken)
   .post(
     "/invite",
@@ -51,7 +57,6 @@ classRoute
     CatchWrapper(upload.single("thumbnail")),
     CatchWrapper(updateClassController)
   )
-  .get("/user", CatchWrapper(getClassUserController))
   .post(
     "/join/invitation",
     validateRequest(joinInvitationClassSchema),
@@ -64,5 +69,4 @@ classRoute
     verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     CatchWrapper(publishClassController)
   )
-  .delete("/:classId", CatchWrapper(deleteClassessController))
-  .get("/:classId", CatchWrapper(getDetailClassController));
+  .delete("/:classId", CatchWrapper(deleteClassessController));

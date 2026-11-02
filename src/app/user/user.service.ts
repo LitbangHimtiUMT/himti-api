@@ -20,7 +20,9 @@ import {
   getUserWithoutMentorCountRepository,
   getUserWithoutMentorRepository,
   updateUser,
+  updateUserRole,
 } from "./user.repository";
+import { Role } from "@prisma/client";
 import { Query } from "../../interface/Query";
 
 export const getUsersService = async (query: IFilterUser) => {
@@ -34,7 +36,10 @@ export const getUsersService = async (query: IFilterUser) => {
   return { data: users, meta };
 };
 
-export const createUserService = async (body: UserRequestBodyDTO) => {
+export const createUserService = async (
+  body: UserRequestBodyDTO,
+  callerRole?: string
+) => {
   const existUser = await getUserByEmail(body.email);
   if (existUser) {
     return new ErrorApp(
@@ -46,9 +51,15 @@ export const createUserService = async (body: UserRequestBodyDTO) => {
 
   const hashPassword = await bcrypt.hash(body.password, 10);
 
+  // Previously every user created through this service became ADMIN,
+  // regardless of what was requested. Now: SUPER_ADMIN callers may
+  // assign any role, ADMIN callers may only create USER accounts
+  // (they cannot mint new admins), and the default is USER.
+  const role: Role =
+    callerRole === "SUPER_ADMIN" && body.role ? body.role : "USER";
   const user = await createUser({
     ...body,
-    role: "ADMIN",
+    role,
     password: hashPassword,
   });
   return user;
@@ -83,6 +94,20 @@ export const updateUserService = async (
   }
 
   const result = await updateUser(userId, data);
+  return result;
+};
+
+export const updateUserRoleService = async (userId: string, role: Role) => {
+  const user = await getUserById(userId);
+  if (!user) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+
+  const result = await updateUserRole(userId, role);
   return result;
 };
 

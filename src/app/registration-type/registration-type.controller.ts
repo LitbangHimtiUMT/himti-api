@@ -6,12 +6,22 @@ import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
 
 export const createRegistrationType = async (
-  req: Request,
+  req: Request & { file?: Express.Multer.File },
   res: Response,
   next: NextFunction
 ) => {
   try {
-    await RegistrationTypeService.create(req.body);
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.image = req.file;
+    }
+    if (typeof payload.year === "string") {
+      payload.year = parseInt(payload.year, 10);
+    }
+    if (typeof payload.isActive === "string") {
+      payload.isActive = payload.isActive === "true";
+    }
+    await RegistrationTypeService.create(payload);
     HandleResponse(
       res,
       201,
@@ -19,6 +29,7 @@ export const createRegistrationType = async (
       "Registration type created successfully"
     );
   } catch (error) {
+    console.error("Create Registration Type Error:", error);
     if (error instanceof ErrorApp) {
       next(error);
       return;
@@ -121,14 +132,24 @@ export const getRegistrationTypeById = async (
 };
 
 export const updateRegistrationType = async (
-  req: Request,
+  req: Request & { file?: Express.Multer.File },
   res: Response,
   next: NextFunction
 ) => {
   try {
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.image = req.file;
+    }
+    if (typeof payload.year === "string") {
+      payload.year = parseInt(payload.year, 10);
+    }
+    if (typeof payload.isActive === "string") {
+      payload.isActive = payload.isActive === "true";
+    }
     const updatedRegistrationType = await RegistrationTypeService.update(
       req.params.id,
-      req.body
+      payload
     );
     HandleResponse(
       res,

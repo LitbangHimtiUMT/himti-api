@@ -10,6 +10,8 @@ import {
   getCertificatesService,
 } from "./certificates.service";
 
+import { prisma } from "../../../config";
+
 export const generateCertificateController = async (
   req: RequestWithAccessToken,
   res: Response,
@@ -59,29 +61,61 @@ export const getFileCertificateController = async (
   res: Response,
   next: NextFunction
 ) => {
-  next
-  // const certificateData = {
-  //   studentName: req.body.studentName || 'John Doe',
-  //   courseName: req.body.courseName || 'Advanced TypeScript',
-  //   completionDate: req.body.completionDate || new Date().toLocaleDateString(),
-  //   certificateId: req.body.certificateId || `CERT-${Date.now()}`,
-  //   issuerName: req.body.issuerName,
-  //   additionalText: req.body.additionalText,
-  // };
+  // By-code only: the old by-id lookup let anyone enumerate
+  // certificate ids and download other students' certificates.
+  // The code is the unguessable verification token printed on the
+  // certificate itself, so this stays public for verification.
+  const { code } = req.query;
+
+  if (!code) {
+    next(new ErrorApp("Certificate code is required", 400, MESSAGE_CODE.BAD_REQUEST));
+    return;
+  }
+
+  const certificate = await prisma.certificate.findFirst({
+    where: {
+      code: code as string,
+    },
+    // Explicit selects: never load the full user row (it carries
+    // the password hash) for a public verification endpoint.
+    select: {
+      code: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      class: {
+        select: {
+          name: true,
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!certificate) {
+    next(new ErrorApp("Certificate not found", 404, MESSAGE_CODE.NOT_FOUND));
+    return;
+  }
+
   const certificateData = {
-    studentName: "Jane Doe",
-    courseName: "Advanced Web Development",
-    completionDate: new Date().toLocaleDateString("en-US", {
+    studentName: certificate.user.name,
+    courseName: certificate.class.name,
+    completionDate: new Date(certificate.createdAt).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     }),
-    certificateId: `CERT-${Date.now()}`,
-    issuerName: "Tech Education Institute",
-    hoursCompleted: 120,
-    instructorName: "Dr. John Smith",
-    additionalText:
-      "This certificate verifies the completion of all course requirements and final project assessment.",
+    certificateId: certificate.code,
+    issuerName: "HIMTI UMT",
+    instructorName: certificate.class.user.name,
+    additionalText: `This certificate verifies the completion of all course requirements for "${certificate.class.name}".`,
   };
 
   const pdfBytes = await generateCertificateAdvancedBuffer(certificateData);

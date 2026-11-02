@@ -14,8 +14,13 @@ import {
   getUsersController,
   getUserWithoutMentorController,
   updateUserController,
+  updateUserRoleController,
 } from "./user.controller";
-import { createUserSchema, updateUserSchema } from "./user.request";
+import {
+  createUserSchema,
+  updateUserSchema,
+  updateUserRoleSchema,
+} from "./user.request";
 
 const route = Router();
 
@@ -39,6 +44,12 @@ route
     verifyRole([RolesEnum.ADMIN, RolesEnum.SUPER_ADMIN]),
     validateRequest(updateUserSchema),
     CatchWrapper(updateUserController)
+  )
+  .patch(
+    "/:userId/role",
+    verifyRole([RolesEnum.SUPER_ADMIN]),
+    validateRequest(updateUserRoleSchema),
+    CatchWrapper(updateUserRoleController)
   )
 
   .delete("/", verifyToken, CatchWrapper(deleteUserController));

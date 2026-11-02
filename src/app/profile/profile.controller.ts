@@ -1,4 +1,4 @@
-import { NextFunction, type Request, type Response } from "express";
+import { NextFunction, type Response } from "express";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { HandleResponse } from "../../utils/handle-response";
 import { ErrorApp } from "../../utils/http-error";
@@ -13,12 +13,11 @@ import { RequestWithAccessToken } from "../../interface/Request";
 import { updateProfileSchema } from "./profile.request";
 
 export const getProfileController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const bearerToken = req.headers.authorization?.replace("Bearer ", "");
-  const profile = await getProfileService(bearerToken as string);
+  const profile = await getProfileService(req.userId as string);
 
   if (profile instanceof ErrorApp) {
     next(profile);
@@ -73,13 +72,12 @@ export const updateProfileController = async (
 };
 
 export const updatePasswordController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const bearerToken = req.headers.authorization?.replace("Bearer ", "");
   const { newPassword, oldPassword } = req.body;
-  const profile = await updatePasswordService(bearerToken as string, {
+  const profile = await updatePasswordService(req.userId as string, {
     newPassword,
     oldPassword,
   });

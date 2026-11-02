@@ -1,11 +1,10 @@
 import { NextFunction, type Request, type Response } from "express";
-import { TokenDecodeInterface } from "../interface";
-import { TokenExpiredError, decode, verify } from "jsonwebtoken";
+import { TokenExpiredError } from "jsonwebtoken";
 import { RequestWithAccessToken } from "../interface/Request";
-import { environment } from "../libs";
 import { MESSAGE_CODE } from "../utils/error-code";
 import { HandleResponse } from "../utils/handle-response";
 import { MESSAGES } from "../utils/messages";
+import { verifyAccessToken } from "../utils/auth-tokens";
 import { Role } from "@prisma/client";
 import { getUserById } from "../app/authentication/auth.repository";
 import { getMentorByUserIdRepository } from "../app/lms/mentor/mentor.repository";
@@ -21,175 +20,146 @@ export enum RolesEnum {
   USER = "USER",
 }
 
+const extractBearer = (req: Request): string | null => {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith("Bearer ")) return null;
+  return auth.replace("Bearer ", "");
+};
+
+const unauthorized = (res: Response, message: string) =>
+  HandleResponse(res, 401, MESSAGE_CODE.UNAUTHORIZED, message);
+
+/**
+ * JWT-only authentication. The old header-secret bypass was removed:
+ * a shared header is not user authentication, and the old code also
+ * trusted an unverified decoded payload when a header was present.
+ * Only a signature-verified access token, belonging to an existing
+ * user, sets req.userId.
+ */
 export const verifyToken = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const key = req.header(environment.HEADER_KEY) as string;
-  const auth = req.headers.authorization;
-
-  if (!key && !auth) {
-    return HandleResponse(
-      res,
-      403,
-      MESSAGE_CODE.FORBIDDEN,
-      MESSAGES.ERROR.UNAUTHORIZED.ACCESS
-    );
+  const token = extractBearer(req);
+  if (!token) {
+    return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN);
   }
-
-  if (key) {
-    if (atob(key) !== environment.SECRET_KEY) {
-      return HandleResponse(
-        res,
-        403,
-        MESSAGE_CODE.FORBIDDEN,
-        MESSAGES.ERROR.UNAUTHORIZED.ACCESS
-      );
+  let decoded;
+  try {
+    decoded = verifyAccessToken(token);
+  } catch (err) {
+    if (err instanceof TokenExpiredError) {
+      return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.EXPIRED);
     }
-    next()
-    return
+    return unauthorized(res, MESSAGES.ERROR.INVALID.AUTH);
   }
-
-  if (!auth) {
-    return HandleResponse(
-      res,
-      401,
-      MESSAGE_CODE.UNAUTHORIZED,
-      MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
-    );
+  if (!decoded?.id) {
+    return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
   }
-  const token = auth.replace("Bearer ", "");
-  const decodeToken = decode(token) as TokenDecodeInterface;
-  verify(token, environment.JWT_SECRET as string, async (err: unknown) => {
-    if (err) {
-      if (err instanceof TokenExpiredError) {
-        return HandleResponse(
-          res,
-          401,
-          MESSAGE_CODE.UNAUTHORIZED,
-          MESSAGES.ERROR.UNAUTHORIZED.EXPIRED
-        );
-      }
-      if (!(decodeToken as TokenDecodeInterface)?.id) {
-        return HandleResponse(
-          res,
-          401,
-          MESSAGE_CODE.UNAUTHORIZED,
-          MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
-        );
-      }
-      return HandleResponse(
-        res,
-        401,
-        MESSAGE_CODE.UNAUTHORIZED,
-        MESSAGES.ERROR.INVALID.AUTH
-      );
-    }
-    const user = await getUserById(decodeToken.id);
-    if (!user) {
-      return HandleResponse(
-        res,
-        401,
-        MESSAGE_CODE.UNAUTHORIZED,
-        MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
-      );
-    }
-    (req as RequestWithAccessToken).userId = decodeToken?.id;
-    next();
-  });
+  const user = await getUserById(decoded.id);
+  if (!user) {
+    return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
+  }
+  (req as RequestWithAccessToken).userId = decoded.id;
+  next();
 };
 
-export const decodeToken = async (
+/**
+ * Optional verified identity, for public catalog routes (class list /
+ * detail). No token -> anonymous (published classes only, decided by
+ * the service). A present but invalid/expired token is rejected, so a
+ * forged token can never spoof another user's visibility. This
+ * replaces the old custom class handlers that trusted decode() and
+ * the header secret.
+ */
+export const optionalAuth = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.headers.authorization) {
-    return HandleResponse(
-      res,
-      401,
-      MESSAGE_CODE.UNAUTHORIZED,
-      MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
-    );
+  const token = extractBearer(req);
+  if (!token) {
+    next();
+    return;
   }
-  const token = req.headers.authorization.replace("Bearer ", "");
-  const decodeToken = decode(token) as TokenDecodeInterface;
-
-  (req as RequestWithAccessToken).userId = decodeToken?.id;
+  let decoded;
+  try {
+    decoded = verifyAccessToken(token);
+  } catch (err) {
+    if (err instanceof TokenExpiredError) {
+      return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.EXPIRED);
+    }
+    return unauthorized(res, MESSAGES.ERROR.INVALID.AUTH);
+  }
+  if (!decoded?.id) {
+    return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
+  }
+  const user = await getUserById(decoded.id);
+  if (!user) {
+    return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
+  }
+  (req as RequestWithAccessToken).userId = decoded.id;
   next();
 };
 
+/**
+ * Role gate with verified identity.
+ *
+ * Allowed iff: user.role is in the requested list, OR the requested
+ * list contains MENTOR and the user has a mentor record. The old code
+ * passed the first check for ANY role whenever the list contained
+ * MENTOR, which let ordinary users through mentor/admin gates.
+ * When access comes via the mentor record, req.mentorId is set.
+ */
 export const verifyRole =
   (roles?: Roles) =>
   async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.headers.authorization) {
-      return HandleResponse(
-        res,
-        401,
-        MESSAGE_CODE.UNAUTHORIZED,
-        MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
-      );
+    const token = extractBearer(req);
+    if (!token) {
+      return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN);
     }
-    const token = req.headers.authorization.replace("Bearer ", "");
-    const decodeToken = decode(token) as TokenDecodeInterface;
-    verify(token, environment.JWT_SECRET as string, async (err: unknown) => {
-      if (err) {
-        if (err instanceof TokenExpiredError) {
-          return HandleResponse(
-            res,
-            401,
-            MESSAGE_CODE.UNAUTHORIZED,
-            MESSAGES.ERROR.UNAUTHORIZED.EXPIRED
-          );
+    let decoded;
+    try {
+      decoded = verifyAccessToken(token);
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.EXPIRED);
+      }
+      return unauthorized(res, MESSAGES.ERROR.INVALID.AUTH);
+    }
+    if (!decoded?.id) {
+      return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
+    }
+    const user = await getUserById(decoded.id);
+    if (!user) {
+      return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
+    }
+    if (roles?.length) {
+      const roleMatches = roles.includes(user.role as Role | Mentor);
+      let mentorMatches = false;
+      if (!roleMatches && roles.includes("MENTOR")) {
+        const mentor = await getMentorByUserIdRepository(user.id);
+        if (mentor) {
+          mentorMatches = true;
+          (req as RequestWithAccessToken).mentorId = mentor.id;
         }
-        if (!(decodeToken as TokenDecodeInterface)?.id) {
-          return HandleResponse(
-            res,
-            401,
-            MESSAGE_CODE.UNAUTHORIZED,
-            MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
-          );
+      } else if (roles.includes("MENTOR")) {
+        // Role already matched, but still expose mentorId when present.
+        const mentor = await getMentorByUserIdRepository(user.id);
+        if (mentor) {
+          (req as RequestWithAccessToken).mentorId = mentor.id;
         }
+      }
+      if (!roleMatches && !mentorMatches) {
         return HandleResponse(
           res,
-          401,
-          MESSAGE_CODE.UNAUTHORIZED,
-          MESSAGES.ERROR.INVALID.AUTH
+          403,
+          MESSAGE_CODE.FORBIDDEN,
+          MESSAGES.ERROR.FORBIDDEN.ROLE
         );
       }
-      const user = await getUserById(decodeToken.id);
-      if (!user) {
-        return HandleResponse(
-          res,
-          401,
-          MESSAGE_CODE.UNAUTHORIZED,
-          MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
-        );
-      }
-      if (roles?.length) {
-        if (!roles.includes(user.role) && !roles.includes("MENTOR")) {
-          return HandleResponse(
-            res,
-            403,
-            MESSAGE_CODE.FORBIDDEN,
-            MESSAGES.ERROR.FORBIDDEN.ROLE
-          );
-        }
-        if (roles.includes("MENTOR") && !roles.includes(user.role)) {
-          const mentor = await getMentorByUserIdRepository(user.id);
-          if (!mentor) {
-            return HandleResponse(
-              res,
-              403,
-              MESSAGE_CODE.FORBIDDEN,
-              MESSAGES.ERROR.FORBIDDEN.ROLE
-            );
-          }
-          (req as RequestWithAccessToken).mentorId = mentor?.id;
-        }
-      }
-      (req as RequestWithAccessToken).userId = decodeToken?.id;
-      next();
-    });
+    }
+    (req as RequestWithAccessToken).userId = decoded.id;
+    next();
   };

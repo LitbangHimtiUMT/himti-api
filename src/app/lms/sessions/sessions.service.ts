@@ -31,11 +31,17 @@ import {
   RemoveFileFromStorage,
 } from "../../../utils/upload-file-to-storage";
 import { environment } from "../../../libs";
+import {
+  requireClassAccess,
+  requireClassManage,
+} from "../../../utils/lms-access";
 
 export const createSessionService = async (
   { name, classId }: CreateSessionBodyRequest,
   userId: string
 ) => {
+  const denied = await requireClassManage(userId, classId);
+  if (denied) return denied;
   const validate = await createSessionValidate({
     classId,
     name,
@@ -66,6 +72,8 @@ export const updateSessionService = async (
   userId: string
 ) => {
   const session = await getDetailSession(sessionId);
+  const denied = await requireClassManage(userId, session?.class?.id ?? "");
+  if (denied) return denied;
 
   if (!session) {
     return new ErrorApp(
@@ -100,6 +108,8 @@ export const getSessionsByClassService = async (
   userId: string
 ) => {
   const { page = "1", perPage = "10" } = query;
+  const denied = await requireClassAccess(userId, (query as Query & { classId?: string }).classId ?? "");
+  if (denied) return denied;
   const [sessions, totalData] = await Promise.all([
     getSessionsRepository(query, userId),
     getSessionsCountRepository(query),
@@ -113,8 +123,12 @@ export const getSessionsByClassService = async (
   };
 };
 
-export const getSessionService = async (sessionId: string) => {
+export const getSessionService = async (sessionId: string, userId?: string) => {
   const session = await getDetailSession(sessionId);
+  if (userId) {
+    const denied = await requireClassAccess(userId, session?.class?.id ?? "");
+    if (denied) return denied;
+  }
 
   if (!session) {
     return new ErrorApp(
@@ -129,6 +143,8 @@ export const getSessionService = async (sessionId: string) => {
 
 export const deleteSessionService = async (sessionId: string, userId: string) => {
   const session = await getDetailSession(sessionId);
+  const denied = await requireClassManage(userId, session?.class?.id ?? "");
+  if (denied) return denied;
 
   if (!session) {
     return new ErrorApp(

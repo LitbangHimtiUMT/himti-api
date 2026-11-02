@@ -184,9 +184,23 @@ export const updateUser = async (
     data: {
       name: ReturnValue<string>(data.name as string),
       email: ReturnValue<string>(data.email as string),
+      ...(data.role ? { role: data.role } : {}),
     },
     select: {
       id: true,
+    },
+  });
+};
+
+export const updateUserRole = async (userId: string, role: Role) => {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: { role },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
     },
   });
 };

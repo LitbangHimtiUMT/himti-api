@@ -8,5 +8,7 @@ export interface HistoryQuery extends Query {
 }
 
 export interface HistoryData extends History {
-    user: User | null
+    // Narrowed on purpose: the repository selects only these user
+    // fields (never the password hash) for history listings.
+    user: Pick<User, "id" | "name" | "email" | "photo" | "role"> | null;
 }

@@ -23,13 +23,19 @@ export const findAllPotentialUsers = async () => {
           company: true,
           experienceYear: true,
           isActive: true,
+          summary: true,
+          skills: true,
+          projects: true,
+          education: true,
+          portfolioUrl: true,
+          resumeUrl: true,
         },
       },
     },
   });
 };
 
-export const createPotentialUser = async (data: CreatePotentialUserDTO) => {
+export const createPotentialUser = async (data: any) => {
   return await prisma.potentialUsers.create({
     data,
   });

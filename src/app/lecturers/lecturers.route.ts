@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
-import { verifyToken } from "../../middleware/verify-token";
+import { VerifyAdmin } from "../../middleware/verify-admin";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createLecturerController,
@@ -12,14 +12,17 @@ import { createDosenSchema } from "./lecturers.request";
 
 const route = Router();
 
+// Public endpoint (no auth) — dipakai halaman publik website.
+route.get("/public", CatchWrapper(getLecturerController));
+
 route.post(
   "/",
-  verifyToken,
+  VerifyAdmin,
   validateRequest(createDosenSchema),
   CatchWrapper(createLecturerController)
 );
-route.get("/", verifyToken, CatchWrapper(getLecturerController));
-route.delete("/:id", verifyToken, CatchWrapper(deleteLecturerController));
-route.put("/:id", verifyToken, CatchWrapper(updateLecturerController));
+route.get("/", CatchWrapper(getLecturerController));
+route.delete("/:id", VerifyAdmin, CatchWrapper(deleteLecturerController));
+route.put("/:id", VerifyAdmin, CatchWrapper(updateLecturerController));
 
 export default route;

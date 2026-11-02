@@ -46,7 +46,11 @@ export const strukturalValidate = async ({
     );
   }
   const jabatanIsAlready = await getStructuralByJabatan(jabatan);
-  if (jabatanIsAlready && jabatanIsAlready.jabatan !== "KETUA_DEPARTMENT") {
+  if (
+    jabatanIsAlready &&
+    jabatanIsAlready.jabatan !== "KETUA_DEPARTMENT" &&
+    jabatanIsAlready.jabatan !== "SEKRETARIS"
+  ) {
     return new ErrorApp(
       MESSAGES.ERROR.ALREADY.JABATAN,
       400,

@@ -28,6 +28,11 @@ export interface UserRequestBodyDTO {
 export interface UpdateUserBodyRequest {
     name?: string
     email?: string
+    role?: Role
+}
+
+export interface UpdateUserRoleBodyRequest {
+    role: Role
 }
 
 export interface UserDTO {

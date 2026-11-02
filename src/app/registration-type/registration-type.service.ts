@@ -1,20 +1,63 @@
 import { RegistrationEventTypeEnum } from "@prisma/client";
+import sharp from "sharp";
 import * as registrationTypeRepository from "./registration-type.repository";
 import {
   RegistrationTypeCreationDTO,
   RegistrationTypeDTO,
   RegistrationTypeQuery,
+  RegistrationTypeUpdateDTO,
 } from "./registration-type.interface";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { registrationTypeMapper } from "./registration-type.mapper";
 import { Meta } from "../../utils/meta";
+import {
+  BUCKET_FOLDER,
+  FileType,
+  UploadFileToStorage,
+} from "../../utils/upload-file-to-storage";
+import { environment } from "../../libs";
 
 export const create = async (
-  data: RegistrationTypeCreationDTO
+  data: RegistrationTypeCreationDTO & { image?: Express.Multer.File | string }
 ): Promise<RegistrationTypeDTO> => {
+  let filename: string | undefined;
+  const { image, ...rest } = data;
+  let finalImage: string | undefined;
+
+  if (image) {
+    if (typeof image !== "string") {
+      const file = image as Express.Multer.File;
+      if (file.size > 3 * 1024 * 1024) {
+        throw new ErrorApp(
+          "Image size exceeds 3MB",
+          400,
+          MESSAGE_CODE.BAD_REQUEST
+        );
+      }
+      filename = `${file.originalname.replace(
+        FileType[file.mimetype] || "",
+        ""
+      )} - ${+new Date()}.webp`;
+      const quality = file.size > 5 * 1024 * 1024 ? 75 : 100;
+      const compress = await sharp(file.buffer).webp({ quality }).toBuffer();
+      await UploadFileToStorage({
+        Bucket: environment.STORAGE.BUCKET,
+        Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.registrationType}/${filename}`,
+        Body: compress,
+        ContentType: "image/webp",
+      });
+      finalImage = filename;
+    } else {
+      finalImage = image;
+    }
+  }
+
   const registrationType =
-    await registrationTypeRepository.createRegistrationTypeRepository(data);
+    await registrationTypeRepository.createRegistrationTypeRepository({
+      ...rest,
+      ...(finalImage ? { image: finalImage } : {}),
+    });
   return registrationTypeMapper(registrationType);
 };
 
@@ -46,10 +89,50 @@ export const getById = async (id: string): Promise<RegistrationTypeDTO> => {
 
 export const update = async (
   id: string,
-  data: Partial<RegistrationTypeCreationDTO>
+  data: RegistrationTypeUpdateDTO & { image?: Express.Multer.File | string }
 ): Promise<RegistrationTypeDTO> => {
+  let filename: string | undefined;
+  const { image, ...rest } = data;
+  let finalImage: string | undefined;
+
+  if (image) {
+    if (typeof image !== "string") {
+      const file = image as Express.Multer.File;
+      if (file.size > 3 * 1024 * 1024) {
+        throw new ErrorApp(
+          "Image size exceeds 3MB",
+          400,
+          MESSAGE_CODE.BAD_REQUEST
+        );
+      }
+      filename = `${file.originalname.replace(
+        FileType[file.mimetype] || "",
+        ""
+      )} - ${+new Date()}.webp`;
+      const quality = file.size > 5 * 1024 * 1024 ? 75 : 100;
+      const compress = await sharp(file.buffer).webp({ quality }).toBuffer();
+      await UploadFileToStorage({
+        Bucket: environment.STORAGE.BUCKET,
+        Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.registrationType}/${filename}`,
+        Body: compress,
+        ContentType: "image/webp",
+      });
+      finalImage = filename;
+    } else {
+      finalImage = image;
+    }
+  }
+
+  const payloadToUpdate = {
+    ...rest,
+    ...(finalImage !== undefined ? { image: finalImage } : {}),
+  };
+
   const updatedRegistrationType =
-    await registrationTypeRepository.updateRegistrationTypeRepository(id, data);
+    await registrationTypeRepository.updateRegistrationTypeRepository(
+      id,
+      payloadToUpdate
+    );
   return registrationTypeMapper(updatedRegistrationType);
 };
 

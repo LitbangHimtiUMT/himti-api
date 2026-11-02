@@ -8,6 +8,8 @@ export const createRegistrationTypeSchema = Joi.object({
     .valid(...Object.keys(RegistrationEventTypeEnum))
     .required(),
   isActive: Joi.boolean().required(),
+  image: Joi.any().optional().allow(null, ""),
+  link: Joi.string().optional().allow(null, ""),
   eventId: Joi.string().optional().allow(null, ""),
 });
 
@@ -18,5 +20,7 @@ export const updateRegistrationTypeSchema = Joi.object({
     .valid(...Object.keys(RegistrationEventTypeEnum))
     .optional(),
   isActive: Joi.boolean().optional(),
+  image: Joi.any().optional().allow(null, ""),
+  link: Joi.string().optional().allow(null, ""),
   eventId: Joi.string().optional().allow(null, ""),
 });

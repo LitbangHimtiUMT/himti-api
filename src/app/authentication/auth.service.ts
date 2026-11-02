@@ -1,8 +1,12 @@
 import { HistoryModule, Role } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import jwt, { decode, TokenExpiredError, verify } from "jsonwebtoken";
-import { TokenDecodeInterface } from "../../interface";
+import { TokenExpiredError } from "jsonwebtoken";
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from "../../utils/auth-tokens";
 import { environment } from "../../libs";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { random } from "../../utils/generate-random-otp";
@@ -31,9 +35,10 @@ import {
   getUserByNIM,
   userLogin,
   verifiedOtp,
+  deleteOtp,
+  incrementOtpAttempts,
 } from "./auth.repository";
 import { Query } from "../../interface/Query";
-import { decryptAES } from "../../utils/decrypt";
 import {
   historyCreateFlag,
   historyLoginFlag,
@@ -232,21 +237,8 @@ export const loginService = async (data: LoginAuthBodyDTO, query: Query) => {
   //     MESSAGE_CODE.UNAUTHORIZED
   //   );
   // }
-  const token = jwt.sign(
-    {
-      id: user.id,
-    },
-    environment.JWT_SECRET as string,
-    { expiresIn: environment.JWT_EXPIRES as string | number }
-  );
-
-  const refreshToken = jwt.sign(
-    {
-      id: user.id,
-    },
-    `${environment.SECRET_KEY}${environment.JWT_SECRET}`,
-    { expiresIn: "7d" }
-  );
+  const token = signAccessToken(user.id);
+  const refreshToken = signRefreshToken(user.id);
 
   if (authType === "app") {
     if (fcmToken) {
@@ -309,13 +301,7 @@ export const loginAdminService = async ({
     );
   }
 
-  const token = jwt.sign(
-    {
-      id: user.id,
-    },
-    environment.JWT_SECRET as string,
-    { expiresIn: "3d" }
-  );
+  const token = signAccessToken(user.id);
 
   await historyLoginFlag({
     module: HistoryModule.AUTH,
@@ -347,7 +333,6 @@ export const requestOtpService = async (email: string) => {
   await sendOtp(user.email, user.name, randomOtp);
   const data = {
     key: otp.id,
-    otp: hashOtp,
     isVerified: otp.isVerified,
     expired,
   };
@@ -374,20 +359,30 @@ export const validateOtpService = async ({ key, otp }: ValidateOtpDTO) => {
     );
   }
 
-  const matchOtp = await bcrypt.compare(otp.toString(), findOtp.otp);
-
-  if (!matchOtp) {
+  const isExpired = new Date(findOtp.expired as Date) < new Date(Date.now());
+  if (isExpired) {
+    await deleteOtp(key);
     return new ErrorApp(
-      MESSAGES.ERROR.INVALID.OTP_NUMBER,
+      MESSAGES.ERROR.INVALID.OTP_EXPIRED,
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
   }
 
-  const isExpired = new Date(findOtp.expired as Date) < new Date(Date.now());
-  if (isExpired) {
+  const matchOtp = await bcrypt.compare(otp.toString(), findOtp.otp);
+
+  if (!matchOtp) {
+    const updatedOtp = await incrementOtpAttempts(key);
+    if (updatedOtp.attempts >= 3) {
+      await deleteOtp(key);
+      return new ErrorApp(
+        "Batas percobaan habis, silakan request OTP baru",
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
     return new ErrorApp(
-      MESSAGES.ERROR.INVALID.OTP_EXPIRED,
+      MESSAGES.ERROR.INVALID.OTP_NUMBER,
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
@@ -440,13 +435,16 @@ export const forgotPasswordService = async ({
 
   const hashPassword = await bcrypt.hash(password, 10);
   const response = await changePassword(user.id, hashPassword);
+  
+  await deleteOtp(key);
+
   return response;
 };
 
-export const logoutService = async (token: string) => {
-  const decodeToken = decode(token) as TokenDecodeInterface;
-  const id = decodeToken.id;
-  const user = await getUserById(id);
+export const logoutService = async (userId: string) => {
+  // Caller must be VerifyTokenWithoutExp: signature verified, expiry
+  // waived only for logout. No decode() of an unverified token here.
+  const user = await getUserById(userId);
   if (!user) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
@@ -468,86 +466,43 @@ export const logoutService = async (token: string) => {
   return response;
 };
 
-export const biometricAuthService = async (
-  encryptedEmail: string,
-  ivKey: string,
-  fcmToken?: string
-) => {
-  const email = decryptAES(
-    encryptedEmail,
-    ivKey,
-    environment.CRYPTO_SECRET_KEY
-  );
-  const user = await getUserByEmail(email);
-  if (!user) {
+export const refreshTokenService = async (token: string) => {
+  // Synchronous verification against the SAME derived refresh key
+  // used at login. The old code verified against a different key and
+  // discarded the verify() callback result, so any token whose
+  // payload carried an existing user id produced a fresh pair.
+  if (!token) {
     return new ErrorApp(
-      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
-      404,
-      MESSAGE_CODE.NOT_FOUND
-    );
-  }
-
-  if (user.role === "ADMIN" && !user.memberId) {
-    return new ErrorApp(
-      MESSAGES.ERROR.UNAUTHORIZED.ADMIN,
+      MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED,
       401,
       MESSAGE_CODE.UNAUTHORIZED
     );
   }
-
-  if (fcmToken) {
-    await createUserFCM(user.id, fcmToken as string);
-  }
-  await userLogin(user.id, true);
-
-  const token = jwt.sign(
-    {
-      id: user.id,
-    },
-    environment.JWT_SECRET as string,
-    { expiresIn: environment.JWT_EXPIRES as string | number }
-  );
-  const userInfo = {
-    name: user.name,
-    nim: user.nim,
-    role: user.role,
-  };
-  await historyLoginFlag({
-    module: HistoryModule.AUTH,
-    title: `New User Login (HIMTI APP) - ${user.name}`,
-    actionId: user.id,
-    createdBy: user.id,
-  });
-  return { access_token: token, user: userInfo };
-};
-
-export const refreshTokenService = async (token: string) => {
-  const decodeToken = decode(token) as TokenDecodeInterface;
-  verify(token, environment.JWT_SECRET as string, async (err: unknown) => {
-    if (err) {
-      if (err instanceof TokenExpiredError) {
-        return new ErrorApp(
-          MESSAGES.ERROR.UNAUTHORIZED.EXPIRED,
-          401,
-          MESSAGE_CODE.UNAUTHORIZED
-        );
-      }
-      if (!decodeToken?.id) {
-        return new ErrorApp(
-          MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED,
-          401,
-          MESSAGE_CODE.UNAUTHORIZED
-        );
-      }
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(token);
+  } catch (err) {
+    if (err instanceof TokenExpiredError) {
       return new ErrorApp(
-        MESSAGES.ERROR.INVALID.AUTH,
+        MESSAGES.ERROR.UNAUTHORIZED.EXPIRED,
         401,
         MESSAGE_CODE.UNAUTHORIZED
       );
     }
-  });
-
-  const user = await getUserById(decodeToken.id);
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.AUTH,
+      401,
+      MESSAGE_CODE.UNAUTHORIZED
+    );
+  }
+  if (!decoded?.id) {
+    return new ErrorApp(
+      MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED,
+      401,
+      MESSAGE_CODE.UNAUTHORIZED
+    );
+  }
+  const user = await getUserById(decoded.id);
   if (!user) {
     return new ErrorApp(
       MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED,
@@ -555,25 +510,10 @@ export const refreshTokenService = async (token: string) => {
       MESSAGE_CODE.UNAUTHORIZED
     );
   }
-
-  const accessToken = jwt.sign(
-    {
-      id: user.id,
-    },
-    environment.JWT_SECRET as string,
-    { expiresIn: environment.JWT_EXPIRES as string | number }
-  );
-
-  const refreshToken = jwt.sign(
-    {
-      id: user.id,
-    },
-    `${environment.SECRET_KEY}${environment.JWT_SECRET}`,
-    { expiresIn: "7d" }
-  );
-
+  const accessToken = signAccessToken(user.id);
+  const refreshToken = signRefreshToken(user.id);
   return {
     accessToken,
     refreshToken,
   };
-};
+}

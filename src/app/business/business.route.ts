@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { CatchWrapper } from "../../utils/catch-wrapper";
+import { VerifyAdmin } from "../../middleware/verify-admin";
 
 import { validateRequest } from "../../middleware/validate-request";
 import {
@@ -17,13 +18,14 @@ const route = Router();
 route.get("/merchandise", CatchWrapper(getMerchandiseController));
 route.post(
   "/merchandise",
-  // verifyToken,
+  VerifyAdmin,
   validateRequest(createBusinessSchema),
   CatchWrapper(createMerchandiseController)
 );
 
 route.post(
   "/:businessId",
+  VerifyAdmin,
   upload.single("image"),
   CatchWrapper(uploadImageBusinessController)
 );

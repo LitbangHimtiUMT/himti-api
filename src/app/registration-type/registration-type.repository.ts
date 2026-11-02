@@ -14,7 +14,9 @@ export const createRegistrationTypeRepository = async (
       type: data.type,
       year: data.year,
       isActive: typeof data.isActive === "boolean" ? data.isActive : true,
-      eventId: data.eventId,
+      image: data.image || null,
+      link: data.link || null,
+      eventId: data.eventId && data.eventId.trim() !== "" ? data.eventId : null,
     },
   });
 };
@@ -71,9 +73,14 @@ export const updateRegistrationTypeRepository = async (
   id: string,
   data: Partial<RegistrationTypeCreationDTO>
 ) => {
+  const payload: any = { ...data };
+  if (typeof payload.eventId !== "undefined") {
+    payload.eventId =
+      payload.eventId && payload.eventId.trim() !== "" ? payload.eventId : null;
+  }
   return await prisma.registrationType.update({
     where: { id },
-    data,
+    data: payload,
   });
 };
 

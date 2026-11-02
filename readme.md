@@ -1,386 +1,158 @@
-
 # HIMTI API
 
-Important data regarding HIMTI
+API backend HIMTI UMT. Express + TypeScript + Prisma + PostgreSQL,
+di-deploy di Vercel. Dipakai tiga klien: web utama, CMS, dan LMS.
 
-Base URL
-```bash
-  https://himti-api.vercel.app
-```
+Base URL production:
 
-### Authentication 
-Register
 ```bash
-  {
-    path: "/auth/register",
-    method: POST
-    body: {
-        name: "Example",
-        email: "example@example.com",
-        password: "example123"
-    }
-  }
+https://himti-api.vercel.app
 ```
 
-Login
+Dokumen di repo ini hanya file ini. Tidak ada dokumen lain.
+
+## Menjalankan
+
 ```bash
-  {
-    path: "/auth/login",
-    method: POST
-    body: {
-        email: "example@example.com",
-        password: "example123"
-    }
-  }
-```
-```
-{
-    "status": 200,
-    "code": "SUCCESS",
-    "message": "User logged in successfully",
-    "data": {
-        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NjZlYjc3ZDc5MWNkMDA0ODhjZDc4ZCIsIm5hbWUiOiJNdWhhbW1hZCBGaWtyaSIsImVtYWlsIjoiTXVoZmlrcmlAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzE4MzY4NjIyfQ.s1tPLCzgX7XAPg-ZFAeEIy0-r7Kz8bMIdeTh7gTJh7g"
-    }
-}
+npm install
+npx prisma generate
+npm run dev
 ```
 
-### Angkatan 
-Get Angkatan
+Cek sebelum commit/push:
+
 ```bash
-  {
-    path: "/angkatan",
-    method: GET,
-    queryParams: {
-        page: 1 -> (default = 1),
-        perPage: 10 -> (default = 10),
-        search: 2020
-    }
-  }
-```
-With Query Params
-```bash
-  /angkatan?page=1&perPage=10&name=2020
+npm run build   # prisma generate && tsc
+npm run lint    # eslint ./src
+npx tsc --noEmit
 ```
 
-Create Angkatan
-```bash
-  {
-    path: "/angkatan",
-    method: POST
-    body: {
-        angkatan: 2023,
-        isActive: true  -> optional (default = true)
-    }
-  }
-```
+Struktur yang penting:
 
-Update Angkatan
-```bash
-  {
-    path: "/angkatan/:id",
-    method: PUT
-    body: {
-        angkatan: 2023,
-        isActive: true
-  }
-```
+- `src/index.ts` — entrypoint, CORS, helmet, rate limit.
+- `src/routes/index.ts` — mount semua modul.
+- `src/app/` — satu folder per modul: `authentication`, `profile`,
+  `members` (anggota), `lecturers` (dosen), `generations` (angkatan),
+  `struktural`, `prodi-structural`, `periode`, `event`, `sub-acara`,
+  `event-meeting`, `meetings`, `attendances` (absensi),
+  `event-registration`, `registration-type`, `business`, `achievements`
+  (prestasi), `history`, `notification`, `user-fcm`, `user`, `point`,
+  `contact-info`, `version`, `potential-users`, `potential-user-keys`,
+  `midtrans`, dan `lms/`.
+- `src/app/lms/` — kelas, sesi, modul, assignment, submission, peserta
+  kelas, mentor, kategori, transaksi, sertifikat, completed.
+- `src/middleware/` — `verify-token`, `verify-admin`,
+  `verify-super-admin`, `verify-token-without-exp`, `validate-request`.
+- `src/utils/` — helper auth, upload, mail, Firebase, pagination, dan lain-lain.
+- `prisma/schema.prisma` — model. `prisma/migrations/` — lihat peringatan
+  di bawah, jangan percaya folder ini mentah-mentah.
+- `ABSENSI.template.docx` — template runtime untuk export absensi
+  pendaftaran event (diisi data peserta oleh
+  `src/app/event-registration/event-registration.service.ts`).
+  `ABSENSI.docx` + `scripts/prepare-absensi-template.js` adalah sumber
+  pembuatan template itu, bukan dokumen.
+- `src/initial/seed-dosen.ts` (`npm run seed:dosen`) — seed dosen.
+- `vercel.json` — deploy Vercel. `tsconfig.json`, `eslint.config.mjs`,
+  `nodemon.json` — config build/lint/dev.
+- `.env.example` — contoh nama variabel saja, tanpa nilai. Jangan pernah
+  menulis nilai variabel ke repo, log, atau chat.
 
-Delete Angkatan
-```bash
-  {
-    path: "/angkatan/:id",
-    method: DELETE
-```
+## Auth
 
-### Anggota 
-Get Anggota
-```bash
-  {
-    path: "/anggota",
-    method: GET,
-    queryParams: {
-        page: 1 -> (default = 1),
-        perPage: 10 -> (default = 10),
-        name: "fikri"
-    }
-  }
-```
-With Query Params
-```bash
-  /anggota?page=1&perPage=10&name=fikri
-```
+JWT-only. Header rahasia legacy tidak lagi diterima sebagai auth di
+endpoint mana pun. Klien harus berhenti mengirimnya.
 
-Create Anggota
-```bash
-  {
-    path: "/anggota",
-    method: POST
-    body: {
-        nim: 22552012333 -> required,
-        name: "Muhammad Fikri" -> required,
-        angkatanId: "6666fd9be909b426c8aede32" -> required,
-        email: "muhfikriantoaji2@gmail.com" -> optional,
-        isActive: true -> optional (default = true)
-    }
-  }
-```
+- `verifyToken`: token access terverifikasi signature-nya dan user-nya ada.
+- `VerifyAdmin`: ADMIN atau SUPER_ADMIN. `VerifySuperAdmin`: SUPER_ADMIN saja.
+- `verifyRole`: role yang diminta, atau record mentor nyata untuk MENTOR.
+- Refresh: `POST /auth/refresh-token`, kontrak sama, verifikasi sinkron
+  terhadap kunci turunan yang sama agar token LMS yang beredar tetap jalan.
+  Kunci refresh dedicated baru adalah Fase 4, bersama forced re-login.
+- LMS memakai ownership per kelas: peserta hanya kelasnya, mentor hanya
+  kelas yang ia buat atau ampu, admin semua kelas
+  (`src/utils/lms-access.ts`).
+- Rate limit ada di auth dan pendaftaran event; OTP tetap dibatasi.
 
-Update Anggota
-```bash
-  {
-    path: "/anggota/:id",
-    method: PUT
-    body: {
-        nim: 22552012333,
-        name: "Muhammad Fikri new",
-        angkatanId: "6666fd9be909b426c8aede32",
-        email: "muhfikriantoaji2@gmail.com",
-        isActive: false
-  }
-```
+Endpoint yang dimatikan, jangan diaktifkan lagi tanpa keputusan eksplisit:
 
-Delete Anggota
-```bash
-  {
-    path: "/anggota/:id",
-    method: DELETE
-```
+- `POST /initial` — dihapus dari routing.
+- `POST /seed-generation-2022` dan `/scheduling-notification-meeting` —
+  dihapus dari routing.
+- `POST /lms/transactions/callback` — stub 410. Pembuatan transaksi
+  Midtrans untuk kelas berbayar masih hidup
+  (`src/app/midtrans/midtrans.service.ts`); yang mati hanya callback-nya,
+  karena signature-nya tidak pernah diverifikasi.
+- `POST /auth/biometric` — stub 410, service dan controller-nya sudah
+  dihapus. Kembali hanya dengan second factor nyata.
 
-### Dosen 
-Get Dosen
-```bash
-  {
-    path: "/dosen",
-    method: GET,
-    queryParams: {
-        page: 1 -> (default = 1),
-        perPage: 10 -> (default = 10),
-        name: "fikri"
-    }
-  }
-```
-With Query Params
-```bash
-  /dosen?page=1&perPage=10&name=fikri
-```
+Endpoint baru, provisional: `/sub-acara`, model anak Event (nama, deskripsi,
+image, waktu, `isOpenAbsen`, `eventId`), CRUD admin + baca publik.
 
-Create Dosen
-```bash
-  {
-    path: "/dosen",
-    method: POST
-    body: {
-        nidn: 259525024 -> required, 
-        name: "Fikri" -> required, 
-        email: "fikri5@gmail.com" -> required, 
-        numberPhone: 8951212 -> required, 
-        mataKuliah: "Pemrograman Dasar" -> optional, 
-        isActive: true -> optional (default = true) 
-    }
-  }
-```
+Sertifikat: `GET /lms/certificates/file` hanya by-code (`?code=...`) +
+rate limit.
 
-Update Dosen
-```bash
-  {
-    path: "/dosen/:id",
-    method: PUT
-    body: {
-        nidn: 259525024, 
-        name: "Fikri", 
-        email: "fikri5@gmail.com", 
-        numberPhone: 8951212, 
-        mataKuliah: "Pemrograman Dasar", 
-        isActive: true
-  }
-```
+## Route, ringkas
 
-Delete Dosen
-```bash
-  {
-    path: "/dosen/:id",
-    method: DELETE
-```
+- Baca publik: prestasi, acara, dosen publik, anggota publik, generasi,
+  struktural baca, prodi-structural, periode, registration-type, business,
+  contact-info, version, katalog kelas LMS.
+- Tulis: admin, kecuali `POST /event-registration` (pendaftaran terbuka,
+  + rate limit dan validasi) dan endpoint auth dasar.
+- LMS: kelas, sesi, modul, assignment, submission, peserta, sertifikat
+  tunduk ownership per kelas, bukan cuma role. List peserta wajib manage
+  kelas. Self-enrol wajib kelas PUBLISH + harga 0 + anti-duplikat.
+- Semua route lain yang dulu telanjang kini bergate JWT atau admin.
+  Kalau ada route yang tidak jelas gate-nya, baca file route-nya langsung
+  — jangan asumsi publik.
 
+## Migrasi — baca ini sebelum jalanin apa pun
 
-### Struktural 
-Get Struktural
-```bash
-  {
-    path: "/struktural",
-    method: GET,
-    queryParams: {
-        page: 1 -> (default = 1),
-        perPage: 10 -> (default = 10),
-        name: "fikri"
-    }
-  }
-```
-With Query Params
-```bash
-  /struktural?page=1&perPage=10&name=fikri
-```
+**Peringatan keras: histori migrasi repo ini tidak lengkap.** Hanya ada
+satu migrasi awal (`20241110144914_initial_migration`), dan migrasi itu
+tidak membuat tabel `ticket_suport`, `classes`, `mentors`, dan banyak
+model lain. Model-model itu ditambahkan belakangan tanpa migrasi
+(kemungkinan lewat `db push`). Akibatnya, struktur database production
+tidak bisa dibuktikan hanya dari folder `prisma/migrations/`.
 
-Create Struktural
-```bash
-  {
-    path: "/struktural",
-    contentType: "multipart/form-data",
-    method: POST
-    body: {
-        
-        anggotaId: "6666fd9be909b426c8aede32" -> required,
-        image: "/path/image.png" -> required,
-        instagram: "https://instagram.com" -> optional, 
-        twitter: "https://twitter.com" -> optional, 
-        facebook: "https://facebook.com" -> optional, 
-        linkedin: "https://linkedin.com" -> optional,
-        isActive: true -> optional (default = true)
-    }
-  }
-```
+Karena itu, sebelum menjalankan migrasi baru di database mana pun:
 
-Update Struktural
-```bash
-  {
-    path: "/struktural/:id",
-    method: PUT,
-    contentType: "multipart/form-data",
-    body: {
-       
-        anggotaId: "6666fd9be909b426c8aede32",
-        image: "/path/image.png",
-        instagram: "https://instagram.com", 
-        twitter: "https://twitter.com", 
-        facebook: "https://facebook.com", 
-        linkedin: "https://linkedin.com",
-        isActive: true
-  }
-```
+1. Pastikan database yang dimigrasi adalah database yang dipakai API
+   production (bukan database kosong, bukan database lain, bukan schema
+   lain). Kalau tabel `user` saja tidak ada di database itu, berhenti —
+   itu bukan database production yang benar, atau schema-nya beda.
+2. Cek daftar tabel di database itu (dari file backup `pg_dump` yang
+   sudah ada, atau `\dt` di database itu), dan cocokkan dengan model
+   yang diubah migrasi.
+3. Baru jalankan migrasi, dan baca NOTICE-nya. Migrasi baru di branch
+   ini sengaja guarded: kalau tabel tidak ada, migrasi tidak gagal total
+   tapi hanya mencatat NOTICE dan tidak mengubah apa-apa. Sukses yang
+   guarded **bukan** bukti perubahan sudah diterapkan.
 
-Delete Struktural
-```bash
-  {
-    path: "/struktural/:id",
-    method: DELETE
-```
+Migrasi baru, urut, dan harus jalan sebelum deploy kode yang memakainya:
 
+1. `20261102_user_role_default_user` — default kolom `role` jadi `USER`.
+   Baris lama tidak diubah.
+2. `20261102_sub_acara` — buat tabel `sub_acara` anak `event`.
+3. `20261102_drop_ticket_suport` — hapus tabel `ticket_suport` kalau ada.
+   Destruktif untuk baris dari build lama: hanya setelah backup.
 
-### Alumni 
-Get Alumni
-```bash
-  {
-    path: "/alumni",
-    method: GET,
-    queryParams: {
-        page: 1 -> (default = 1),
-        perPage: 10 -> (default = 10),
-        name: "fikri"
-    }
-  }
-```
-With Query Params
-```bash
-  /alumni?page=1&perPage=10&name=fikri
-```
+## Deploy
 
-Create Alumni
-```bash
-  {
-    path: "/alumni",
-    contentType: "multipart/form-data",
-    method: POST
-    body: {
-        angkatanId: "6666fd9be909b426c8aede32" -> required,
-        anggotaId: "666b00f41c5fd055c7a0b62c" -> required
-        company: PT. Example Jaya -> required,
-        image: "/path/image.jpg" -> required,
-        isActive: true -> optional (default = true)
-    }
-  }
-```
+Urutan aman: API dulu, tunggu stabil, baru klien (klien tanpa header
+hanya jalan di API baru). Jangan merge sebelum backup production,
+migrasi di atas, CORS production, durasi token admin, base URL tiga
+klien, dan smoke + QA manual selesai. Rollback: redeploy commit `main`
+lama dan restore DB bila migrasi/data berubah.
 
-Update Alumni
-```bash
-  {
-    path: "/alumni/:id",
-    method: PUT,
-    contentType: "multipart/form-data",
-    body: {
-        angkatanId: "6666fd9be909b426c8aede32",
-        anggotaId: "666b00f41c5fd055c7a0b62c"
-        company: PT. Example Jaya,
-        image: "/path/image.jpg",
-        isActive: true
-    }
-  }
-```
+## Yang sengaja dipertahankan
 
-Delete Alumni
-```bash
-  {
-    path: "/alumni/:id",
-    method: DELETE
-```
-
-
-### Acara 
-Get Acara
-```bash
-  {
-    path: "/acara",
-    method: GET,
-    queryParams: {
-        page: 1 -> (default = 1),
-        perPage: 10 -> (default = 10),
-        name: "sharing"
-    }
-  }
-```
-With Query Params
-```bash
-  /acara?page=1&perPage=10&name=fikri
-```
-
-Create Acara
-```bash
-  {
-    path: "/acara",
-    contentType: "multipart/form-data",
-    method: POST
-    body: {
-        name: "Sharing Jaringan"
-        description: "lorem ipsum dolor sit amet" -> optional,
-        startTime: "2023-09-05T22:56:46.000Z" -> optional,
-        endTime: "2023-09-05T22:56:46.000Z" -> optional,
-        image: "/path/image.png",
-        isActive: true -> optional (default = true)
-    }
-  }
-```
-
-Update Acara
-```bash
-  {
-    path: "/acara/:id",
-    method: PUT,
-    contentType: "multipart/form-data",
-    body: {
-        name: "Sharing Jaringan"
-        description: "lorem ipsum dolor sit amet",
-        startTime: "2023-09-05T22:56:46.000Z",
-        endTime: "2023-09-05T22:56:46.000Z",
-        image: "/path/image.png",
-        isActive: true
-    }
-  }
-```
-
-Delete Acara
-```bash
-  {
-    path: "/acara/:id",
-    method: DELETE
-```
-
-Edit dan Delete
+- Storage attendances masih Cloudinary, upload lain sudah S3-compatible.
+  Memindahkannya mengubah URL image lama, perlu rencana migrasi URL dulu.
+- Pembuatan transaksi Midtrans masih hidup (lihat di atas); yang mati
+  hanya callback-nya.
+- Notifikasi Firebase masih hidup (`src/utils/firebase-config.ts`).
+- Template sertifikat event masih hidup lewat attendances; template
+  dikirim sebagai buffer oleh caller.
+- Kedua lockfile (`package-lock.json` dan `yarn.lock`) sudah ada sejak
+  `main` lama; pakai satu package manager secara konsisten per folder,
+  jangan dicampur.

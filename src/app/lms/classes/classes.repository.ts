@@ -10,13 +10,20 @@ export const getClassById = async (
   userId?: string,
   query?: Query
 ) => {
-  const {search} = query || {}
+  const { search } = query || {}
   return await prisma.class.findUnique({
     where: {
       id: classId,
     },
     include: {
-      user: true,
+      user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
       category: true,
       session: {
         ...(query && {
@@ -125,23 +132,37 @@ export const getClassRepository = async (
       }),
       ...(userId &&
         !ignoreUserBool && {
-          OR: [
-            {
-              createdBy: userId,
-            },
-            {
-              ClassMentor: {
-                some: {
-                  userId,
-                },
+        OR: [
+          {
+            createdBy: userId,
+          },
+          {
+            ClassMentor: {
+              some: {
+                userId,
               },
             },
-          ],
-        }),
+          },
+          {
+            classParticipant: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
+      }),
       status: userId ? undefined : "PUBLISH",
     },
     include: {
-      user: true,
+      user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
       category: true,
       _count: {
         select: {
@@ -183,19 +204,26 @@ export const getClassCountRepository = async (
       }),
       ...(userId &&
         !ignoreUserBool && {
-          OR: [
-            {
-              createdBy: userId,
-            },
-            {
-              ClassMentor: {
-                some: {
-                  userId,
-                },
+        OR: [
+          {
+            createdBy: userId,
+          },
+          {
+            ClassMentor: {
+              some: {
+                userId,
               },
             },
-          ],
-        }),
+          },
+          {
+            classParticipant: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
+      }),
       status: userId ? undefined : "PUBLISH",
     },
   });
@@ -207,7 +235,14 @@ export const getClassByCode = async (code: string) => {
       code,
     },
     include: {
-      user: true,
+      user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
       category: true,
       _count: {
         select: { classParticipant: true },
