@@ -4,4 +4,4 @@
 -- The public register flow already passes an explicit role, and
 -- createUserService now defaults to USER, so this is a defence-in-
 -- depth change against any code path that omits the role.
-ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'USER';
+ALTER TABLE "user" ALTER COLUMN "role" SET DEFAULT 'USER';

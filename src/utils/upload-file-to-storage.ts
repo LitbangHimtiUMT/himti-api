@@ -36,7 +36,6 @@ export const BUCKET_FOLDER = {
   modules: "modules",
   assignments: "assignments",
   submission: "submission",
-  ticketSupport: "ticket-supports",
 };
 
 export const FileType: Record<string, string> = {
