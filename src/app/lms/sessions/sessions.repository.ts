@@ -103,7 +103,12 @@ export const getDetailSession = async (sessionId: string) => {
     include: {
       class: {
         include: {
-          user: true,
+          user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         },
       },
     },

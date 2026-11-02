@@ -32,7 +32,12 @@ import {
   historyDeleteFlag,
 } from "../../history/history.repository";
 import { HistoryModule } from "@prisma/client";
-import { getMentorByClassRepository } from "../class-mentor/class-mentor.repository";
+import {
+  classIdFromModule,
+  classIdFromSession,
+  requireClassAccess,
+  requireClassManage,
+} from "../../../utils/lms-access";
 
 export const createModuleService = async (
   {
@@ -51,6 +56,11 @@ export const createModuleService = async (
     if (validate instanceof ErrorApp) {
       return validate;
     }
+    const deniedCreate = await requireClassManage(
+      userId,
+      (await classIdFromSession(sessionId)) ?? ""
+    );
+    if (deniedCreate) return deniedCreate;
     if (fileModule) {
       let buffer = fileModule.buffer;
       fileName = `${fileModule?.originalname.replace(FileType[fileModule.mimetype], "")} - ${+new Date()}${FileType[fileModule.mimetype]}`;
@@ -120,6 +130,11 @@ export const getModulesService = async (query: Query, userId: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
+  const denied = await requireClassAccess(
+    userId,
+    (await classIdFromSession(sessionId ?? "")) ?? ""
+  );
+  if (denied) return denied;
 
   const [modules, totalData] = await Promise.all([
     getModulesRepository(query, userId),
@@ -138,6 +153,9 @@ export const getDetailModuleService = async (
   userId: string,
   isMentor: boolean
 ) => {
+  const moduleClassId = await classIdFromModule(moduleId);
+  const denied = await requireClassAccess(userId, moduleClassId ?? "");
+  if (denied) return denied;
   const modules = await getModuleById(moduleId, userId, isMentor);
   if (!modules) {
     return new ErrorApp(
@@ -161,18 +179,11 @@ export const deleteModuleService = async (moduleId: string, userId: string) => {
     );
   }
 
-  const classId = modules?.session?.class?.id;
-  if (classId) {
-    const mentors = await getMentorByClassRepository(classId, {});
-    const isJoin = mentors.find((item) => item.userId === userId);
-    if (userId !== modules?.session?.class?.createdBy && !isJoin) {
-      return new ErrorApp(
-        MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
-        403,
-        MESSAGE_CODE.FORBIDDEN
-      );
-    }
-  }
+  const denied = await requireClassManage(
+    userId,
+    modules?.session?.class?.id ?? ""
+  );
+  if (denied) return denied;
 
   await historyDeleteFlag({
     module: HistoryModule.CLASS,

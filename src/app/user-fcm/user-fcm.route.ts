@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { CatchWrapper } from "../../utils/catch-wrapper";
+import { VerifyAdmin } from "../../middleware/verify-admin";
 import {
   deleteFCMUserController,
   getAllFCMUserController,
@@ -7,6 +8,6 @@ import {
 
 const route = Router();
 
-route.get("/", CatchWrapper(getAllFCMUserController));
-route.delete("/:fcmUserId", CatchWrapper(deleteFCMUserController));
+route.get("/", VerifyAdmin, CatchWrapper(getAllFCMUserController));
+route.delete("/:fcmUserId", VerifyAdmin, CatchWrapper(deleteFCMUserController));
 export default route;

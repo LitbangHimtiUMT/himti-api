@@ -166,7 +166,15 @@ export const getHistoriesRepository = async (query: HistoryQuery) => {
       }),
     },
     include: {
-      user: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          photo: true,
+          role: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",

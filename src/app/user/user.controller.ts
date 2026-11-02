@@ -4,6 +4,7 @@ import { MESSAGE_CODE } from "../../utils/error-code";
 import { HandleResponse } from "../../utils/handle-response";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
+import { getUserById } from "../authentication/auth.repository";
 import {
   createUserService,
   deleteUserService,
@@ -35,13 +36,18 @@ export const getUsersController = async (
 };
 
 export const createUserController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { body } = req;
+  const { body, userId } = req;
 
-  const user = await createUserService(body);
+  // Pass the caller's role so the service can enforce the
+  // ADMIN-cannot-mint-ADMIN rule. This route is currently shadowed
+  // by GET /:userId (see CHANGELOG), so this is defence in depth
+  // for when the route ordering is fixed in Fase 3.
+  const caller = userId ? await getUserById(userId) : null;
+  const user = await createUserService(body, caller?.role);
 
   if (user instanceof ErrorApp) {
     next(user);

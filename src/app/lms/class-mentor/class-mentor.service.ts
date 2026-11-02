@@ -15,6 +15,7 @@ import {
 import { getClassMentorMapper } from "./class-mentor.mapper";
 import { getUserById } from "../../authentication/auth.repository";
 import { sendMailInvitationMentor } from "./class-mentor.utility";
+import { requireClassManage } from "../../../utils/lms-access";
 
 export const inviteMentorService = async (
   createdBy: string,
@@ -28,6 +29,11 @@ export const inviteMentorService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
+  // Previously any authenticated user could attach a mentor to any
+  // class. Only the class creator, its mentors, or an admin may
+  // invite.
+  const denied = await requireClassManage(createdBy, data.classId);
+  if (denied) return denied;
 
   const mentor = await getMentorByIdRepository(data.mentorId);
   if (!mentor) {

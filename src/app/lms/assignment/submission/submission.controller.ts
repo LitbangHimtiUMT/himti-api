@@ -11,9 +11,9 @@ export const getSubmissionByIdController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { params } = req;
+  const { params, userId } = req;
   const { submissionId } = params;
-  const result = await getSubmissionByIdService(submissionId);
+  const result = await getSubmissionByIdService(submissionId, userId);
   if (result instanceof ErrorApp) {
     next(result);
     return;
@@ -32,9 +32,9 @@ export const getSubmissionByAssignmentController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { params } = req;
+  const { params, userId } = req;
   const { assignmentId } = params;
-  const result = await getSubmissionByAssignmentService(assignmentId);
+  const result = await getSubmissionByAssignmentService(assignmentId, userId);
   if (result instanceof ErrorApp) {
     next(result);
     return;

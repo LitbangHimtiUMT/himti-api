@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { verifyToken } from "../../middleware/verify-token";
+import { VerifyAdmin } from "../../middleware/verify-admin";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   getNotificationController,
@@ -15,15 +16,17 @@ const route = Router();
 
 route.post(
   "/",
+  VerifyAdmin,
   validateRequest(sendNotificationSchema),
   CatchWrapper(sendNotificationController)
 );
 route.post(
   "/:fcm",
+  VerifyAdmin,
   validateRequest(sendNotificationSchema),
   CatchWrapper(sendSingleNotificationController)
 );
-route.post("/fcm/:fcmId", CatchWrapper(sendNotificationByFcmIdController));
+route.post("/fcm/:fcmId", VerifyAdmin, CatchWrapper(sendNotificationByFcmIdController));
 route.get("/", verifyToken, CatchWrapper(getNotificationController));
 route.put(
   "/read/:notificationId",

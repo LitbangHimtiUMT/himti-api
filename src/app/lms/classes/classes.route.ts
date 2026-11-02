@@ -1,8 +1,7 @@
 import { Router } from "express";
-import { environment } from "../../../libs";
 import { validateRequest } from "../../../middleware/validate-request";
 import {
-  decodeToken,
+  optionalAuth,
   RolesEnum,
   verifyRole,
   verifyToken,
@@ -30,32 +29,15 @@ import { inviteMentorSchema } from "../class-mentor/class-mentor.request";
 
 export const classRoute = Router();
 
+// Public catalog: optionalAuth sets a VERIFIED userId when a valid
+// token is present (so mentor/participant visibility still works),
+// and leaves it empty for guests (published classes only, decided by
+// the service). The old handlers trusted an unverified decode() and
+// a header secret here; both are removed.
 classRoute
-  .get("/", (req, res, next) => {
-    // If authorization header is present, always decode token first to enforce user visibility (e.g. mentor class isolation)
-    if (req.headers.authorization) {
-      return decodeToken(req, res, () => CatchWrapper(getClassController)(req, res, next));
-    }
-    
-    // Otherwise, check for API Key for public/guest access
-    const apiKey = req.headers[environment.HEADER_KEY.toLowerCase()];
-    const apiKeyStr = (Array.isArray(apiKey) ? apiKey[0] : apiKey) || "";
-    if (apiKeyStr && atob(apiKeyStr) === environment.SECRET_KEY) {
-      return CatchWrapper(getClassController)(req, res, next);
-    }
-    // Fallback
-    return decodeToken(req, res, () => CatchWrapper(getClassController)(req, res, next));
-  })
-  .get("/user", decodeToken, verifyToken, CatchWrapper(getClassUserController))
-  .get("/:classId", (req, res, next) => {
-    const apiKey = req.headers[environment.HEADER_KEY.toLowerCase()];
-    const apiKeyStr = (Array.isArray(apiKey) ? apiKey[0] : apiKey) || "";
-    if (apiKeyStr && atob(apiKeyStr) === environment.SECRET_KEY) {
-      return CatchWrapper(getDetailClassController)(req, res, next);
-    }
-    return decodeToken(req, res, () => CatchWrapper(getDetailClassController)(req, res, next));
-  })
-  .use(decodeToken)
+  .get("/", optionalAuth, CatchWrapper(getClassController))
+  .get("/user", verifyToken, CatchWrapper(getClassUserController))
+  .get("/:classId", optionalAuth, CatchWrapper(getDetailClassController))
   .use(verifyToken)
   .post(
     "/invite",

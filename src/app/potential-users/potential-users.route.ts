@@ -6,15 +6,15 @@ import {
   parseCVController,
 } from "./potential-users.controller";
 import { CatchWrapper } from "../../utils/catch-wrapper";
-import { verifyToken } from "../../middleware/verify-token";
+import { VerifyAdmin } from "../../middleware/verify-admin";
 import { upload } from "../../utils/upload-file-to-storage";
 
 const route = Router();
 
-route.get("/", CatchWrapper(getPotentialUsersController));
-route.post("/", CatchWrapper(upload.single("photo")), CatchWrapper(createPotentialUserController));
-route.put("/", verifyToken, CatchWrapper(updatePotentialUserController));
-route.post("/parse-cv", CatchWrapper(parseCVController));
+route.get("/", VerifyAdmin, CatchWrapper(getPotentialUsersController));
+route.post("/", VerifyAdmin, CatchWrapper(upload.single("photo")), CatchWrapper(createPotentialUserController));
+route.put("/", VerifyAdmin, CatchWrapper(updatePotentialUserController));
+route.post("/parse-cv", VerifyAdmin, CatchWrapper(parseCVController));
 
 export default route;
 

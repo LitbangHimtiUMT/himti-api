@@ -1,4 +1,4 @@
-import { NextFunction, Request, type Response } from "express";
+import { NextFunction, type Response } from "express";
 import { RequestWithAccessToken } from "../../../interface/Request";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
@@ -37,14 +37,14 @@ export const createClassParticipantController = async (
 };
 
 export const getClassParticipantsByClassIdController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { query, params } = req;
+  const { query, params, userId } = req;
   const { classId } = params;
 
-  const result = await getClassParticipantsByClassIdService(classId, query);
+  const result = await getClassParticipantsByClassIdService(classId, query, userId);
 
   if (result instanceof ErrorApp) {
     next(result);
@@ -62,14 +62,14 @@ export const getClassParticipantsByClassIdController = async (
 };
 
 export const getParticipantsController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { query, params } = req;
+  const { query, params, userId } = req;
   const { classId } = params;
 
-  const result = await getParticipantsService(classId, query);
+  const result = await getParticipantsService(classId, query, userId);
 
   if (result instanceof ErrorApp) {
     next(result);

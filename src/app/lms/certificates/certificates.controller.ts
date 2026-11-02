@@ -61,28 +61,42 @@ export const getFileCertificateController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { code, id } = req.query;
+  // By-code only: the old by-id lookup let anyone enumerate
+  // certificate ids and download other students' certificates.
+  // The code is the unguessable verification token printed on the
+  // certificate itself, so this stays public for verification.
+  const { code } = req.query;
 
-  if (!code && !id) {
-    next(new ErrorApp("Certificate code or ID is required", 400, MESSAGE_CODE.BAD_REQUEST));
+  if (!code) {
+    next(new ErrorApp("Certificate code is required", 400, MESSAGE_CODE.BAD_REQUEST));
     return;
   }
 
   const certificate = await prisma.certificate.findFirst({
     where: {
-      OR: [
-        ...(id ? [{ id: id as string }] : []),
-        ...(code ? [{ code: code as string }] : []),
-      ]
+      code: code as string,
     },
-    include: {
-      user: true,
+    // Explicit selects: never load the full user row (it carries
+    // the password hash) for a public verification endpoint.
+    select: {
+      code: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
       class: {
-        include: {
-          user: true,
-        }
-      }
-    }
+        select: {
+          name: true,
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!certificate) {

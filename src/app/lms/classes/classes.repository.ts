@@ -16,7 +16,14 @@ export const getClassById = async (
       id: classId,
     },
     include: {
-      user: true,
+      user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
       category: true,
       session: {
         ...(query && {
@@ -148,7 +155,14 @@ export const getClassRepository = async (
       status: userId ? undefined : "PUBLISH",
     },
     include: {
-      user: true,
+      user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
       category: true,
       _count: {
         select: {
@@ -221,7 +235,14 @@ export const getClassByCode = async (code: string) => {
       code,
     },
     include: {
-      user: true,
+      user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
       category: true,
       _count: {
         select: { classParticipant: true },

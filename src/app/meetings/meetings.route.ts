@@ -26,6 +26,7 @@ route
   )
   .post(
     "/",
+    VerifySuperAdmin,
     validateRequest(createMeetingSchema),
     CatchWrapper(createMeetingController)
   )

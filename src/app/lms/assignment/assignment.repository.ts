@@ -47,7 +47,13 @@ export const getAssignmentDetailRepository = async (
             include: {
               class: {
                 include: {
-                  user: true,
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      photo: true,
+                    },
+                  },
                 },
               },
             },

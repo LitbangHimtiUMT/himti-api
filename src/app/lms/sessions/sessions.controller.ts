@@ -1,4 +1,4 @@
-import { NextFunction, Request, type Response } from "express";
+import { NextFunction, type Response } from "express";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
@@ -91,14 +91,14 @@ export const getSessionByClassController = async (
 };
 
 export const getSessionController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const { params } = req;
+  const { params, userId } = req;
   const { sessionId } = params;
 
-  const session = await getSessionService(sessionId);
+  const session = await getSessionService(sessionId, userId);
 
   if (session instanceof ErrorApp) {
     next(session);

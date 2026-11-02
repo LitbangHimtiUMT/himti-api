@@ -21,6 +21,7 @@ route.post(
 );
 route.post(
   "/:meetingId",
+  VerifyAdmin,
   CatchWrapper(upload.single("image")),
   CatchWrapper(generateCertificateByMeetingAttendanceController)
 );

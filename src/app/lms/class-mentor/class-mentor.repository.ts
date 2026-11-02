@@ -52,7 +52,14 @@ export const getMentorByClassRepository = async (classId: string, query: Query) 
       }),
     },
     include: {
-      user: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          photo: true,
+        },
+      },
     }
   });
 };

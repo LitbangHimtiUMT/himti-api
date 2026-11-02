@@ -12,8 +12,6 @@ import { ImagePath } from "../../../utils/image-path";
 import { MESSAGES } from "../../../utils/messages";
 import {
   BUCKET_FOLDER,
-  FileType,
-  getFileExtension,
   RemoveFileFromStorage,
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
@@ -22,7 +20,11 @@ import {
   historyDeleteFlag,
   historyUpdateFlag,
 } from "../../history/history.repository";
-import { getMentorByClassRepository } from "../class-mentor/class-mentor.repository";
+import {
+  canManageClass,
+  requireClassAccess,
+  requireClassManage,
+} from "../../../utils/lms-access";
 import { getModuleById } from "../modules/modules.repository";
 import { CreateAssignmentDTO, SubmissionCreationDTO } from "./assignment.dto";
 import {
@@ -47,18 +49,8 @@ export const createAssignmentService = async (
     );
   }
 
-  const mentors = await getMentorByClassRepository(
-    modules.session.class.id,
-    {}
-  );
-  const isJoin = mentors.find((item) => item.userId === userId);
-  if (userId !== modules.session.class.createdBy && !isJoin) {
-    return new ErrorApp(
-      MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
-      403,
-      MESSAGE_CODE.FORBIDDEN
-    );
-  }
+  const denied = await requireClassManage(userId, modules.session.class.id);
+  if (denied) return denied;
 
   const isOpen = checkDueDate(new Date(data.dueDate));
 
@@ -104,18 +96,11 @@ export const updateAssignmentService = async (
     );
   }
 
-  const mentors = await getMentorByClassRepository(
-    assignment.module?.session?.class?.id ?? "",
-    {}
+  const denied = await requireClassManage(
+    userId,
+    assignment.module?.session?.class?.id ?? ""
   );
-  const isJoin = mentors.find((item) => item.userId === userId);
-  if (userId !== assignment?.module?.session.class.createdBy && !isJoin) {
-    return new ErrorApp(
-      MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
-      403,
-      MESSAGE_CODE.FORBIDDEN
-    );
-  }
+  if (denied) return denied;
 
   const isOpen = checkDueDate(new Date(data.dueDate));
   if (!isOpen) {
@@ -156,11 +141,25 @@ export const getAssignmentByIdService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  const activeSubmission = assignment
-    ? assignment.submission.find(
-        (item) => item.status === SubmissionStatus.REVIEW
-      ) || null
-    : null;
+  // IDOR: any authenticated user could previously read this assignment
+  // AND every participant's submission history/files from it. Now the
+  // caller must belong to the class, and non-managers only see their
+  // own submissions.
+  const denied = await requireClassAccess(
+    userId,
+    assignment.module?.session?.class?.id ?? ""
+  );
+  if (denied) return denied;
+  const isManager = await canManageClass(
+    userId,
+    assignment.module?.session?.class?.id ?? ""
+  );
+  const visibleSubmissions = isManager
+    ? assignment.submission
+    : assignment.submission.filter((item) => item.userId === userId);
+  const activeSubmission = visibleSubmissions.find(
+    (item) => item.status === SubmissionStatus.REVIEW
+  ) || null;
   const active = activeSubmission
     ? {
         ...activeSubmission,
@@ -190,7 +189,7 @@ export const getAssignmentByIdService = async (
           )
         : null,
     },
-    historySubmission: assignment?.submission
+    historySubmission: visibleSubmissions
       .filter((item) => item.status !== SubmissionStatus.REVIEW)
       .map((item) => ({
         id: item.id,
@@ -225,6 +224,13 @@ export const submitAssignmentService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
+  // submittedBy is already req.userId from the controller; the check
+  // here is that the caller is enrolled in this class (or staff).
+  const denied = await requireClassAccess(
+    data.submittedBy,
+    assignment.module?.session?.class?.id ?? ""
+  );
+  if (denied) return denied;
 
   const alreadyReview = assignment.submission
     .filter((item) => item.userId === data.submittedBy)
@@ -314,18 +320,11 @@ export const submitAssignmentService = async (
 export const deleteAssignmentService = async (id: string, userId: string) => {
   const assignment = await getAssignmentDetailRepository(id);
 
-  const classId = assignment?.module?.session?.class?.id;
-  if (classId) {
-    const mentors = await getMentorByClassRepository(classId, {});
-    const isJoin = mentors.find((item) => item.userId === userId);
-    if (userId !== assignment?.module?.session?.class?.createdBy && !isJoin) {
-      return new ErrorApp(
-        MESSAGES.ERROR.FORBIDDEN.ASSIGNMENT,
-        403,
-        MESSAGE_CODE.FORBIDDEN
-      );
-    }
-  }
+  const denied = await requireClassManage(
+    userId,
+    assignment?.module?.session?.class?.id ?? ""
+  );
+  if (denied) return denied;
 
   await historyDeleteFlag({
     module: HistoryModule.CLASS,

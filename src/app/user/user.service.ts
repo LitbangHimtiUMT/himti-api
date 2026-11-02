@@ -36,7 +36,10 @@ export const getUsersService = async (query: IFilterUser) => {
   return { data: users, meta };
 };
 
-export const createUserService = async (body: UserRequestBodyDTO) => {
+export const createUserService = async (
+  body: UserRequestBodyDTO,
+  callerRole?: string
+) => {
   const existUser = await getUserByEmail(body.email);
   if (existUser) {
     return new ErrorApp(
@@ -48,9 +51,15 @@ export const createUserService = async (body: UserRequestBodyDTO) => {
 
   const hashPassword = await bcrypt.hash(body.password, 10);
 
+  // Previously every user created through this service became ADMIN,
+  // regardless of what was requested. Now: SUPER_ADMIN callers may
+  // assign any role, ADMIN callers may only create USER accounts
+  // (they cannot mint new admins), and the default is USER.
+  const role: Role =
+    callerRole === "SUPER_ADMIN" && body.role ? body.role : "USER";
   const user = await createUser({
     ...body,
-    role: "ADMIN",
+    role,
     password: hashPassword,
   });
   return user;

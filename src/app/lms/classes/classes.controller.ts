@@ -60,8 +60,7 @@ export const updateClassController = async (
   next: NextFunction
 ) => {
   const file = req?.file as Express.Multer.File;
-  const { body, params } = req;
-  console.log({ file });
+  const { body, params, userId } = req;
   const combine = {
     ...body,
     thumbnail: file,
@@ -79,7 +78,7 @@ export const updateClassController = async (
     return;
   }
 
-  const classCtrl = await updateClassService(params?.classId, combine);
+  const classCtrl = await updateClassService(params?.classId, combine, userId);
 
   if (classCtrl instanceof ErrorApp) {
     next(classCtrl);

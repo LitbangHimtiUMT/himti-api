@@ -4,6 +4,7 @@ import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
 import { getClassById } from "../classes/classes.repository";
+import { requireClassAccess } from "../../../utils/lms-access";
 import { CertificateQuery } from "./certificates.interface";
 import { getCertificatesMapper } from "./certificates.mapper";
 import {
@@ -17,6 +18,13 @@ export const generateCertificateService = async (
   classId: string,
   userId: string
 ) => {
+  // The caller must belong to the class: previously any
+  // authenticated user could generate a certificate row for a class
+  // they never joined (the percent math only counted their own
+  // completions, but a mentor/staff caller with access to the class
+  // detail could still pass it via completedModule counts).
+  const denied = await requireClassAccess(userId, classId);
+  if (denied) return denied;
   const classess = await getClassById(classId, userId);
   if (!classess) {
     return new ErrorApp(
@@ -35,6 +43,12 @@ export const generateCertificateService = async (
     for (const completed of modules.module) {
       total.completed += completed._count?.completedModule ?? 0;
     }
+  }
+  // Guard the empty-class edge: 0/0 is NaN, and NaN < 100 is
+  // false, so a class with zero modules previously passed this
+  // check and issued a certificate for nothing.
+  if (total.module === 0) {
+    return new ErrorApp("Class not completed", 400, MESSAGE_CODE.BAD_REQUEST);
   }
   const percent = (total.completed / total.module) * 100;
   if (percent < 100) {

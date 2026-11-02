@@ -2,6 +2,7 @@ import { ErrorApp } from "../../../utils/http-error";
 import { CreateCompletedClassBodyRequest } from "./completed-classes.dto";
 import { createCompletedClassRepository } from "./completed-classes.repository";
 import { createCompletedClassValidate } from "./completed-classes.validate";
+import { requireClassAccess } from "../../../utils/lms-access";
 
 export const createCompletedClassService = async (
   { classId }: CreateCompletedClassBodyRequest,
@@ -17,6 +18,8 @@ export const createCompletedClassService = async (
   if (validate instanceof ErrorApp) {
     return validate;
   }
+  const denied = await requireClassAccess(userId, classId as string);
+  if (denied) return denied;
 
   const completedClass = await createCompletedClassRepository(
     {
