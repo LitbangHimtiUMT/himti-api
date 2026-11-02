@@ -57,6 +57,12 @@ app.use(
     allowedHeaders: [
       "Content-Type",
       "Authorization",
+      // Temporary bridge (2026-11-02): production LMS/web clients still
+      // send the legacy x-api-key header. The server ignores its value
+      // (auth is JWT-only), but the header name must be allowed here
+      // or browsers block those clients at preflight. Remove this line
+      // once all clients are redeployed without the legacy header.
+      "x-api-key",
       "X-CSRF-Token",
       "X-Requested-With",
       "Accept",
