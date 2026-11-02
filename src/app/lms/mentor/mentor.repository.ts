@@ -65,7 +65,14 @@ export const getMentorsRepository = async (query: QueryMentor) => {
       ],
     },
     include: {
-      user: true,
+      user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
     },
     orderBy: {
       createdAt: "desc",
@@ -120,7 +127,14 @@ export const getMentorByIdRepository = async (mentorId: string) => {
       id: mentorId,
     },
     include: {
-      user: true,
+      user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
     },
   });
 };

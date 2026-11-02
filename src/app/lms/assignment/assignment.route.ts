@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { validateRequest } from "../../../middleware/validate-request";
-import { verifyToken } from "../../../middleware/verify-token";
+import {
+  RolesEnum,
+  verifyRole,
+  verifyToken,
+} from "../../../middleware/verify-token";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { upload } from "../../../utils/upload-file-to-storage";
 import {
@@ -26,14 +30,14 @@ assignmentRoute
   )
   .post(
     "/:moduleId",
-    // verifyRole([RolesEnum.MENTOR]),
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     verifyToken,
     validateRequest(createAssignmentSchema),
     CatchWrapper(createAssignmentController)
   )
   .put(
     "/:assignmentId",
-    // verifyRole([RolesEnum.MENTOR]),
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     verifyToken,
     validateRequest(createAssignmentSchema),
     CatchWrapper(updateAssignmentController)
@@ -53,6 +57,7 @@ assignmentRoute
   )
   .delete(
     "/:assignmentId",
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     verifyToken,
     CatchWrapper(deleteAssignmentController)
   );

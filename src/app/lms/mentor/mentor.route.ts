@@ -11,12 +11,15 @@ import {
   verifyRole,
   verifyToken,
 } from "../../../middleware/verify-token";
-import { verifyKey } from "../../../middleware/verify-key";
 
 export const mentorsRoute = Router();
 
+// Mentor list was header-only (verifyKey). LMS MentorGrid and the CMS
+// mentor list are both used by logged-in users, so the replacement is
+// verifyToken (any authenticated user), not an admin-only gate, which
+// would have broken the LMS mentor browsing page.
 mentorsRoute
-  .get("/", verifyKey, CatchWrapper(getMentorsController))
+  .get("/", verifyToken, CatchWrapper(getMentorsController))
   .use(verifyToken)
   .post(
     "/:userId",

@@ -4,7 +4,9 @@ import { BUCKET_FOLDER } from "../../../utils/upload-file-to-storage";
 import { MentorDTO } from "./mentor.dto";
 
 export interface MentorData extends Mentor {
-  user: User | null;
+  // Narrowed on purpose: the repository selects only these user
+  // fields (never the password hash) for mentor listings.
+  user: Pick<User, "id" | "name" | "email" | "photo"> | null;
 }
 
 export const getMentorsDTOMapper = (data: MentorData[]): MentorDTO[] => {

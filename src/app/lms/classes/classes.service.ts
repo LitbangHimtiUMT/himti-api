@@ -51,6 +51,10 @@ import {
   historyUpdateFlag,
 } from "../../history/history.repository";
 import { getSessionsCountRepository } from "../sessions/sessions.repository";
+import {
+  isAdminRole,
+  requireClassManage,
+} from "../../../utils/lms-access";
 
 export const createClassService = async (
   {
@@ -153,7 +157,8 @@ export const updateClassService = async (
     level,
     categoryId,
     price,
-  }: Partial<CreateClassBodyRequest>
+  }: Partial<CreateClassBodyRequest>,
+  userId?: string
 ) => {
   let fileName;
 
@@ -166,6 +171,13 @@ export const updateClassService = async (
         404,
         MESSAGE_CODE.NOT_FOUND
       );
+    }
+    // Previously update had NO ownership check at all: any
+    // authenticated user could rewrite any class. Creator, mentor
+    // of the class, or admin only.
+    if (userId) {
+      const denied = await requireClassManage(userId, classId);
+      if (denied) return denied;
     }
     const validate = await createClassValidate("update", {
       categoryId,
@@ -494,11 +506,18 @@ export const publishClassService = async (classId: string, userId: string) => {
     );
   }
   if (classess.createdBy !== userId) {
-    return new ErrorApp(
-      MESSAGES.ERROR.INVALID.CREATOR_PUBLISH,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
+    // Creator-only before; admins may now also publish (e.g. when
+    // the creator account is gone). Mentors who are not the creator
+    // still cannot publish someone else's class, so this is an
+    // admin-only bypass, not the general manage check.
+    const isAdmin = await isAdminRole(userId);
+    if (!isAdmin) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.CREATOR_PUBLISH,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
   }
   historyUpdateFlag({
     module: HistoryModule.CLASS,
@@ -521,13 +540,8 @@ export const deleteClassessService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  if (classess.createdBy !== userId) {
-    return new ErrorApp(
-      MESSAGES.ERROR.FORBIDDEN.DELETE_CLASS,
-      400,
-      MESSAGE_CODE.BAD_REQUEST
-    );
-  }
+  const denied = await requireClassManage(userId, classId);
+  if (denied) return denied;
   await historyDeleteFlag({
     module: HistoryModule.CLASS,
     title: `Delete class ${classess.name}`,

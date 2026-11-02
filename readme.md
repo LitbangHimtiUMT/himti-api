@@ -3,6 +3,30 @@
 
 Important data regarding HIMTI
 
+> **Auth repair (Fase 1–3, branch `fix/himti-api-auth`) — baca dulu:**
+> detail lengkap ada di [`CHANGELOG-FASE1-3.md`](CHANGELOG-FASE1-3.md),
+> termasuk checklist yang HARUS dilakukan sebelum merge/deploy (backup DB,
+> 2 migrasi Prisma baru, `CORS_ALLOWED_ORIGINS`, urutan deploy API dulu
+> baru klien, dan smoke test 3 klien). Ringkasnya:
+>
+> - Auth kini JWT-only. Header rahasia legacy TIDAK lagi diterima sebagai
+>   auth (klien harus berhenti mengirimnya — perubahan klien disiapkan
+>   terpisah, lihat CHANGELOG §3.5).
+> - Refresh token: `POST /auth/refresh-token`, kontrak sama, verifikasi
+>   sinkron terhadap kunci turunan yang sama agar token LMS yang beredar
+>   tetap jalan. Kunci refresh dedicated baru adalah Fase 4.
+> - Endpoint yang dimatikan: `POST /initial`, callback Midtrans,
+>   `POST /seed-generation-2022`, `/scheduling-notification-meeting`,
+>   dan `POST /auth/biometric` (semuanya 410 atau dihapus dari routing).
+> - Endpoint baru (PROVISIONAL, menunggu konfirmasi): `/sub-acara`
+>   (model anak Event + migrasi — migrasi WAJIB jalan sebelum deploy).
+> - Sertifikat: `GET /lms/certificates/file` kini by-code saja
+>   (`?code=...`) + rate limit.
+> - Env contract (hanya nama, tanpa nilai): `JWT_SECRET`, `JWT_EXPIRES`,
+>   `SECRET_KEY`, `DATABASE_URL`, `CORS_ALLOWED_ORIGINS` (baru, wajib di
+>   production), storage S3-compatible, `CLOUDINARY_*` (hanya attendances).
+>   Daftar lengkap + alasan tiap nama ada di CHANGELOG §4.
+
 Base URL
 ```bash
   https://himti-api.vercel.app

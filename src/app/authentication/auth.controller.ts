@@ -4,6 +4,7 @@ import { HandleResponse } from "../../utils/handle-response";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
 import { LoginAuthResponse } from "./auth.dto";
+import { RequestWithAccessToken } from "../../interface/Request";
 import {
   biometricAuthService,
   forgotPasswordService,
@@ -141,12 +142,11 @@ export const forgotPasswordController = async (
 };
 
 export const logoutController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers.authorization?.replace("Bearer ", "");
-  const logout = await logoutService(token as string);
+  const logout = await logoutService(req.userId as string);
 
   if (logout instanceof ErrorApp) {
     next(logout);

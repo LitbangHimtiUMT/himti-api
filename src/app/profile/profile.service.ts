@@ -1,7 +1,5 @@
 import bcrypt from "bcrypt";
-import { decode } from "jsonwebtoken";
 import sharp from "sharp";
-import { TokenDecodeInterface } from "../../interface";
 import { environment } from "../../libs";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
@@ -32,16 +30,17 @@ import {
   updateProfile,
 } from "./profile.repository";
 
-export const getProfileService = async (token: string) => {
-  const decodeToken = decode(token);
-  if (!(decodeToken as ProfileDTO)?.id) {
+export const getProfileService = async (userId: string) => {
+  // userId comes from verifyToken (signature-verified). The old code
+  // decoded the raw token here, bypassing middleware verification.
+  if (!userId) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER_ID,
       404,
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  const profile = await getProfile((decodeToken as ProfileDTO)?.id as string);
+  const profile = await getProfile(userId);
   if (!profile) {
     return new ErrorApp(
       MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
@@ -212,11 +211,10 @@ export const updateProfileService = async (
 };
 
 export const updatePasswordService = async (
-  token: string,
+  userId: string,
   { newPassword, oldPassword }: ChangePasswordDTO
 ) => {
-  const decodeToken = decode(token) as TokenDecodeInterface;
-  const id = decodeToken.id;
+  const id = userId;
   const user = await getUserById(id);
   if (!user) {
     return new ErrorApp(

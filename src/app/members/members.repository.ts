@@ -90,7 +90,15 @@ export const getAllMember = async ({
           isActive: true,
         },
       },
-      User: true,
+      // Explicit select: the mapper only needs email + photo, and
+      // loading the full user row pulled the password hash into
+      // memory on every member list/export query.
+      User: {
+        select: {
+          email: true,
+          photo: true,
+        },
+      },
     },
     orderBy: {
       nim: "desc",

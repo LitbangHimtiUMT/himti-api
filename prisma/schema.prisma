@@ -12,7 +12,7 @@ model User {
   name                  String                @db.VarChar(255)
   email                 String                @unique @db.VarChar(110)
   password              String                @db.VarChar(110)
-  role                  Role                  @default(ADMIN)
+  role                  Role                  @default(USER)
   nim                   String?               @db.VarChar(20)
   memberId              String?               @unique @map("member_id") @db.VarChar(110)
   Attendance            Attendance[]
@@ -133,8 +133,32 @@ model Event {
   NotificationHistory NotificationHistory[]
   EventRegistration   EventRegistration[]
   RegistrationType    RegistrationType[]
+  SubAcara            SubAcara[]
 
   @@map("event")
+}
+
+// PROVISIONAL (Fase 2, pending Wisnu's confirmation): CMS calls
+// /sub-acara but the API had no such table. This is a child of
+// Event, NOT a Meeting: Meeting belongs to EventMeeting and has no
+// image/isOpenAbsen, so mapping sub-acara onto Meeting would be
+// wrong. CMS sub-acara UI stays untouched (separate repo); this
+// endpoint only makes the API side exist.
+model SubAcara {
+  id          String   @id @unique @default(uuid())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  image       String?  @db.VarChar(255)
+  startTime   DateTime @map("start_time") @db.Timestamp(0)
+  endTime     DateTime @map("end_time") @db.Timestamp(0)
+  isOpenAbsen Boolean  @default(false) @map("is_open_absen")
+  eventId     String   @map("event_id") @db.VarChar(110)
+  Event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@index([eventId], map: "sub_acara_fk_1")
+  @@map("sub_acara")
 }
 
 model EventMeeting {

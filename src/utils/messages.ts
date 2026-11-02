@@ -140,6 +140,7 @@ export const MESSAGES = {
       ORDER_BY: 'Order by must be "asc" or "desc"',
       NOT_ENOUGH_POINT: "You don't have enough point",
       ONLY_PUBLISH_CLASS: "Only publish class you can joined",
+      PAID_CLASS_JOIN_FLOW: "Paid classes must be joined through the class join flow",
       ALREADY_JOIN_CLASS: "You already join this class",
       DUE_DATE: "Due date must be greater than today",
       YOUTUBE_URL: "Invalid YouTube URL",

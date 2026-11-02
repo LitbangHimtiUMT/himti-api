@@ -42,5 +42,9 @@ sessionRoute
     ]),
     CatchWrapper(getSessionByClassController)
   )
-  .delete(`/:sessionId`, CatchWrapper(deleteSessionController))
+  .delete(
+    `/:sessionId`,
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
+    CatchWrapper(deleteSessionController)
+  )
   .get("/:sessionId", CatchWrapper(getSessionController));

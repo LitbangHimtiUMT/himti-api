@@ -23,6 +23,7 @@ export interface FileInterface {
 export const BUCKET_FOLDER = {
   attendance: "attendance",
   event: "event",
+  subAcara: "sub-acara",
   eventRegistration: "event-registration",
   registrationType: "registration-type",
   business: {
@@ -102,6 +103,53 @@ export const getFileExtension = (
 
 export const storage = multer.memoryStorage();
 
+// Multer limits: enforced WHILE the request streams in, i.e. BEFORE
+// the file is fully buffered in memory. Previously no limit was set
+// anywhere, so an unbounded upload was buffered whole (memoryStorage)
+// before any code looked at it.
+export const MULTER_LIMITS = {
+  fileSize: 10 * 1024 * 1024, // 10 MB per file
+  files: 5,
+};
+
+// Magic-byte signatures. The extension/mime from the client is
+// untrusted: a script renamed to .png passed the old filter. This
+// checks the actual first bytes of the buffer before anything is
+// stored. Extensions not listed here (e.g. .bin) are not checked.
+const MAGIC_SIGNATURES: Record<string, ((b: Buffer) => boolean)[]> = {
+  ".png": [(b) => b.length >= 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))],
+  ".jpg": [(b) => b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff],
+  ".jpeg": [(b) => b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff],
+  ".webp": [(b) => b.length >= 12 && b.subarray(0, 4).toString("ascii") === "RIFF" && b.subarray(8, 12).toString("ascii") === "WEBP"],
+  ".pdf": [(b) => b.length >= 4 && b.subarray(0, 4).toString("ascii") === "%PDF"],
+  ".zip": [(b) => b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b && [0x03, 0x05, 0x07].includes(b[2])],
+  // docx/pptx/odt/odp/pages/key are all ZIP containers.
+  ".docx": [(b) => b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b],
+  ".pptx": [(b) => b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b],
+  ".odt": [(b) => b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b],
+  ".odp": [(b) => b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b],
+  ".key": [(b) => b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b],
+  ".pages": [(b) => b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b],
+  ".rar": [(b) => b.length >= 7 && b.subarray(0, 7).equals(Buffer.from([0x52, 0x61, 0x72, 0x21, 0x1a, 0x07]))],
+  // Legacy OLE compound documents (.doc, .ppt).
+  ".doc": [(b) => b.length >= 8 && b.subarray(0, 8).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]))],
+  ".ppt": [(b) => b.length >= 8 && b.subarray(0, 8).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]))],
+};
+
+export const validateMagicBytes = (buffer: Buffer, fileName: string): boolean => {
+  const ext = path.extname(fileName).toLowerCase();
+  const checks = MAGIC_SIGNATURES[ext];
+  if (!checks) return true; // unknown extension: no signature to check
+  if (!buffer || buffer.length === 0) return false;
+  return checks.some((check) => {
+    try {
+      return check(buffer);
+    } catch {
+      return false;
+    }
+  });
+};
+
 export const MulterFileFilter = (
   request: Request,
   file: Express.Multer.File,
@@ -163,6 +211,18 @@ export const StorageS3Client = new S3({
 });
 
 export const UploadFileToStorage = async (data: FileInterface) => {
+  // Central choke point: every S3 upload in the codebase goes
+  // through here, so a content/extension mismatch is rejected
+  // before the object is stored, regardless of which route uploaded
+  // it. This THROWS (callers must not silently continue to a DB
+  // write after a failed upload).
+  if (Buffer.isBuffer(data.Body) && !validateMagicBytes(data.Body, data.Key)) {
+    throw new ErrorApp(
+      "File content does not match its extension",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
   try {
     const file = await StorageS3Client.send(new PutObjectCommand(data));
     const object = `${data.Bucket}/${data.Key}`;
@@ -235,4 +295,5 @@ export const GetPublicURL = (filename: string): string => {
 export const upload = multer({
   storage,
   fileFilter: MulterFileFilter,
+  limits: MULTER_LIMITS,
 });

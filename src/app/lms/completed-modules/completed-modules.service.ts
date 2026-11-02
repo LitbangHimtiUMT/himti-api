@@ -5,6 +5,10 @@ import {
   getAlreadyCompletedModule,
 } from "./completed-modules.repository";
 import { createCompletedModuleValidate } from "./completed-modules.validate";
+import {
+  classIdFromModule,
+  requireClassAccess,
+} from "../../../utils/lms-access";
 
 export const createCompletedModuleService = async ({
   moduleId,
@@ -18,6 +22,14 @@ export const createCompletedModuleService = async ({
   if (validate instanceof ErrorApp) {
     return validate;
   }
+  // Progress must only be recorded for a class the caller belongs
+  // to; otherwise anyone could complete any module and inflate the
+  // completion percentage used for certificates.
+  const denied = await requireClassAccess(
+    userId as string,
+    (await classIdFromModule(moduleId as string)) ?? ""
+  );
+  if (denied) return denied;
 
   const getAlreadyModule = await getAlreadyCompletedModule(
     moduleId as string,

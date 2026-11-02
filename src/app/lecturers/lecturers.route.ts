@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate-request";
-import { verifyToken } from "../../middleware/verify-token";
+import { VerifyAdmin } from "../../middleware/verify-admin";
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createLecturerController,
@@ -17,12 +17,12 @@ route.get("/public", CatchWrapper(getLecturerController));
 
 route.post(
   "/",
-  verifyToken,
+  VerifyAdmin,
   validateRequest(createDosenSchema),
   CatchWrapper(createLecturerController)
 );
 route.get("/", CatchWrapper(getLecturerController));
-route.delete("/:id", verifyToken, CatchWrapper(deleteLecturerController));
-route.put("/:id", verifyToken, CatchWrapper(updateLecturerController));
+route.delete("/:id", VerifyAdmin, CatchWrapper(deleteLecturerController));
+route.put("/:id", VerifyAdmin, CatchWrapper(updateLecturerController));
 
 export default route;
