@@ -6,7 +6,6 @@ import { MESSAGES } from "../../utils/messages";
 import { LoginAuthResponse } from "./auth.dto";
 import { RequestWithAccessToken } from "../../interface/Request";
 import {
-  biometricAuthService,
   forgotPasswordService,
   loginAdminService,
   loginService,
@@ -158,28 +157,6 @@ export const logoutController = async (
 
 export const checkToken = async (req: Request, res: Response) => {
   HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.TOKEN);
-};
-
-export const loginWithEncrypt = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const encrypted = req.header("X-Encrypted-Data") as string;
-  const iv = req.header("X-Encryption-IV") as string;
-
-  if (!encrypted || !iv) {
-    next(new ErrorApp(`You're not allowed to access`, 403, "FORBIDDEN"));
-  }
-
-  const result = await biometricAuthService(encrypted, iv, req.body?.fcmToken);
-
-  if (result instanceof ErrorApp) {
-    next(result);
-    return;
-  }
-
-  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, "Success login", result);
 };
 
 export const refreshTokenController = async (

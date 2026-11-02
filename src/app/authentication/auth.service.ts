@@ -39,7 +39,6 @@ import {
   incrementOtpAttempts,
 } from "./auth.repository";
 import { Query } from "../../interface/Query";
-import { decryptAES } from "../../utils/decrypt";
 import {
   historyCreateFlag,
   historyLoginFlag,
@@ -465,53 +464,6 @@ export const logoutService = async (userId: string) => {
     createdBy: user.id,
   });
   return response;
-};
-
-export const biometricAuthService = async (
-  encryptedEmail: string,
-  ivKey: string,
-  fcmToken?: string
-) => {
-  const email = decryptAES(
-    encryptedEmail,
-    ivKey,
-    environment.CRYPTO_SECRET_KEY
-  );
-  const user = await getUserByEmail(email);
-  if (!user) {
-    return new ErrorApp(
-      MESSAGES.ERROR.NOT_FOUND.USER.ACCOUNT,
-      404,
-      MESSAGE_CODE.NOT_FOUND
-    );
-  }
-
-  if (user.role === "ADMIN" && !user.memberId) {
-    return new ErrorApp(
-      MESSAGES.ERROR.UNAUTHORIZED.ADMIN,
-      401,
-      MESSAGE_CODE.UNAUTHORIZED
-    );
-  }
-
-  if (fcmToken) {
-    await createUserFCM(user.id, fcmToken as string);
-  }
-  await userLogin(user.id, true);
-
-  const token = signAccessToken(user.id);
-  const userInfo = {
-    name: user.name,
-    nim: user.nim,
-    role: user.role,
-  };
-  await historyLoginFlag({
-    module: HistoryModule.AUTH,
-    title: `New User Login (HIMTI APP) - ${user.name}`,
-    actionId: user.id,
-    createdBy: user.id,
-  });
-  return { access_token: token, user: userInfo };
 };
 
 export const refreshTokenService = async (token: string) => {
