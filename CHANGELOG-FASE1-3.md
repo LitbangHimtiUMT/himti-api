@@ -1,8 +1,10 @@
 # HIMTI API — CHANGELOG Fase 1–3 (Auth Repair)
 
-> **Status: WORKING TREE ONLY — belum commit, belum push, belum PR, belum merge,
-> belum deploy.** Dokumen ini ditulis agar induk (dan Wisnu) bisa verifikasi
-> mendalam dulu sebelum commit apa pun, sesuai aturan Wisnu.
+> **Status update: PR draft #5 sudah dibuka di `LitbangHimtiUMT/himti-api`
+> (commit `e225f7f`, 96 file) — BELUM merge, BELUM deploy.** Addendum clean
+> batch 2 di bawah ini masih working tree di atas commit itu, belum push.
+> Dokumen ini ditulis agar induk (dan Wisnu) bisa verifikasi mendalam dulu
+> sebelum commit/push apa pun, sesuai aturan Wisnu.
 >
 > Branch: `fix/himti-api-auth` · Base: `origin/main` `7307b28` · Worktree:
 > `~/workspace/himti-api-exec` (repo `~/workspace/himti-api` checkout `dev`
@@ -32,6 +34,36 @@
   paksa (alasan di §5); pola auth/upload dirapikan; perubahan klien minimal
   disiapkan sebagai working tree di 3 repo klien (tanpa commit/push);
   dokumen ini + catatan README.
+
+## Addendum — clean batch 2 + fix migrasi (2026-11-02, setelah PR #5 dibuka)
+
+- **Fix migrasi role (bug nyata, ditemukan dari error production Wisnu).**
+  File `20261102_user_role_default_user` awal menulis
+  `ALTER TABLE "User"` dan gagal `relation "User" does not exist`.
+  Penyebab: itu nama model Prisma, sedangkan tabelnya `"user"` lowercase
+  sesuai `@@map("user")` dan migrasi awal. Diperbaiki jadi
+  `ALTER TABLE "user"`. Migrasi sub-acara tidak kena bug ini.
+- **Dihapus (aman, sudah diverifikasi tidak direferensikan):**
+  `backup-storage.ts` dan `generate-postman.js` (seluruh isi terkomentari,
+  0 baris aktif), `query-db.ts` (script debug dengan ID hardcoded),
+  `test-connection.ts` (script tes koneksi). Service + controller
+  biometrik dihapus (route sudah stub 410 sejak Fase 1–3, controller tidak
+  dipakai route mana pun). Model `TicketSuport`, relasi di `User`, dan
+  pemetaan folder upload-nya dihapus, plus migrasi baru
+  `20261102_drop_ticket_suport` (DROP TABLE — destruktif, hanya setelah
+  backup).
+- **Diperbaiki, bukan dihapus:** skrip `lint` (flag `--ext` tidak valid di
+  ESLint 9) dan skrip `deploy:dev` yang menunjuk proyek gcloud pribadi
+  (bukan HIMTI) dihapus dari `package.json`.
+- **Sengaja dipertahankan dan didokumentasikan di README baru:**
+  pembuatan transaksi Midtrans (kelas berbayar masih memakainya; yang
+  mati hanya callback), storage attendances Cloudinary, notifikasi
+  Firebase, template sertifikat event, script absensi, seed dosen,
+  restore storage, dan koleksi Postman.
+- **Docs:** `readme.md` ditulis ulang (auth JWT-only, migrasi + urutan
+  deploy, yang dipertahankan, tools), `ROUTE-MATRIX.md` baru sebagai
+  matriks final per modul, dan dokumen ini diperbarui status PR-nya.
+  README lama yang penuh contoh usang sudah diganti, bukan ditambal.
 
 ## 0. Yang HARUS dilakukan Wisnu SEBELUM merge & SEBELUM deploy (pre-merge checklist)
 
