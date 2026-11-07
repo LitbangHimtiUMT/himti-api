@@ -7,6 +7,7 @@ import { IFilterLecturer, LecturerBodyDTO } from "./lecturers.dto";
 import {
   createLecturerService,
   deleteLecturerService,
+  getLecturerByIdService,
   getLecturerService,
   updateLecturerService,
 } from "./lecturers.service";
@@ -58,6 +59,26 @@ export const getLecturerController = async (
     MESSAGES.SUCCESS.DOSEN.GET,
     dosen?.data,
     dosen?.meta
+  );
+};
+
+export const getLecturerByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  const result = await getLecturerByIdService(id);
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.DOSEN.GET,
+    result
   );
 };
 

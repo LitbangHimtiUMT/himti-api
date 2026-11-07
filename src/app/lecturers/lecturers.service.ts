@@ -56,6 +56,18 @@ export const getLecturerService = async ({
   return { data: dosens || [], meta };
 };
 
+export const getLecturerByIdService = async (id: string) => {
+  const dosen = await getDosenById(id);
+  if (!dosen) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.DOSEN,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  return dosen;
+};
+
 export const deleteLecturerService = async ({ id }: LecturerBodyDTO) => {
   const matchDosen = await getDosenById(id as string);
 
