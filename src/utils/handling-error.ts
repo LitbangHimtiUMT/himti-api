@@ -18,8 +18,13 @@ export const HandlingError = async (
   const request = req as RequestWithAccessToken;
 
   const createdBy = request?.userId ?? undefined;
+  // Errors raised before the JSON body parser runs (e.g. CORS rejections)
+  // reach this handler with req.body undefined. Default it so the handler
+  // answers instead of throwing on Object.keys(undefined) and hanging
+  // the request (Express 4 does not rescue a throwing async handler).
+  const body = req.body ?? {};
   const isHaveParams = !!Object.keys(req.params).length;
-  const isHaveBody = !!Object.keys(req.body).filter(
+  const isHaveBody = !!Object.keys(body).filter(
     (item) => item?.toLowerCase() !== "password"
   ).length;
 
@@ -27,7 +32,7 @@ export const HandlingError = async (
   let statusCode = 500;
   let errorCode = MESSAGE_CODE.INTERNAL_SERVER_ERROR;
 
-  const { password, ...rest } = req.body;
+  const { password, ...rest } = body;
   password?.toString();
 
   // Dapatkan informasi endpoint yang diakses
