@@ -12,6 +12,7 @@ import {
 } from "../../utils/upload-file-to-storage";
 import { getEventById } from "../event/event.repository";
 import { SubAcaraBodyDTO, SubAcaraQuery } from "./sub-acara.dto";
+import { subAcaraDetailMapper, subAcaraListMapper } from "./sub-acara.mapper";
 import {
   createSubAcara,
   deleteSubAcara,
@@ -46,7 +47,7 @@ export const getSubAcaraService = async (query: SubAcaraQuery) => {
     getSubAcaraList(query),
     getSubAcaraCount(query),
   ]);
-  return { data, meta: Meta(Number(query.page ?? "1"), Number(query.perPage ?? "10"), totalData) };
+  return { data: subAcaraListMapper(data), meta: Meta(Number(query.page ?? "1"), Number(query.perPage ?? "10"), totalData) };
 };
 
 export const getSubAcaraDetailService = async (id: string) => {
@@ -58,7 +59,7 @@ export const getSubAcaraDetailService = async (id: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  return item;
+  return subAcaraDetailMapper(item);
 };
 
 export const createSubAcaraService = async (body: SubAcaraBodyDTO) => {
