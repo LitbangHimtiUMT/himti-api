@@ -15,6 +15,14 @@ export const getAllContactsService = async () => {
   return await findAllContacts();
 };
 
+export const getContactByIdService = async (id: string) => {
+  const contact = await findContactById(id);
+  if (!contact) {
+    return new ErrorApp("Contact not found", 404, MESSAGE_CODE.NOT_FOUND);
+  }
+  return contact;
+};
+
 export const createContactService = async (data: CreateContactInfoDTO) => {
   const existing = await findContactByKey(data.key);
   if (existing) {

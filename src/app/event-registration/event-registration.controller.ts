@@ -57,13 +57,14 @@ export const getEventRegistrations = async (
   next: NextFunction
 ) => {
   try {
-    const eventRegistrations = await EventRegistrationService.findAll();
+    const result = await EventRegistrationService.findAll(req.query);
     HandleResponse(
       res,
       200,
       MESSAGE_CODE.SUCCESS,
       "Event registrations retrieved successfully",
-      eventRegistrations
+      result.data,
+      result.meta
     );
   } catch (error) {
     if (error instanceof ErrorApp) {

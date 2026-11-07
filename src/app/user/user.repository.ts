@@ -9,61 +9,61 @@ import {
 import { Query } from "../../interface/Query";
 import { queryPagination } from "../../utils/pagination";
 
-export const getUsers = async (query: IFilterUser) => {
-  const { search, role, roles } = query;
-  let filter = {} as { OR: Prisma.UserWhereInput[] };
+// Search (nama/email/nim) dan filter role HARUS di-AND-kan: kondisi
+// search digabung OR di antara mereka sendiri, lalu role menjadi
+// syarat tambahan. Sebelumnya role di-push ke array OR yang sama,
+// sehingga filter admin + search "budi" mengembalikan semua admin
+// plus siapa pun bernama budi.
+const buildUserWhere = ({
+  search,
+  role,
+  roles,
+}: IFilterUser): Prisma.UserWhereInput => {
+  const where: Prisma.UserWhereInput = {};
 
   if (search) {
-    filter = {
-      ...filter,
-      OR: [
-        ...(filter?.OR ?? []),
-        {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
+    where.OR = [
+      {
+        name: {
+          contains: search,
+          mode: "insensitive",
         },
-        {
-          email: {
-            contains: search,
-            mode: "insensitive",
-          },
+      },
+      {
+        email: {
+          contains: search,
+          mode: "insensitive",
         },
-        {
-          nim: {
-            contains: search,
-            mode: "insensitive",
-          },
+      },
+      {
+        nim: {
+          contains: search,
+          mode: "insensitive",
         },
-      ],
-    };
+      },
+    ];
   }
 
   if (roles) {
     const parse = JSON.parse(roles ?? "[]") as Role[];
-    filter = {
-      ...filter,
-      OR: [
-        ...(filter?.OR ?? []),
-        {
-          role: {
-            in: parse,
-          },
+    if (parse.length) {
+      where.AND = {
+        role: {
+          in: parse,
         },
-      ],
-    };
+      };
+    }
   } else if (role) {
-    filter = {
-      ...filter,
-      OR: [
-        ...(filter?.OR ?? []),
-        {
-          role,
-        },
-      ],
+    where.AND = {
+      role,
     };
   }
+
+  return where;
+};
+
+export const getUsers = async (query: IFilterUser) => {
+  const filter = buildUserWhere(query);
 
   return await prisma.user.findMany({
     where: filter,
@@ -82,60 +82,8 @@ export const getUsers = async (query: IFilterUser) => {
   });
 };
 
-export const getUsersCount = async ({ search, role, roles }: IFilterUser) => {
-  let filter = {} as { OR: Prisma.UserWhereInput[], };
-
-  if (search) {
-    filter = {
-      ...filter,
-      OR: [
-        ...(filter?.OR ?? []),
-        {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          email: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          nim: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-      ],
-    };
-  }
-
-  if (roles) {
-    const parse = JSON.parse(roles ?? "[]") as Role[];
-    filter = {
-      ...filter,
-      OR: [
-        ...(filter?.OR ?? []),
-        {
-          role: {
-            in: parse,
-          },
-        },
-      ],
-    };
-  } else if (role) {
-    filter = {
-      ...filter,
-      OR: [
-        ...(filter?.OR ?? []),
-        {
-          role,
-        },
-      ],
-    };
-  }
+export const getUsersCount = async (query: IFilterUser) => {
+  const filter = buildUserWhere(query);
 
   return await prisma.user.count({
     where: filter,

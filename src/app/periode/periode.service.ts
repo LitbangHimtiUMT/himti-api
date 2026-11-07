@@ -37,6 +37,17 @@ export const getAllPeriodsService = async () => {
   }));
 };
 
+export const getPeriodByIdService = async (id: string) => {
+  const period = await findPeriodById(id);
+  if (!period) {
+    return new ErrorApp("Period not found", 404, MESSAGE_CODE.NOT_FOUND);
+  }
+  return {
+    ...period,
+    logo: period.logo ? ImagePath(`periode/${period.logo}`) : null,
+  };
+};
+
 export const createPeriodService = async (
   data: CreatePeriodeDTO,
   logoFile?: Express.Multer.File
