@@ -5,6 +5,10 @@ export interface MemberBodyDTO {
     name?: string,
     generationId?: string,
     isActive?: boolean
+    facebook?: string
+    instagram?: string
+    twitter?: string
+    linkedin?: string
 }
 
 export interface MemberSosmedDTO {

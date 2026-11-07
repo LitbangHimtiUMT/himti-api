@@ -82,7 +82,8 @@ export const getUserService = async (userId: string) => {
 
 export const updateUserService = async (
   userId: string,
-  data: UpdateUserBodyRequest
+  data: UpdateUserBodyRequest,
+  callerRole?: string
 ) => {
   const user = await getUserById(userId);
   if (!user) {
@@ -93,7 +94,16 @@ export const updateUserService = async (
     );
   }
 
-  const result = await updateUser(userId, data);
+  // Hanya SUPER_ADMIN boleh mengubah role lewat endpoint ini. ADMIN
+  // biasa tetap bisa mengedit field lain (nama/email), tapi `role`
+  // dibuang diam-diam dari data update supaya tidak terjadi eskalasi
+  // ADMIN -> SUPER_ADMIN lewat form Edit User di CMS.
+  const safeData = { ...data };
+  if (callerRole !== "SUPER_ADMIN") {
+    delete safeData.role;
+  }
+
+  const result = await updateUser(userId, safeData);
   return result;
 };
 
@@ -111,7 +121,11 @@ export const updateUserRoleService = async (userId: string, role: Role) => {
   return result;
 };
 
-export const deleteUserService = async (userId: string) => {
+export const deleteUserService = async (
+  userId: string,
+  callerId?: string,
+  callerRole?: string
+) => {
   const user = await getUserById(userId);
   if (!user) {
     return new ErrorApp(
@@ -120,6 +134,30 @@ export const deleteUserService = async (userId: string) => {
       MESSAGE_CODE.NOT_FOUND
     );
   }
+
+  // Bila pemanggil diketahui (jalur admin DELETE /:userId): tolak hapus
+  // diri sendiri, dan hanya SUPER_ADMIN yang boleh menghapus akun
+  // ber-role ADMIN/SUPER_ADMIN. Tanpa caller (jalur self-delete
+  // DELETE /), pemeriksaan ini dilewati seperti sebelumnya.
+  if (callerId && user.id === callerId) {
+    return new ErrorApp(
+      MESSAGES.ERROR.FORBIDDEN.ROLE,
+      403,
+      MESSAGE_CODE.FORBIDDEN
+    );
+  }
+  if (
+    callerId &&
+    (user.role === "ADMIN" || user.role === "SUPER_ADMIN") &&
+    callerRole !== "SUPER_ADMIN"
+  ) {
+    return new ErrorApp(
+      MESSAGES.ERROR.FORBIDDEN.ROLE,
+      403,
+      MESSAGE_CODE.FORBIDDEN
+    );
+  }
+
   const result = await deleteUser(userId);
   return result;
 };

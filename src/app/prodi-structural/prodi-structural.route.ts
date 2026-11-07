@@ -5,6 +5,7 @@ import { upload } from "../../utils/upload-file-to-storage";
 import {
   createProdiStructuralController,
   deleteProdiStructuralController,
+  getProdiStructuralByIdController,
   getProdiStructuralController,
   updateProdiStructuralController,
 } from "./prodi-structural.controller";
@@ -12,6 +13,7 @@ import {
 const route = Router();
 
 route.get("/", CatchWrapper(getProdiStructuralController));
+route.get("/:id", CatchWrapper(getProdiStructuralByIdController));
 route.post("/", VerifyAdmin, upload.single("image"), CatchWrapper(createProdiStructuralController));
 route.put("/:id", VerifyAdmin, upload.single("image"), CatchWrapper(updateProdiStructuralController));
 route.delete("/:id", VerifyAdmin, CatchWrapper(deleteProdiStructuralController));

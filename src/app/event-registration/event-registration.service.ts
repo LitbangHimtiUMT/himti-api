@@ -150,21 +150,28 @@ export const create = async (
   }
 };
 
-export const findAll = async (): Promise<EventRegistrationDTO[]> => {
-  const eventRegistrations =
-    await eventRegistrationRepository.getEventRegistrationsRepository();
+export const findAll = async (
+  query: Query = {}
+): Promise<{ data: EventRegistrationDTO[]; meta: ReturnType<typeof Meta> }> => {
+  const { page = "1", perPage = "10" } = query;
+  const [eventRegistrations, total] = await Promise.all([
+    eventRegistrationRepository.getEventRegistrationsRepository(query),
+    eventRegistrationRepository.getEventRegistrationsCountRepository(query),
+  ]);
   const registrationTypeMap = await buildRegistrationTypeMap(
     eventRegistrations
       .map((item) => item.registrationTypeId)
       .filter((id): id is string => Boolean(id))
   );
-  return eventRegistrations.map((eventRegistration) =>
+  const data = eventRegistrations.map((eventRegistration) =>
     eventRegistrationMapper(
       eventRegistration,
       registrationTypeMap.get(eventRegistration.registrationTypeId ?? "") ||
         null
     )
   );
+  const meta = Meta(Number(page), Number(perPage), total);
+  return { data, meta };
 };
 
 export const findById = async (id: string): Promise<EventRegistrationDTO> => {

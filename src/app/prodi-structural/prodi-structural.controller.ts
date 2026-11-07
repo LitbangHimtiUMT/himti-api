@@ -10,6 +10,7 @@ import {
   createProdiStructuralService,
   deleteProdiStructuralService,
   getAllProdiStructuralService,
+  getProdiStructuralByIdService,
   updateProdiStructuralService,
 } from "./prodi-structural.service";
 
@@ -20,6 +21,19 @@ export const getProdiStructuralController = async (
 ) => {
   const result = await getAllProdiStructuralService();
   HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, "Success get prodi structural list", result);
+};
+
+export const getProdiStructuralByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  const result = await getProdiStructuralByIdService(id);
+  if (result instanceof ErrorApp) {
+    return next(result);
+  }
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, "Success get prodi structural", result);
 };
 
 export const createProdiStructuralController = async (

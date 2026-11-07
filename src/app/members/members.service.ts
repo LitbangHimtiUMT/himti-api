@@ -45,6 +45,10 @@ export const createAnggotaService = async ({
   nim,
   generationId,
   isActive,
+  facebook,
+  instagram,
+  twitter,
+  linkedin,
 }: MemberBodyDTO) => {
   const validate = await anggotaValidate({
     name: name as string,
@@ -60,6 +64,10 @@ export const createAnggotaService = async ({
     isActive,
     name,
     nim,
+    facebook,
+    instagram,
+    twitter,
+    linkedin,
   });
   return anggota;
 };
@@ -123,6 +131,10 @@ export const updateAnggotaService = async ({
   isActive,
   generationId,
   nim,
+  facebook,
+  instagram,
+  twitter,
+  linkedin,
 }: MemberBodyDTO) => {
   const matchAnggota = await getMemberById(id as string);
 
@@ -149,6 +161,10 @@ export const updateAnggotaService = async ({
   if (isActive !== undefined) updateFields.isActive = isActive;
   if (generationId !== undefined) updateFields.generationId = generationId;
   if (nim !== undefined) updateFields.nim = nim.toString();
+  if (facebook !== undefined) updateFields.facebook = facebook;
+  if (instagram !== undefined) updateFields.instagram = instagram;
+  if (twitter !== undefined) updateFields.twitter = twitter;
+  if (linkedin !== undefined) updateFields.linkedin = linkedin;
 
   const anggota = await updateMember(updateFields);
 

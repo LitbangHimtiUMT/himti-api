@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../config";
 import { Query } from "../../interface/Query";
 import { queryPagination } from "../../utils/pagination";
@@ -28,8 +29,38 @@ export const getEventRegistrationByNIM = async (
   });
 };
 
-export const getEventRegistrationsRepository = async () => {
-  return await prisma.eventRegistration.findMany();
+export const getEventRegistrationsRepository = async (query: Query = {}) => {
+  const { search } = query;
+  return await prisma.eventRegistration.findMany({
+    where: {
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { nim: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+    },
+    ...queryPagination(query),
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+export const getEventRegistrationsCountRepository = async (
+  query: Query = {}
+) => {
+  const { search } = query;
+  return await prisma.eventRegistration.count({
+    where: {
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { nim: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+    },
+  });
 };
 
 export const getEventRegistrationByIdRepository = async (id: string) => {
@@ -87,20 +118,26 @@ export const getEventRegistrationsByRegistrationTypeRepository = async (
   registrationTypeId: string,
   query: Query
 ) => {
+  const { search } = query;
+  const where: Prisma.EventRegistrationWhereInput = {
+    registrationTypeId,
+    ...(search && {
+      OR: [
+        { name: { contains: search, mode: "insensitive" } },
+        { nim: { contains: search, mode: "insensitive" } },
+      ],
+    }),
+  };
   const [data, total] = await Promise.all([
     prisma.eventRegistration.findMany({
-      where: {
-        registrationTypeId,
-      },
+      where,
       ...queryPagination(query),
       orderBy: {
         createdAt: "desc",
       },
     }),
     prisma.eventRegistration.count({
-      where: {
-        registrationTypeId,
-      },
+      where,
     }),
   ]);
 

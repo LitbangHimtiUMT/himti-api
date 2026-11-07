@@ -110,7 +110,11 @@ export const updateStrukturalController = async (
     isActive,
     memberId,
     jabatan,
-    image: req.file?.path,
+    // Upload memakai multer.memoryStorage, jadi file tidak punya `.path`
+    // (hanya buffer/originalname/mimetype). Oper objek file-nya, seperti
+    // create — sebelumnya `req.file?.path` selalu undefined sehingga
+    // foto baru diam-diam tidak pernah tersimpan.
+    image: req.file,
   });
   if (struktural instanceof ErrorApp) {
     next(struktural);

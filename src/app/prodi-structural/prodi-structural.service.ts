@@ -25,6 +25,21 @@ export const getAllProdiStructuralService = async () => {
   }));
 };
 
+export const getProdiStructuralByIdService = async (id: string) => {
+  const item = await findProdiStructuralById(id);
+  if (!item) {
+    return new ErrorApp(
+      "Prodi structural record not found",
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  return {
+    ...item,
+    image: item.image ? ImagePath(`prodi-structural/${item.image}`) : null,
+  };
+};
+
 export const createProdiStructuralService = async (
   data: CreateProdiStructuralDTO,
   imageFile?: Express.Multer.File

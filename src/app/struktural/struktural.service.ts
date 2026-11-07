@@ -214,7 +214,10 @@ export const updateStrukturalService = async ({
     updateFields.isActive = JSON.parse(String(isActive));
   if (memberId !== undefined) updateFields.memberId = memberId;
   if (jabatan !== undefined) updateFields.jabatan = replaceJabatan;
-  if (!image) updateFields.image = filename;
+  // `filename` hanya terisi bila ada file baru yang di-upload; kondisi
+  // terbalik di sini (`!image`) membuat foto baru tidak pernah
+  // tersimpan ke DB meskipun file sudah naik ke storage.
+  if (image) updateFields.image = filename;
 
   const response = await updateStructural(updateFields);
 
