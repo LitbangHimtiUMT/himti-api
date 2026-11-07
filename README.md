@@ -56,9 +56,18 @@ menulis nilai variabel ke repo, log, atau chat. Contoh lengkap ada di
 | `AWS_STORAGE_ENDPOINT`, `AWS_STORAGE_REGION`, `AWS_STORAGE_BUCKET`, `AWS_STORAGE_BUCKET_FOLDER`, `AWS_STORAGE_ACCESS_KEY`, `AWS_STORAGE_SECRET_KEY` | Storage S3-compatible (semua upload, termasuk attendances) |
 | `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | Firebase (notifikasi) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_LOGIN`, `EMAIL_SENDER` | Pengiriman email |
-| `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_SNAP_URL` | Pembayaran Midtrans |
-| `LIBREOFFICE_PATH`, `CLOUDCONVERT_API_KEY`, `REPLICATE_API_TOKEN` | Opsional: konversi dokumen (LibreOffice lokal / CloudConvert) dan fitur AI (Replicate) |
+| `CLOUDCONVERT_API_KEY`, `REPLICATE_API_TOKEN` | Konversi dokumen di production (CloudConvert) dan fitur AI (Replicate) |
 | `ANGGOTA_CODE`, `UNDER_MAINTENANCE` | Kode anggota dan mode maintenance (`YES`/`NO`) |
+
+Variabel berikut dibaca kode tapi tidak di-set di Vercel production:
+
+| Variabel | Akibat di production |
+| --- | --- |
+| `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_SNAP_URL` | Pembuatan transaksi kelas berbayar gagal |
+| `LIBREOFFICE_PATH` | Tidak berpengaruh; opsional, hanya override path binary lokal (production memakai CloudConvert) |
+
+Kalau salah satu fitur di atas dipakai di production, tambahkan dulu
+variabelnya di Vercel.
 
 ## Struktur proyek
 
@@ -108,8 +117,10 @@ Endpoint yang dimatikan, jangan diaktifkan lagi tanpa keputusan eksplisit:
 - `POST /seed-generation-2022` dan `/scheduling-notification-meeting`:
   dihapus dari routing.
 - `POST /lms/transactions/callback`: stub 410. Pembuatan transaksi
-  Midtrans untuk kelas berbayar masih hidup
-  (`src/app/midtrans/midtrans.service.ts`); yang mati hanya callback-nya,
+  Midtrans untuk kelas berbayar masih hidup di kode
+  (`src/app/midtrans/midtrans.service.ts`), tapi `MIDTRANS_SERVER_KEY`
+  dan `MIDTRANS_SNAP_URL` tidak di-set di production, jadi pembuatan
+  transaksi gagal di production. Yang mati hanya callback-nya,
   karena signature-nya tidak pernah diverifikasi.
 - `POST /auth/biometric`: stub 410, service dan controller-nya sudah
   dihapus. Kembali hanya dengan second factor nyata.
@@ -163,7 +174,7 @@ restore DB bila migrasi/data berubah.
 ## Yang sengaja dipertahankan
 
 - Semua upload, termasuk attendances, pakai storage S3-compatible. Wiring Cloudinary lama sudah dihapus karena tidak ada yang memakai.
-- Pembuatan transaksi Midtrans masih hidup (lihat di atas); yang mati
+- Pembuatan transaksi Midtrans masih hidup (lihat di atas), tapi `MIDTRANS_SERVER_KEY` dan `MIDTRANS_SNAP_URL` tidak di-set di production, jadi pembuatan transaksi gagal di production. Yang mati hanya callback-nya.
   hanya callback-nya.
 - Notifikasi Firebase masih hidup (`src/utils/firebase-config.ts`).
 - Template sertifikat event masih hidup lewat attendances; template
