@@ -241,6 +241,10 @@ export const createMember = async ({
   isActive,
   name,
   nim,
+  facebook,
+  instagram,
+  twitter,
+  linkedin,
 }: MemberBodyDTO) => {
   return await prisma.member.create({
     data: {
@@ -248,6 +252,10 @@ export const createMember = async ({
       nim: nim?.toString() as string,
       generationId: generationId as string,
       isActive,
+      facebook,
+      instagram,
+      twitter,
+      linkedin,
     },
   });
 };

@@ -68,7 +68,7 @@ export const getRegistrationTypes = async (
   next: NextFunction
 ) => {
   try {
-    const { type, isActive, eventId } = req.query;
+    const { type, isActive, eventId, page, perPage, search } = req.query;
     const filters = {
       ...(typeof type === "string" && type
         ? { type: type as RegistrationEventTypeEnum }
@@ -77,6 +77,13 @@ export const getRegistrationTypes = async (
         ? { isActive: isActive === "true" }
         : {}),
       ...(typeof eventId === "string" && eventId ? { eventId } : {}),
+      // Sebelumnya page/perPage/search tidak pernah diteruskan ke
+      // service, jadi halaman 2+ diam-diam mengembalikan halaman 1
+      // dan search tidak berpengaruh (repository sudah mendukung
+      // ketiganya — hanya controller yang tidak mengopernya).
+      ...(typeof page === "string" && page ? { page } : {}),
+      ...(typeof perPage === "string" && perPage ? { perPage } : {}),
+      ...(typeof search === "string" && search ? { search } : {}),
     };
     const registrationTypes = await RegistrationTypeService.getAll(filters);
     HandleResponse(

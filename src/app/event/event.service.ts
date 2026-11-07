@@ -180,7 +180,12 @@ export const updateEventService = async (
     endTime,
     isOpen,
     startTime,
-  }: CreateEventBodyRequest
+    // CMS mengirim `eventType`, DTO memakai `type` — samakan di sini
+    // seperti createEventService (destructure eventType, bukan type).
+    eventType,
+  }: Omit<CreateEventBodyRequest, "type"> & {
+    eventType: EventType;
+  }
 ) => {
   const matchAcara = await getEventById(id as string);
 
@@ -211,6 +216,7 @@ export const updateEventService = async (
 
   if (name) updateFields.name = name;
   if (description) updateFields.description = description;
+  if (eventType) updateFields.type = eventType;
   if (image) updateFields.image = filename;
   if (typeof isOpen !== "undefined")
     updateFields.isOpen = openValue(String(isOpen));

@@ -22,7 +22,7 @@ export const getStructuralDTOMapper = (data: StructuralData) => {
     image: data.image.includes("https")
       ? data.image
       : ImagePath(`struktural/${data.image}`),
-    memberId: "667ea366768c4c597992623e",
+    memberId: data.memberId,
     member: {
       id: data.Member.id,
       name: data.Member.name as string,

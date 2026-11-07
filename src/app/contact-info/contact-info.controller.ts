@@ -12,6 +12,7 @@ import {
   createContactService,
   deleteContactService,
   getAllContactsService,
+  getContactByIdService,
   updateContactService,
 } from "./contact-info.service";
 
@@ -22,6 +23,19 @@ export const getContactsController = async (
 ) => {
   const result = await getAllContactsService();
   HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, "Success get contacts", result);
+};
+
+export const getContactByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  const result = await getContactByIdService(id);
+  if (result instanceof ErrorApp) {
+    return next(result);
+  }
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, "Success get contact", result);
 };
 
 export const createContactController = async (

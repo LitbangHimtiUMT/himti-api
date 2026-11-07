@@ -8,6 +8,7 @@ import {
   deletePeriodService,
   getActivePeriodService,
   getAllPeriodsService,
+  getPeriodByIdService,
   updatePeriodService,
 } from "./periode.service";
 
@@ -27,6 +28,19 @@ export const getPeriodsController = async (
 ) => {
   const result = await getAllPeriodsService();
   HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, "Success get all periods", result);
+};
+
+export const getPeriodByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  const result = await getPeriodByIdService(id);
+  if (result instanceof ErrorApp) {
+    return next(result);
+  }
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, "Success get period", result);
 };
 
 export const createPeriodController = async (

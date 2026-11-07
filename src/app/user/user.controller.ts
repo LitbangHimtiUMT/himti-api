@@ -78,13 +78,19 @@ export const getUserController = async (
 };
 
 export const updateUserController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
   const { userId } = req.params;
   const { body } = req;
-  const result = await updateUserService(userId, body);
+
+  // Teruskan peran pemanggil supaya service bisa membuang field `role`
+  // dari update bila pemanggil bukan SUPER_ADMIN (pola yang sama dengan
+  // createUserController). Request tidak di-403-kan: body.role selalu
+  // ada di payload CMS, jadi yang diblokir hanya perubahan role-nya.
+  const caller = req.userId ? await getUserById(req.userId) : null;
+  const result = await updateUserService(userId, body, caller?.role);
   if (result instanceof ErrorApp) {
     next(result);
     return;
@@ -142,12 +148,20 @@ export const deleteUserController = async (
 // diri sendiri dari token (DELETE /user tanpa id), jadi kalau CMS
 // dipaksa ke route itu, yang kehapus malah admin yang login.
 export const deleteUserByIdController = async (
-  req: Request,
+  req: RequestWithAccessToken,
   res: Response,
   next: NextFunction
 ) => {
   const { userId } = req.params;
-  const result = await deleteUserService(userId ?? "");
+
+  // Teruskan identitas pemanggil supaya service bisa menolak hapus
+  // akun ADMIN/SUPER_ADMIN oleh ADMIN biasa dan hapus diri sendiri.
+  const caller = req.userId ? await getUserById(req.userId) : null;
+  const result = await deleteUserService(
+    userId ?? "",
+    caller?.id,
+    caller?.role
+  );
   if (result instanceof ErrorApp) {
     next(result);
     return;
