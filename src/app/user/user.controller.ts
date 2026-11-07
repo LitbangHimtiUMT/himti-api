@@ -137,6 +137,29 @@ export const deleteUserController = async (
   );
 };
 
+// Hapus user lain oleh admin (dipakai CMS: DELETE /user/:id).
+// Jangan disamakan dengan deleteUserController di atas: yang itu hapus
+// diri sendiri dari token (DELETE /user tanpa id), jadi kalau CMS
+// dipaksa ke route itu, yang kehapus malah admin yang login.
+export const deleteUserByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.params;
+  const result = await deleteUserService(userId ?? "");
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.USER_DATA.DELETE
+  );
+};
+
 export const getUserWithoutMentorController = async (
   req: Request,
   res: Response,
