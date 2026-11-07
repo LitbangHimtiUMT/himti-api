@@ -53,8 +53,7 @@ menulis nilai variabel ke repo, log, atau chat. Contoh lengkap ada di
 | `JWT_SECRET`, `JWT_EXPIRES` | Kunci dan masa berlaku token JWT (`JWT_EXPIRES` default `3d`) |
 | `CORS_ALLOWED_ORIGINS` | Daftar origin diizinkan, dipisah koma. Production wajib diisi persis 4 origin di tabel klien di atas |
 | `SECRET_KEY`, `HEADER_KEY`, `CRYPTO_SECRET_KEY` | Kunci internal (enkripsi/payload). Header legacy sudah tidak dipakai sebagai auth |
-| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_CLOUD_NAME` | Storage attendances (Cloudinary) |
-| `AWS_STORAGE_ENDPOINT`, `AWS_STORAGE_REGION`, `AWS_STORAGE_BUCKET`, `AWS_STORAGE_BUCKET_FOLDER`, `AWS_STORAGE_ACCESS_KEY`, `AWS_STORAGE_SECRET_KEY` | Storage S3-compatible (upload selain attendances) |
+| `AWS_STORAGE_ENDPOINT`, `AWS_STORAGE_REGION`, `AWS_STORAGE_BUCKET`, `AWS_STORAGE_BUCKET_FOLDER`, `AWS_STORAGE_ACCESS_KEY`, `AWS_STORAGE_SECRET_KEY` | Storage S3-compatible (semua upload, termasuk attendances) |
 | `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | Firebase (notifikasi) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_LOGIN`, `EMAIL_SENDER` | Pengiriman email |
 | `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_SNAP_URL` | Pembayaran Midtrans |
@@ -163,8 +162,7 @@ restore DB bila migrasi/data berubah.
 
 ## Yang sengaja dipertahankan
 
-- Storage attendances masih Cloudinary, upload lain sudah S3-compatible.
-  Memindahkannya mengubah URL image lama, perlu rencana migrasi URL dulu.
+- Semua upload, termasuk attendances, pakai storage S3-compatible. Wiring Cloudinary lama sudah dihapus karena tidak ada yang memakai.
 - Pembuatan transaksi Midtrans masih hidup (lihat di atas); yang mati
   hanya callback-nya.
 - Notifikasi Firebase masih hidup (`src/utils/firebase-config.ts`).
