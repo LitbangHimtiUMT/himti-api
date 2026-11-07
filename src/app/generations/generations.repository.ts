@@ -34,6 +34,7 @@ export const getGenerations = async ({
     select: {
       id: true,
       year: true,
+      isActive: true,
     },
     take: perPage,
     skip: (Number(page) - 1) * Number(perPage),
