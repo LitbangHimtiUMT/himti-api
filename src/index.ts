@@ -2,10 +2,12 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
-import express from "express";
+import express, { type ErrorRequestHandler } from "express";
 import helmet from "helmet";
 import { environment } from "./libs";
 import routes from "./routes";
+import { MESSAGE_CODE } from "./utils/error-code";
+import { HandleResponse } from "./utils/handle-response";
 import { HandlingError } from "./utils/handling-error";
 
 const app = express();
@@ -39,6 +41,18 @@ const allowedOrigins = (
   .filter(Boolean);
 
 app.use(helmet());
+
+/**
+ * Never let a shared cache store API responses. Vercel's edge cache kept
+ * serving a stale Access-Control-Allow-Origin after the apex migration
+ * (2026-11-07), so every response carries `private, no-store`. Placed
+ * before cors so preflight responses are covered too.
+ */
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "private, no-store");
+  next();
+});
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -78,6 +92,25 @@ app.use(
     preflightContinue: false,
   })
 );
+
+/**
+ * A disallowed origin is a client error, not a server error. Answer 403
+ * here instead of letting it fall through to the generic error handler,
+ * which would log it as a 500 system error (DB write) for what is really
+ * a rejected client.
+ */
+const corsRejectionHandler: ErrorRequestHandler = (err, req, res, next) => {
+  if (err?.message === "Origin not allowed by CORS") {
+    return HandleResponse(
+      res,
+      403,
+      MESSAGE_CODE.FORBIDDEN,
+      "Origin not allowed by CORS"
+    );
+  }
+  return next(err);
+};
+app.use(corsRejectionHandler);
 
 app.use(cookieParser());
 app.use(express.json());
