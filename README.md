@@ -1,190 +1,176 @@
-# HIMTI API
+# himti-api
 
-API backend HIMTI UMT. Status: **production-ready**, live di Vercel,
-dipakai tiga klien: web utama, CMS, dan LMS.
+Backend API HIMTI UMT. Express + TypeScript + Prisma + Postgres (Neon).
+Live di `https://himti-api.vercel.app`, auto-deploy dari `main`.
 
-- Stack: Express + TypeScript + Prisma + PostgreSQL (Neon)
-- Auth: JWT-only
-- Deploy: Vercel, auto-deploy dari branch `main`
-- Base URL production: `https://himti-api.vercel.app`
+Dipakai 3 klien: web utama (`himtiumt.org`, `www.himtiumt.org`), CMS
+(`cms.himtiumt.org`), LMS (`lms.himtiumt.org`).
 
-| Klien | Origin |
-| --- | --- |
-| Web utama | `https://himtiumt.org`, `https://www.himtiumt.org` |
-| CMS | `https://cms.himtiumt.org` |
-| LMS | `https://lms.himtiumt.org` |
+## Jalanin lokal
 
-## Menjalankan lokal
-
-Prasyarat: Node.js 20+ (LTS), npm, dan akses ke database PostgreSQL
-(Neon untuk production; lokal boleh Postgres lokal).
+Butuh Node 20+ sama akses Postgres (Neon buat production, lokal bebas
+pakai Postgres lokal).
 
 ```bash
 npm install
-cp .env.example .env   # isi nilainya, jangan pernah commit file .env
+cp .env.example .env  # isi nilainya, jangan di-commit
 npx prisma generate
 npm run dev
 ```
 
-| Perintah | Fungsi |
-| --- | --- |
-| `npm run dev` | Jalankan dengan nodemon |
-| `npm run build` | `prisma generate && tsc` |
-| `npm start` | `node dist/index.js` |
-| `npm run lint` | `eslint ./src` |
-| `npx tsc --noEmit` | Typecheck tanpa emit |
-| `npm run seed:dosen` | Seed data dosen |
+Script yang ada: `npm run dev` (nodemon), `npm run build`
+(`prisma generate && tsc`), `npm start` (`node dist/index.js`),
+`npm run lint`, `npx tsc --noEmit`, `npm run seed:dosen`.
 
-Cek sebelum commit/push: `npm run build`, `npm run lint`,
-`npx tsc --noEmit`. Lihat [CONTRIBUTING.md](CONTRIBUTING.md) untuk
-aturan kontribusi lengkap.
+Sebelum commit/push: `npm run build`, `npm run lint`,
+`npx tsc --noEmit`. Aturan lengkap ada di
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Environment variables
+## Env vars
 
-Nama variabel saja, tanpa nilai. Nilai aslinya hanya ada di
-Vercel dashboard (production) dan file `.env` lokal. Jangan pernah
-menulis nilai variabel ke repo, log, atau chat. Contoh lengkap ada di
+Nilai asli cuma ada di Vercel dashboard sama `.env` lokal. Jangan
+taruh nilai asli di repo, log, atau chat. Contoh lengkap di
 [.env.example](.env.example).
 
-| Variabel | Keterangan |
-| --- | --- |
-| `DATABASE_URL` | PostgreSQL (Neon di production) |
-| `PORT` | Port server, default `5000` kalau tidak diisi |
-| `JWT_SECRET`, `JWT_EXPIRES` | Kunci dan masa berlaku token JWT (`JWT_EXPIRES` default `3d`) |
-| `CORS_ALLOWED_ORIGINS` | Daftar origin diizinkan, dipisah koma. Production wajib diisi persis 4 origin di tabel klien di atas |
-| `SECRET_KEY`, `HEADER_KEY`, `CRYPTO_SECRET_KEY` | Kunci internal (enkripsi/payload). Header legacy sudah tidak dipakai sebagai auth |
-| `AWS_STORAGE_ENDPOINT`, `AWS_STORAGE_REGION`, `AWS_STORAGE_BUCKET`, `AWS_STORAGE_BUCKET_FOLDER`, `AWS_STORAGE_ACCESS_KEY`, `AWS_STORAGE_SECRET_KEY` | Storage S3-compatible (semua upload, termasuk attendances) |
-| `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | Firebase (notifikasi) |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_LOGIN`, `EMAIL_SENDER` | Pengiriman email |
-| `CLOUDCONVERT_API_KEY`, `REPLICATE_API_TOKEN` | Konversi dokumen di production (CloudConvert) dan fitur AI (Replicate) |
-| `ANGGOTA_CODE`, `UNDER_MAINTENANCE` | Kode anggota dan mode maintenance (`YES`/`NO`) |
+- `DATABASE_URL`: Postgres (Neon di production)
+- `PORT`: default `5000` kalau kosong
+- `JWT_SECRET`, `JWT_EXPIRES`: token JWT (`JWT_EXPIRES` default `3d`)
+- `CORS_ALLOWED_ORIGINS`: origin yang diizinkan, dipisah koma.
+  Production wajib diisi 4 origin di atas.
+- `SECRET_KEY`, `HEADER_KEY`, `CRYPTO_SECRET_KEY`: kunci internal.
+  Header legacy udah nggak dipakai buat auth.
+- `AWS_STORAGE_ENDPOINT`, `AWS_STORAGE_REGION`, `AWS_STORAGE_BUCKET`,
+  `AWS_STORAGE_BUCKET_FOLDER`, `AWS_STORAGE_ACCESS_KEY`,
+  `AWS_STORAGE_SECRET_KEY`: storage S3-compatible buat semua upload,
+  termasuk attendances.
+- `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`,
+  `FIREBASE_PRIVATE_KEY`: notifikasi.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`,
+  `SMTP_LOGIN`, `EMAIL_SENDER`: kirim email.
+- `CLOUDCONVERT_API_KEY`, `REPLICATE_API_TOKEN`: konversi dokumen
+  (production) dan fitur AI.
+- `ANGGOTA_CODE`, `UNDER_MAINTENANCE`: kode anggota dan mode
+  maintenance (`YES`/`NO`).
 
-Variabel berikut dibaca kode tapi tidak di-set di Vercel production:
+Yang dibaca kode tapi nggak di-set di production:
 
-| Variabel | Akibat di production |
-| --- | --- |
-| `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_SNAP_URL` | Pembuatan transaksi kelas berbayar gagal |
-| `LIBREOFFICE_PATH` | Tidak berpengaruh; opsional, hanya override path binary lokal (production memakai CloudConvert) |
+- `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_SNAP_URL`:
+  pembuatan transaksi kelas berbayar bakal gagal.
+- `LIBREOFFICE_PATH`: nggak ngaruh, opsional. Production pakai
+  CloudConvert.
 
-Kalau salah satu fitur di atas dipakai di production, tambahkan dulu
+Kalau fitur di atas mau dipakai di production, tambahin dulu
 variabelnya di Vercel.
 
-## Struktur proyek
+## Struktur
 
-- `src/index.ts`: entrypoint: helmet, `Cache-Control: private, no-store`,
-  CORS, cookie parser, JSON parser, routing, error handler.
+- `src/index.ts`: entrypoint. Helmet, `Cache-Control: private,
+  no-store`, CORS, cookie parser, JSON parser, routing, error handler.
 - `src/routes/index.ts`: mount semua modul.
-- `src/app/`: satu folder per modul: `authentication`, `profile`,
-  `members` (anggota), `lecturers` (dosen), `generations` (angkatan),
-  `struktural`, `prodi-structural`, `periode`, `event`, `sub-acara`,
-  `event-meeting`, `meetings`, `attendances` (absensi),
-  `event-registration`, `registration-type`, `business`, `achievements`
-  (prestasi), `history`, `notification`, `user-fcm`, `user`, `point`,
-  `contact-info`, `version`, `potential-users`, `potential-user-keys`,
-  `midtrans`, dan `lms/`.
-- `src/app/lms/`: kelas, sesi, modul, assignment, submission, peserta
-  kelas, mentor, kategori, transaksi, sertifikat, completed.
+- `src/app/`: satu folder per modul (auth, profile, anggota, dosen,
+  angkatan, struktural, acara, sub-acara, absensi, pendaftaran,
+  business, prestasi, dst, plus `lms/` dan `midtrans/`).
+- `src/app/lms/`: kelas, sesi, modul, assignment, submission,
+  peserta, mentor, kategori, transaksi, sertifikat.
 - `src/middleware/`: `verify-token`, `verify-admin`,
-  `verify-super-admin`, `verify-token-without-exp`, `validate-request`.
-- `src/utils/`: helper auth, upload, mail, Firebase, pagination, dan lain-lain.
+  `verify-super-admin`, `verify-token-without-exp`,
+  `validate-request`.
+- `src/utils/`: helper auth, upload, mail, Firebase, pagination.
 - `prisma/schema.prisma`: model database.
-- `ABSENSI.template.docx`: template runtime untuk export absensi
-  pendaftaran event (diisi data peserta oleh
-  `src/app/event-registration/event-registration.service.ts`).
-  `ABSENSI.docx` + `scripts/prepare-absensi-template.js` adalah sumber
-  pembuatan template itu, bukan dokumen.
-- `src/initial/seed-dosen.ts` (`npm run seed:dosen`): seed dosen.
-- `vercel.json`: deploy Vercel. `tsconfig.json`, `eslint.config.mjs`,
-  `nodemon.json`: config build/lint/dev.
+- `ABSENSI.template.docx`: template runtime buat export absensi
+  (diisi data peserta sama `event-registration.service.ts`).
+  Sumber pembuatnya `ABSENSI.docx` +
+  `scripts/prepare-absensi-template.js`.
+- `src/initial/seed-dosen.ts`: seed dosen (`npm run seed:dosen`).
+- `vercel.json`, `tsconfig.json`, `eslint.config.mjs`,
+  `nodemon.json`: config deploy/build/lint/dev.
 
 ## Auth
 
-JWT-only. Header rahasia legacy tidak lagi diterima sebagai auth di
-endpoint mana pun. Klien harus berhenti mengirimnya.
+JWT-only. Header rahasia legacy udah nggak diterima di endpoint
+mana pun, klien harus berhenti ngirimnya.
 
-- `verifyToken`: token access terverifikasi signature-nya dan user-nya ada.
-- `VerifyAdmin`: ADMIN atau SUPER_ADMIN. `VerifySuperAdmin`: SUPER_ADMIN saja.
-- `verifyRole`: role yang diminta, atau record mentor nyata untuk MENTOR.
-- Refresh: `POST /auth/refresh-token`.
-- LMS memakai ownership per kelas: peserta hanya kelasnya, mentor hanya
-  kelas yang ia buat atau ampu, admin semua kelas
-  (`src/utils/lms-access.ts`).
+- `verifyToken`: token valid dan user-nya ada.
+- `VerifyAdmin`: ADMIN atau SUPER_ADMIN. `VerifySuperAdmin`:
+  SUPER_ADMIN aja.
+- `verifyRole`: role yang diminta, atau record mentor nyata buat
+  MENTOR.
+- Refresh token: `POST /auth/refresh-token`.
+- LMS pakai ownership per kelas, bukan cuma role: peserta cuma
+  kelasnya sendiri, mentor cuma kelas yang dia buat/ampu, admin
+  semua kelas (`src/utils/lms-access.ts`).
 - Rate limit ada di auth, pendaftaran event, dan sertifikat.
 
-Endpoint yang dimatikan, jangan diaktifkan lagi tanpa keputusan eksplisit:
+Endpoint yang udah dimatiin, jangan dihidupin lagi tanpa keputusan:
 
-- `POST /initial`: dihapus dari routing.
-- `POST /seed-generation-2022` dan `/scheduling-notification-meeting`:
-  dihapus dari routing.
-- `POST /lms/transactions/callback`: stub 410. Pembuatan transaksi
-  Midtrans untuk kelas berbayar masih hidup di kode
-  (`src/app/midtrans/midtrans.service.ts`), tapi `MIDTRANS_SERVER_KEY`
-  dan `MIDTRANS_SNAP_URL` tidak di-set di production, jadi pembuatan
-  transaksi gagal di production. Yang mati hanya callback-nya,
-  karena signature-nya tidak pernah diverifikasi.
-- `POST /auth/biometric`: stub 410, service dan controller-nya sudah
-  dihapus. Kembali hanya dengan second factor nyata.
+- `POST /initial`, `POST /seed-generation-2022`,
+  `POST /scheduling-notification-meeting`: dihapus dari routing.
+- `POST /lms/transactions/callback`: stub 410. Bikin transaksi
+  Midtrans buat kelas berbayar masih ada di kode, tapi
+  `MIDTRANS_SERVER_KEY` dan `MIDTRANS_SNAP_URL` nggak di-set di
+  production, jadi bikin transaksi gagal di production. Yang mati
+  cuma callback-nya, soalnya signature-nya nggak pernah
+  diverifikasi.
+- `POST /auth/biometric`: stub 410. Service sama controller-nya
+  udah dihapus. Balik cuma kalau ada second factor beneran.
 
-Endpoint baru: `/sub-acara`, model anak Event (nama, deskripsi,
-image, waktu, `isOpenAbsen`, `eventId`), CRUD admin + baca publik.
+Lain-lain: `/sub-acara` (anak Event: nama, deskripsi, image, waktu,
+`isOpenAbsen`, `eventId`), CRUD admin + baca publik. Sertifikat:
+`GET /lms/certificates/file` cuma by-code (`?code=...`) + rate limit.
 
-Sertifikat: `GET /lms/certificates/file` hanya by-code (`?code=...`) +
-rate limit.
+## Route
 
-## Route, ringkas
-
-- Baca publik: prestasi, acara, dosen publik, anggota publik, generasi,
-  struktural baca, prodi-structural, periode, registration-type, business,
-  contact-info, version, katalog kelas LMS.
-- Tulis: admin, kecuali `POST /event-registration` (pendaftaran terbuka,
-  + rate limit dan validasi) dan endpoint auth dasar.
-- LMS: kelas, sesi, modul, assignment, submission, peserta, sertifikat
-  tunduk ownership per kelas, bukan cuma role. List peserta wajib manage
+- Baca publik: prestasi, acara, dosen publik, anggota publik,
+  generasi, struktural, prodi-structural, periode,
+  registration-type, business, contact-info, version, katalog kelas
+  LMS.
+- Tulis: admin. Kecuali `POST /event-registration` (pendaftaran
+  terbuka, + rate limit dan validasi) dan endpoint auth dasar.
+- LMS: kelas, sesi, modul, assignment, submission, peserta,
+  sertifikat ikut ownership per kelas. List peserta wajib manage
   kelas. Self-enrol wajib kelas PUBLISH + harga 0 + anti-duplikat.
-- Semua route lain yang dulu telanjang kini bergate JWT atau admin.
-  Kalau ada route yang tidak jelas gate-nya, baca file route-nya langsung,
-  jangan asumsi publik.
+- Route lain yang dulu telanjang sekarang ke-gate JWT atau admin.
+  Kalau gate-nya nggak jelas, baca file route-nya langsung.
 
 ## CORS
 
-- Allowlist ketat: 4 origin di tabel klien di atas, diatur lewat
+- Allowlist ketat, 4 origin di atas, diatur lewat
   `CORS_ALLOWED_ORIGINS` (wajib diisi di production).
-- Setiap respons membawa `Cache-Control: private, no-store`, termasuk
-  preflight, supaya edge cache tidak pernah menyimpan respons API
-  dengan header CORS basi.
+- Semua respons bawa `Cache-Control: private, no-store`, termasuk
+  preflight. Biar edge cache nggak nyimpen respons API dengan header
+  CORS basi.
 - Origin di luar allowlist dijawab 403, bukan 500.
-- Bridge sementara: header `x-api-key` masih diizinkan di preflight
-  karena klien production lama masih mengirimnya. Server mengabaikan
-  nilainya (auth JWT-only). Hapus baris ini setelah semua klien
-  redeploy tanpa header legacy.
+- Bridge sementara: header `x-api-key` masih diizinin di preflight
+  karena klien production lama masih ngirimnya. Server ngabaikan
+  nilainya (auth tetap JWT-only). Hapus baris ini setelah semua
+  klien redeploy tanpa header legacy.
 
 ## Database
 
-- PostgreSQL (Neon di production). Model di `prisma/schema.prisma`,
-  migrasi di `prisma/migrations/`.
-- Production: `npx prisma migrate deploy`.
-- Jangan jalankan migrasi tanpa backup database dulu.
+Postgres (Neon di production). Model di `prisma/schema.prisma`,
+migrasi di `prisma/migrations/`. Production:
+`npx prisma migrate deploy`. Jangan migrasi tanpa backup dulu.
 
 ## Deploy
 
-Merge ke `main` → Vercel auto-deploy. Urutan aman: API dulu, tunggu
-stabil, baru klien. Rollback: redeploy commit `main` sebelumnya dan
-restore DB bila migrasi/data berubah.
+Merge ke `main`, Vercel auto-deploy. Urutan aman: API dulu, tunggu
+stabil, baru klien. Rollback: redeploy commit `main` sebelumnya,
+restore DB kalau migrasi/data berubah.
 
-## Yang sengaja dipertahankan
+## Catatan
 
-- Semua upload, termasuk attendances, pakai storage S3-compatible. Wiring Cloudinary lama sudah dihapus karena tidak ada yang memakai.
-- Pembuatan transaksi Midtrans masih hidup (lihat di atas), tapi `MIDTRANS_SERVER_KEY` dan `MIDTRANS_SNAP_URL` tidak di-set di production, jadi pembuatan transaksi gagal di production. Yang mati hanya callback-nya.
-  hanya callback-nya.
+- Semua upload, termasuk attendances, pakai storage S3-compatible.
+  Wiring Cloudinary lama udah dihapus.
+- Bikin transaksi Midtrans masih hidup, tapi var-nya nggak di-set
+  di production (lihat di atas). Yang mati cuma callback-nya.
 - Notifikasi Firebase masih hidup (`src/utils/firebase-config.ts`).
 - Template sertifikat event masih hidup lewat attendances; template
-  dikirim sebagai buffer oleh caller.
-- Kedua lockfile (`package-lock.json` dan `yarn.lock`) sudah ada sejak
-  lama; pakai satu package manager secara konsisten per folder,
-  jangan dicampur.
+  dikirim sebagai buffer sama caller.
+- Ada dua lockfile (`package-lock.json` sama `yarn.lock`) dari dulu.
+  Pakai satu package manager aja per folder, jangan dicampur.
 
 ## Dokumen lain
 
-- [CONTRIBUTING.md](CONTRIBUTING.md): cara berkontribusi.
-- [SECURITY.md](SECURITY.md): cara melaporkan kerentanan.
-- [LICENSE.md](LICENSE.md): lisensi MIT.
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
+- [LICENSE.md](LICENSE.md) (MIT)
