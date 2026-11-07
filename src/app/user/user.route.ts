@@ -9,6 +9,7 @@ import {
 import { CatchWrapper } from "../../utils/catch-wrapper";
 import {
   createUserController,
+  deleteUserByIdController,
   deleteUserController,
   getUserController,
   getUsersController,
@@ -52,6 +53,10 @@ route
     CatchWrapper(updateUserRoleController)
   )
 
-  .delete("/", verifyToken, CatchWrapper(deleteUserController));
+  .delete("/", verifyToken, CatchWrapper(deleteUserController))
+  // CMS memanggil DELETE /user/:id untuk menghapus user lain.
+  // Sebelumnya route ini tidak ada, jadi request jatuh ke catch-all
+  // 404 "Route not found" di routes/index.ts.
+  .delete("/:userId", VerifyAdmin, CatchWrapper(deleteUserByIdController));
 
 export default route;
