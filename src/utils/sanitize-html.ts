@@ -13,7 +13,9 @@ import sanitizeHtml from "sanitize-html";
 //
 // NOT allowed: script/style content, event handlers, javascript: URLs,
 // iframes (video embeds are a separate youtubeId field, never part of this
-// HTML), and images (the editor has no image button).
+// HTML), and images (the editor has no image button). Links that open in a
+// new tab always get rel="noopener noreferrer" (see transformTags below) so
+// a pasted link cannot get window.opener access to the LMS tab.
 //
 // NOTE: this only covers content saved after this change. Rows already in
 // the database are left untouched; the client sanitizes on render.
@@ -56,6 +58,20 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     },
   },
   disallowedTagsMode: "discard",
+  // A pasted link with target="_blank" and no rel would give the new page
+  // window.opener access. Force the safe rel tokens, keeping any rel tokens
+  // the author already set.
+  transformTags: {
+    a: (tagName, attribs) => {
+      if (attribs.target !== "_blank") return { tagName, attribs };
+      const rel = new Set(
+        (attribs.rel || "").split(/\s+/).filter(Boolean)
+      );
+      rel.add("noopener");
+      rel.add("noreferrer");
+      return { tagName, attribs: { ...attribs, rel: [...rel].join(" ") } };
+    },
+  },
 };
 
 // Generic passthrough: null/undefined/"" come back exactly as they went in,
