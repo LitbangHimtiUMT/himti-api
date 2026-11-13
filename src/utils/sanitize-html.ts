@@ -1,5 +1,15 @@
 import sanitizeHtml from "sanitize-html";
 
+// PINNED: sanitize-html stays on 2.17.1 (exact, no caret) on purpose.
+// 2.17.2+ pulls htmlparser2 10/12, which is ESM-only, and the Vercel
+// Functions loader rejects require() of ES modules (ERR_REQUIRE_ESM) at
+// every Node version — the 2026-11-13 production outage. 2.17.1 is the
+// last version with a fully CommonJS tree (htmlparser2 8.x). Do NOT
+// upgrade past it without verifying the whole tree stays require()-able
+// from CommonJS under Node 18 (the strictest local proxy for the Vercel
+// loader). @types/sanitize-html is pinned to 2.13.0 for the same reason:
+// 2.16.x depends on htmlparser2 ^12.
+//
 // HTML authored in SunEditor (module text + assignment description) is stored
 // in the database and later rendered with dangerouslySetInnerHTML, so it must
 // be sanitized BEFORE it is saved. This mirrors the DOMPurify-default config
