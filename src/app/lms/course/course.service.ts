@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGE_CODE } from "../../../utils/error-code";
+import { MESSAGES } from "../../../utils/messages";
 
 export const evaluateCourseAnswer = async (
   moduleId: string,
@@ -11,8 +12,11 @@ export const evaluateCourseAnswer = async (
 ) => {
   const token = process.env.REPLICATE_API_TOKEN;
   if (!token) {
+    // Config detail stays server-side: HandlingError returns the
+    // ErrorApp message verbatim, so client-facing 500s are generic.
+    console.error("AI Evaluation Service Error: Replicate API token is not configured");
     throw new ErrorApp(
-      "Replicate API Token is not configured in the environment",
+      MESSAGES.ERROR.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       500,
       MESSAGE_CODE.INTERNAL_SERVER_ERROR
     );
@@ -63,8 +67,12 @@ Output Schema (must be exact JSON, no markdown code blocks, no additional text):
 
     const prediction = response.data;
     if (prediction.status !== "succeeded") {
+      console.error(
+        "AI Evaluation Service Error: Replicate prediction failed with status:",
+        prediction.status
+      );
       throw new ErrorApp(
-        `Replicate prediction failed with status: ${prediction.status}`,
+        MESSAGES.ERROR.SERVER_ERROR.INTERNAL_SERVER_ERROR,
         500,
         MESSAGE_CODE.INTERNAL_SERVER_ERROR
       );
@@ -72,8 +80,9 @@ Output Schema (must be exact JSON, no markdown code blocks, no additional text):
 
     const output = prediction.output;
     if (!output) {
+      console.error("AI Evaluation Service Error: no output from AI model");
       throw new ErrorApp(
-        "Failed to get output from AI model",
+        MESSAGES.ERROR.SERVER_ERROR.INTERNAL_SERVER_ERROR,
         500,
         MESSAGE_CODE.INTERNAL_SERVER_ERROR
       );
@@ -118,8 +127,10 @@ Output Schema (must be exact JSON, no markdown code blocks, no additional text):
     if (error instanceof ErrorApp) {
       throw error;
     }
+    // Upstream detail (Replicate response, axios message) stays in
+    // the server log above; the client only gets a generic 500.
     throw new ErrorApp(
-      `Evaluation error: ${error?.response?.data?.detail || error.message}`,
+      MESSAGES.ERROR.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       500,
       MESSAGE_CODE.INTERNAL_SERVER_ERROR
     );
