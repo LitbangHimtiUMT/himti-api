@@ -244,6 +244,20 @@ export const submitAssignmentService = async (
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+
+  // APPROVE is terminal: an approved assignment cannot be submitted again.
+  // REJECT stays resubmittable — only REVIEW and APPROVE block a new row.
+  const alreadyApproved = assignment.submission
+    .filter((item) => item.userId === data.submittedBy)
+    .find((item) => item.status === SubmissionStatus.APPROVE);
+
+  if (alreadyApproved) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.HAS_APPROVE_SUBMISION,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
   const isOpen = checkDueDate(new Date(assignment.dueDate));
   if (!isOpen) {
     return new ErrorApp(

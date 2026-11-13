@@ -157,6 +157,7 @@ export const MESSAGES = {
       ALREADY_INVITED: 'Mentor is already invited in this class',
       SELF_INVITED: 'You cannot invite yourself',
       HAS_REVIEW_SUBMISION: `You already have a review, waiting for approval and submit again`,
+      HAS_APPROVE_SUBMISION: `You already have an approved submission, you cannot submit again`,
     },
     UNAUTHORIZED: {
       AUTH: "If you are not logged in, please log in first",
