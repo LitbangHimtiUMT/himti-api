@@ -5,6 +5,7 @@ import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { Meta } from "../../../utils/meta";
+import { sanitizeUserHtml } from "../../../utils/sanitize-html";
 import {
   BUCKET_FOLDER,
   FileType,
@@ -85,7 +86,7 @@ export const createModuleService = async (
     const moduleService = await createModuleRepository({
       name,
       sessionId: validate.id,
-      textModule,
+      textModule: sanitizeUserHtml(textModule),
       videoUrl,
       fileModule: fileName,
     });

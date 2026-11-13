@@ -10,6 +10,7 @@ import { checkDueDate } from "../../../utils/generate-open";
 import { ErrorApp } from "../../../utils/http-error";
 import { ImagePath } from "../../../utils/image-path";
 import { MESSAGES } from "../../../utils/messages";
+import { sanitizeUserHtml } from "../../../utils/sanitize-html";
 import {
   BUCKET_FOLDER,
   RemoveFileFromStorage,
@@ -65,7 +66,7 @@ export const createAssignmentService = async (
   const result = await createAssignmentRepository({
     dueDate: data.dueDate,
     title: data.title,
-    description: data.description,
+    description: sanitizeUserHtml(data.description),
     moduleId,
     isFinalAssignment: data.isFinalAssignment,
     type: data.type,
@@ -122,7 +123,7 @@ export const updateAssignmentService = async (
   return await updateAssignmentRepository(assignment.id, {
     dueDate: data.dueDate,
     title: data.title,
-    description: data.description,
+    description: sanitizeUserHtml(data.description),
     isFinalAssignment: data.isFinalAssignment,
     type: data.type,
     allowedFile: data.allowedFile,
