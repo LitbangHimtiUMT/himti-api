@@ -5,6 +5,10 @@ import { MESSAGE_CODE } from "../utils/error-code";
 import { HandleResponse } from "../utils/handle-response";
 import { MESSAGES } from "../utils/messages";
 import { verifyAccessToken } from "../utils/auth-tokens";
+import {
+  extractAccessToken,
+  hasCookieCsrfHeader,
+} from "../utils/auth-cookies";
 import { Role } from "@prisma/client";
 import { getUserById } from "../app/authentication/auth.repository";
 import { getMentorByUserIdRepository } from "../app/lms/mentor/mentor.repository";
@@ -20,31 +24,52 @@ export enum RolesEnum {
   USER = "USER",
 }
 
-const extractBearer = (req: Request): string | null => {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith("Bearer ")) return null;
-  return auth.replace("Bearer ", "");
-};
-
 const unauthorized = (res: Response, message: string) =>
   HandleResponse(res, 401, MESSAGE_CODE.UNAUTHORIZED, message);
+
+const forbiddenCsrf = (res: Response) =>
+  HandleResponse(
+    res,
+    403,
+    MESSAGE_CODE.FORBIDDEN,
+    MESSAGES.ERROR.FORBIDDEN.CSRF
+  );
+
+/**
+ * CSRF check for cookie authentication, run after the signature
+ * verified and before any database lookup. Returns true when the
+ * request was rejected. Bearer requests always skip it.
+ */
+const rejectCookieWithoutCsrfHeader = (
+  req: Request,
+  res: Response,
+  method: string
+): boolean => {
+  if (method === "cookie" && !hasCookieCsrfHeader(req)) {
+    forbiddenCsrf(res);
+    return true;
+  }
+  return false;
+};
 
 /**
  * JWT-only authentication. The old header-secret bypass was removed:
  * a shared header is not user authentication, and the old code also
  * trusted an unverified decoded payload when a header was present.
  * Only a signature-verified access token, belonging to an existing
- * user, sets req.userId.
+ * user, sets req.userId. The token comes from the Authorization
+ * header (CMS, HIMTI APP) or the httpOnly access_token cookie (LMS).
  */
 export const verifyToken = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const token = extractBearer(req);
-  if (!token) {
+  const extracted = extractAccessToken(req);
+  if (!extracted) {
     return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN);
   }
+  const token = extracted.token;
   let decoded;
   try {
     decoded = verifyAccessToken(token);
@@ -56,6 +81,9 @@ export const verifyToken = async (
   }
   if (!decoded?.id) {
     return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
+  }
+  if (rejectCookieWithoutCsrfHeader(req, res, extracted.method)) {
+    return;
   }
   const user = await getUserById(decoded.id);
   if (!user) {
@@ -78,11 +106,12 @@ export const optionalAuth = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token = extractBearer(req);
-  if (!token) {
+  const extracted = extractAccessToken(req);
+  if (!extracted) {
     next();
     return;
   }
+  const token = extracted.token;
   let decoded;
   try {
     decoded = verifyAccessToken(token);
@@ -94,6 +123,9 @@ export const optionalAuth = async (
   }
   if (!decoded?.id) {
     return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
+  }
+  if (rejectCookieWithoutCsrfHeader(req, res, extracted.method)) {
+    return;
   }
   const user = await getUserById(decoded.id);
   if (!user) {
@@ -115,10 +147,11 @@ export const optionalAuth = async (
 export const verifyRole =
   (roles?: Roles) =>
   async (req: Request, res: Response, next: NextFunction) => {
-    const token = extractBearer(req);
-    if (!token) {
+    const extracted = extractAccessToken(req);
+    if (!extracted) {
       return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN);
     }
+    const token = extracted.token;
     let decoded;
     try {
       decoded = verifyAccessToken(token);
@@ -130,6 +163,9 @@ export const verifyRole =
     }
     if (!decoded?.id) {
       return unauthorized(res, MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED);
+    }
+    if (rejectCookieWithoutCsrfHeader(req, res, extracted.method)) {
+      return;
     }
     const user = await getUserById(decoded.id);
     if (!user) {

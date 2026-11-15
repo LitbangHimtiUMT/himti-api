@@ -5,6 +5,10 @@ import { MESSAGE_CODE } from "../utils/error-code";
 import { HandleResponse } from "../utils/handle-response";
 import { MESSAGES } from "../utils/messages";
 import { verifyAccessToken } from "../utils/auth-tokens";
+import {
+  extractAccessToken,
+  hasCookieCsrfHeader,
+} from "../utils/auth-cookies";
 
 /**
  * Logout-only gate: the signature MUST verify, but expiry is waived
@@ -19,8 +23,8 @@ export const VerifyTokenWithoutExp = async (
   res: Response,
   next: NextFunction
 ) => {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith("Bearer ")) {
+  const extracted = extractAccessToken(req);
+  if (!extracted) {
     return HandleResponse(
       res,
       401,
@@ -28,7 +32,7 @@ export const VerifyTokenWithoutExp = async (
       MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
     );
   }
-  const token = auth.replace("Bearer ", "");
+  const token = extracted.token;
   let decoded;
   try {
     decoded = verifyAccessToken(token);
@@ -62,6 +66,17 @@ export const VerifyTokenWithoutExp = async (
             MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
           );
         }
+        // CSRF check for cookie authentication. The expired error
+        // proves the signature verified, so this runs after signature
+        // verification here too. Bearer requests skip it.
+        if (extracted.method === "cookie" && !hasCookieCsrfHeader(req)) {
+          return HandleResponse(
+            res,
+            403,
+            MESSAGE_CODE.FORBIDDEN,
+            MESSAGES.ERROR.FORBIDDEN.CSRF
+          );
+        }
         (req as RequestWithAccessToken).userId = payload.id;
         next();
         return;
@@ -87,6 +102,16 @@ export const VerifyTokenWithoutExp = async (
       401,
       MESSAGE_CODE.UNAUTHORIZED,
       MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
+    );
+  }
+  // CSRF check for cookie authentication, after signature verification.
+  // Bearer requests skip it. This middleware does no database lookup.
+  if (extracted.method === "cookie" && !hasCookieCsrfHeader(req)) {
+    return HandleResponse(
+      res,
+      403,
+      MESSAGE_CODE.FORBIDDEN,
+      MESSAGES.ERROR.FORBIDDEN.CSRF
     );
   }
   (req as RequestWithAccessToken).userId = decoded.id;

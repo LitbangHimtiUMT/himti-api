@@ -15,6 +15,25 @@ import {
   requestOtpService,
   validateOtpService,
 } from "./auth.service";
+import {
+  clearAuthCookies,
+  extractRefreshToken,
+  setAuthCookies,
+} from "../../utils/auth-cookies";
+
+/**
+ * Login results come in two shapes: LMS returns
+ * { accessToken, refreshToken }, while app and admin login return
+ * { access_token, ... } with no refresh token. Only string fields
+ * that actually exist become cookies; the response body is untouched.
+ */
+const setCookiesFromLoginResult = (res: Response, login: unknown): void => {
+  const tokens = login as Record<string, unknown>;
+  setAuthCookies(res, {
+    accessToken: tokens.accessToken ?? tokens.access_token,
+    refreshToken: tokens.refreshToken,
+  });
+};
 
 export const registerController = async (
   req: Request,
@@ -48,7 +67,7 @@ export const loginController = async (
     next(login);
     return;
   }
-  res.cookie("access_token", login, { httpOnly: true });
+  setCookiesFromLoginResult(res, login);
   HandleResponse<LoginAuthResponse>(
     res,
     200,
@@ -70,7 +89,8 @@ export const loginAdminController = async (
     next(login);
     return;
   }
-  res.cookie("access_token", login, { httpOnly: true });
+  // Admin login has no refresh token, so only the access cookie is set.
+  setCookiesFromLoginResult(res, login);
   HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.USER, login);
 };
 
@@ -145,6 +165,9 @@ export const logoutController = async (
   res: Response,
   next: NextFunction
 ) => {
+  // Clear both cookies with the same paths they were set with, then
+  // run the existing logout (FCM cleanup). The body is untouched.
+  clearAuthCookies(res);
   const logout = await logoutService(req.userId as string);
 
   if (logout instanceof ErrorApp) {
@@ -164,15 +187,18 @@ export const refreshTokenController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const bearerToken = req.headers.authorization?.replace("Bearer ", "") ?? "";
-
-  const result = await refreshTokenService(bearerToken);
+  // Refresh accepts a Bearer token (CMS, HIMTI APP) or the
+  // path-restricted refresh_token cookie (LMS). No token at all
+  // reaches the service as "", which it already rejects with 401.
+  const extracted = extractRefreshToken(req);
+  const result = await refreshTokenService(extracted?.token ?? "");
 
   if (result instanceof ErrorApp) {
     next(result);
     return;
   }
 
+  setAuthCookies(res, result);
   HandleResponse(
     res,
     200,

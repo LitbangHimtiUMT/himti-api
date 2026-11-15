@@ -5,6 +5,10 @@ import { MESSAGE_CODE } from "../utils/error-code";
 import { HandleResponse } from "../utils/handle-response";
 import { MESSAGES } from "../utils/messages";
 import { verifyAccessToken } from "../utils/auth-tokens";
+import {
+  extractAccessToken,
+  hasCookieCsrfHeader,
+} from "../utils/auth-cookies";
 
 /**
  * Admin gate. The old code only checked the role inside the verify()
@@ -19,8 +23,8 @@ export const VerifyAdmin = async (
   res: Response,
   next: NextFunction
 ) => {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith("Bearer ")) {
+  const extracted = extractAccessToken(req);
+  if (!extracted) {
     return HandleResponse(
       res,
       401,
@@ -28,7 +32,7 @@ export const VerifyAdmin = async (
       MESSAGES.ERROR.UNAUTHORIZED.FORBIDDEN
     );
   }
-  const token = auth.replace("Bearer ", "");
+  const token = extracted.token;
   let decoded;
   try {
     decoded = verifyAccessToken(token);
@@ -54,6 +58,16 @@ export const VerifyAdmin = async (
       401,
       MESSAGE_CODE.UNAUTHORIZED,
       MESSAGES.ERROR.UNAUTHORIZED.RECOGNIZED
+    );
+  }
+  // CSRF check for cookie authentication, after signature verification
+  // and before the database lookup. Bearer requests skip it.
+  if (extracted.method === "cookie" && !hasCookieCsrfHeader(req)) {
+    return HandleResponse(
+      res,
+      403,
+      MESSAGE_CODE.FORBIDDEN,
+      MESSAGES.ERROR.FORBIDDEN.CSRF
     );
   }
   const user = await getUserById(decoded.id);
