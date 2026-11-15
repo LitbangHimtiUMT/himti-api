@@ -169,6 +169,7 @@ export const MESSAGES = {
     },
     FORBIDDEN: {
       ROLE: "You are not allowed to access this resource",
+      CSRF: "Missing X-Requested-With header for cookie authentication",
       ASSIGNMENT: "Only creator class can create assignment",
       APPROVE_SUBMISSION: "Only creator class can approve submission",
       REJECT_SUBMISSION: "Only creator class can approve submission",
