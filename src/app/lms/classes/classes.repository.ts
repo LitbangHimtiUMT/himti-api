@@ -26,9 +26,6 @@ export const getClassById = async (
         },
       category: true,
       session: {
-        ...(query && {
-          ...queryPagination(query),
-        }),
         orderBy: {
           createdAt: 'asc'
         },
