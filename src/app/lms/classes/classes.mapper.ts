@@ -161,6 +161,7 @@ export const getClassAccessMapper = (
       name: item.class.name,
       description: item.class.description,
       status: item.class.status,
+      completedAt: item.class.completedAt,
       thumbnail: ImagePath(`${BUCKET_FOLDER.class}/${item.class.thumbnail}`),
       level: item.class.level,
       price: Number(item.class.price),
@@ -185,9 +186,11 @@ export const getClassAccessMapper = (
       //   id: session.id,
       //   name: session.name,
       // })),
+      // Per-user: the class relation carries every participant's
+      // certificate, so match the certificate's owner, not the row's.
       certificate:
         item.class.certificate.find(
-          (cert) => cert.classId === item.classId && item.userId === userId
+          (cert) => cert.classId === item.classId && cert.userId === userId
         ) ?? null,
     };
   });
