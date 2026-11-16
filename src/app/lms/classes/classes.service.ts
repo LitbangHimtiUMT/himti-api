@@ -50,7 +50,6 @@ import {
   historyDeleteFlag,
   historyUpdateFlag,
 } from "../../history/history.repository";
-import { getSessionsCountRepository } from "../sessions/sessions.repository";
 import {
   isAdminRole,
   requireClassManage,
@@ -388,7 +387,6 @@ export const getDetailClassService = async (
   classId: string,
   userId?: string
 ) => {
-  const { page = "1", perPage = "10" } = query;
   const classess = await getClassById(classId, userId, query);
   if (!classess) {
     return new ErrorApp(
@@ -397,15 +395,15 @@ export const getDetailClassService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
-  const session = await getSessionsCountRepository({
-    ...query,
-    classId,
-  });
   const alreadyJoin = userId
     ? await getExistingClassParticipantRepository(classess.id, userId)
     : null;
 
-  const meta = Meta(Number(page), Number(perPage), session);
+  // Detail returns every session in one payload, so meta describes a
+  // single page holding all of them; perPage never drops to 0 on an
+  // empty class, which would make totalPages NaN.
+  const sessionCount = classess.session.length;
+  const meta = Meta(1, Math.max(sessionCount, 1), sessionCount);
   return {
     data: await getDetailClassMapper({
       ...classess,
