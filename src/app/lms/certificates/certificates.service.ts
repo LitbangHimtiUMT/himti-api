@@ -29,10 +29,10 @@ import {
  * Single graduation check (M30-SPESIAL §1.1), shared by generate and
  * eligibility. A participant graduates iff: enrolled in the class,
  * not a class manager (creator, co-mentor, or admin), the class is
- * not DRAFT, the class has at least one assignment, and every
- * assignment has an APPROVE submission from them. Module completion
- * counts are deliberately NOT consulted. The completed flag does
- * not affect claiming, so completedAt is never read here.
+ * not DRAFT, the mentor has marked the class completed, the class
+ * has at least one assignment, and every assignment has an APPROVE
+ * submission from them. Module completion counts are deliberately
+ * NOT consulted.
  *
  * Counting is per assignment, never per submission row: submissions
  * have no unique constraint, so one assignment with several rows
@@ -98,12 +98,14 @@ export const getCertificateEligibility = async (
   const eligible =
     !isManager &&
     klass.status !== ClassStatus.DRAFT &&
+    klass.completedAt !== null &&
     totalAssignments > 0 &&
     approvedAssignments === totalAssignments;
 
   return {
     kind: "ok",
     eligible,
+    classCompleted: klass.completedAt !== null,
     totalAssignments,
     approvedAssignments,
     assignments: mapped,
@@ -168,6 +170,7 @@ export const getCertificateEligibilityService = async (
   }
   return {
     eligible: eligibility.eligible,
+    classCompleted: eligibility.classCompleted,
     totalAssignments: eligibility.totalAssignments,
     approvedAssignments: eligibility.approvedAssignments,
     assignments: eligibility.assignments,
