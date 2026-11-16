@@ -30,3 +30,19 @@ export const createModuleValidate = async (
 
   return session;
 };
+
+export const updateModuleValidate = (
+  videoUrl?: string | null,
+  currentVideoUrl?: string | null
+) => {
+  if (videoUrl && videoUrl !== currentVideoUrl) {
+    const validUrl = isValidYouTubeUrl(videoUrl);
+    if (!validUrl) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.YOUTUBE_URL,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+  }
+};

@@ -1,7 +1,7 @@
 import { prisma } from "../../../config";
 import { Query } from "../../../interface/Query";
 import { queryPagination } from "../../../utils/pagination";
-import { type CreateModuleBodyRequest } from "./modules.dto";
+import { type CreateModuleBodyRequest, type UpdateModuleBodyRequest } from "./modules.dto";
 
 export const getModuleById = async (
   moduleId: string,
@@ -97,6 +97,25 @@ export const createModuleRepository = async (
           class: true,
         },
       },
+    },
+  });
+};
+
+export const updateModuleRepository = async (
+  moduleId: string,
+  data: Omit<UpdateModuleBodyRequest, "fileModule"> & { fileModule?: string }
+) => {
+  const { name, textModule, videoUrl, fileModule } = data;
+
+  return await prisma.module.update({
+    where: {
+      id: moduleId,
+    },
+    data: {
+      name,
+      textModule,
+      videoUrl,
+      fileModule,
     },
   });
 };

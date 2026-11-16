@@ -12,3 +12,10 @@ export const createModuleSchema = Joi.object({
   videoUrl: Joi.string().optional().allow(null),
   fileModule: Joi.any().optional().allow(null),
 });
+
+export const updateModuleSchema = Joi.object({
+  name: Joi.string().optional(),
+  textModule: Joi.string().optional().allow(null, ""),
+  videoUrl: Joi.string().optional().allow(null, ""),
+  fileModule: Joi.any().optional().allow(null),
+});

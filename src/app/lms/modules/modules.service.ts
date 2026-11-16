@@ -14,7 +14,7 @@ import {
   UploadFileToStorage,
 } from "../../../utils/upload-file-to-storage";
 import { getSessionById } from "../sessions/sessions.repository";
-import { CreateModuleBodyRequest } from "./modules.dto";
+import { CreateModuleBodyRequest, UpdateModuleBodyRequest } from "./modules.dto";
 import {
   getModuleMapper,
   getModulesMapper,
@@ -26,11 +26,13 @@ import {
   getModuleById,
   getModulesCountRepository,
   getModulesRepository,
+  updateModuleRepository,
 } from "./modules.repository";
-import { createModuleValidate } from "./modules.validate";
+import { createModuleValidate, updateModuleValidate } from "./modules.validate";
 import {
   historyCreateFlag,
   historyDeleteFlag,
+  historyUpdateFlag,
 } from "../../history/history.repository";
 import { HistoryModule } from "@prisma/client";
 import {
@@ -113,6 +115,114 @@ export const createModuleService = async (
     }
     return new ErrorApp(
       "Error when create class data or upload file to storage",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+};
+
+export const updateModuleService = async (
+  moduleId: string,
+  { name, textModule, videoUrl, fileModule }: UpdateModuleBodyRequest,
+  userId: string
+) => {
+  let fileName: string | undefined = undefined;
+  let dbUpdated = false;
+  try {
+    const modules = await getModuleById(moduleId);
+    if (!modules) {
+      return new ErrorApp(
+        MESSAGES.ERROR.NOT_FOUND.MODULE,
+        404,
+        MESSAGE_CODE.NOT_FOUND
+      );
+    }
+
+    const denied = await requireClassManage(
+      userId,
+      modules?.session?.class?.id ?? ""
+    );
+    if (denied) return denied;
+
+    const invalidVideoUrl = updateModuleValidate(videoUrl, modules.videoUrl);
+    if (invalidVideoUrl instanceof ErrorApp) {
+      return invalidVideoUrl;
+    }
+
+    if (fileModule) {
+      let buffer = fileModule.buffer;
+      fileName = `${fileModule?.originalname.replace(FileType[fileModule.mimetype], "")} - ${+new Date()}${FileType[fileModule.mimetype]}`;
+      const quality = (fileModule?.size as number) > 5 * 1024 * 1024 ? 75 : 100;
+      const formatFile = FileType[fileModule.mimetype];
+      if (
+        formatFile === ".jpeg" ||
+        formatFile === ".jpg" ||
+        formatFile === ".png"
+      ) {
+        buffer = await sharp(fileModule.buffer).webp({ quality }).toBuffer();
+      }
+
+      await UploadFileToStorage({
+        Bucket: environment.STORAGE.BUCKET,
+        Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${fileName}`,
+        Body: buffer,
+        ContentType: fileModule.mimetype,
+      });
+    }
+
+    const oldFileName = modules.fileModule;
+    const updatedModule = await updateModuleRepository(moduleId, {
+      name,
+      textModule: sanitizeUserHtml(textModule),
+      videoUrl: videoUrl === "" ? null : videoUrl,
+      fileModule: fileName,
+    });
+    dbUpdated = true;
+
+    if (name !== undefined && name !== modules.name) {
+      await historyUpdateFlag({
+        module: HistoryModule.CLASS,
+        title: `Update Module from ${modules.name} to ${name}`,
+        actionId: modules.session.class.id,
+        createdBy: userId,
+      });
+    }
+
+    // The old file is removed only after the database points at the
+    // new one, so a failed upload or update never leaves the module
+    // without a file. Cleanup failure must not fail an update that
+    // already succeeded.
+    if (fileName && oldFileName) {
+      const oldKey = `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${oldFileName}`;
+      try {
+        const exist = await GetFileFromStorage(oldKey);
+        if (exist.exists) {
+          await RemoveFileFromStorage(oldKey);
+        }
+      } catch (error) {
+        console.log({
+          error,
+        });
+      }
+    }
+
+    return updatedModule;
+  } catch (error) {
+    console.log({
+      error,
+    });
+    if (!dbUpdated && fileName) {
+      const exist = await GetFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${fileName}`
+      );
+      if (exist.exists) {
+        await RemoveFileFromStorage(
+          `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.modules}/${fileName}`
+        );
+      }
+    }
+    return new ErrorApp(
+      "Error when update module data or upload file to storage",
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
