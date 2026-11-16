@@ -37,6 +37,7 @@ model User {
   History               History[]
   ClassMentor           ClassMentor[]
   potentialUsers        PotentialUsers[]
+  Review                Review[]
 
   @@index([memberId], map: "user_fk_1")
   @@index([email], map: "user_fk_2")
@@ -352,12 +353,14 @@ model Class {
   price            Decimal            @db.Decimal()
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamp(0)
+  completedAt      DateTime?          @map("completed_at") @db.Timestamp(0)
   user             User               @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   category         Category           @relation(fields: [categoryId], onDelete: Cascade, onUpdate: NoAction, references: [id])
   session          Session[]
   classParticipant ClassParticipant[]
   completedClass   CompletedClass[]
   certificate      Certificate[]
+  review           Review[]
   cransaction      Transaction[]
   Meeting          Meeting[]
   ClassMentor      ClassMentor[]
@@ -466,6 +469,23 @@ model Certificate {
   @@index([classId], map: "certificates_fk_1")
   @@index([userId], map: "certificates_fk_2")
   @@map("certificates")
+}
+
+model Review {
+  id        String   @id @unique @default(uuid())
+  classId   String   @map("class_id") @db.VarChar(110)
+  userId    String   @map("user_id") @db.VarChar(110)
+  rating    Int
+  text      String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, classId], map: "reviews_user_class_unique")
+  @@index([classId], map: "reviews_fk_1")
+  @@index([userId], map: "reviews_fk_2")
+  @@map("reviews")
 }
 
 model Assignment {
@@ -669,6 +689,7 @@ enum Level {
 enum ClassStatus {
   DRAFT
   PUBLISH
+  ARCHIVED
 }
 
 enum AssignmentType {
@@ -761,4 +782,3 @@ model ContactInfo {
 
   @@map("contact_info")
 }
-
