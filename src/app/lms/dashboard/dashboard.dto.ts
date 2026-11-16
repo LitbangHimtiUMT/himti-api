@@ -11,6 +11,7 @@ export interface DashboardPerClassDTO {
   id: string;
   name: string;
   status: ClassStatus;
+  completedAt: Date | null;
   participants: number;
   pendingReviews: number;
   avgProgress: number;

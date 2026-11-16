@@ -33,6 +33,7 @@ export const getDashboardClassesRepository = async (userId: string) => {
       id: true,
       name: true,
       status: true,
+      completedAt: true,
     },
     orderBy: {
       createdAt: "asc",

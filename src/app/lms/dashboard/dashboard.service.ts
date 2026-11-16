@@ -146,6 +146,7 @@ export const getDashboardStatsService = async (
       id: klass.id,
       name: klass.name,
       status: klass.status,
+      completedAt: klass.completedAt,
       participants: members.size,
       pendingReviews: pendingByClass.get(klass.id) ?? 0,
       avgProgress,
