@@ -8,6 +8,13 @@ export interface CreateModuleBodyRequest {
   fileModule?: Express.Multer.File;
 }
 
+export interface UpdateModuleBodyRequest {
+  name?: string;
+  textModule?: string | null;
+  videoUrl?: string | null;
+  fileModule?: Express.Multer.File;
+}
+
 interface SubmissionDTO {
   id: string;
   file: string;
