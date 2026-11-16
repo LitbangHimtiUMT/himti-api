@@ -23,6 +23,7 @@ export interface AssignmentEligibility {
 
 export interface CertificateEligibilityDTO {
     eligible: boolean;
+    classCompleted: boolean;
     totalAssignments: number;
     approvedAssignments: number;
     assignments: AssignmentEligibility[];

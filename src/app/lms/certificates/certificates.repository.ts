@@ -82,6 +82,7 @@ export const getClassForEligibilityRepository = async (classId: string) => {
     select: {
       id: true,
       status: true,
+      completedAt: true,
     },
   });
 };
