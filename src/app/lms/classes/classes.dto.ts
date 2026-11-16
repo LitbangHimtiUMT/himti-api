@@ -1,4 +1,5 @@
 import { ClassStatus, Level } from "@prisma/client";
+import { ClassRatingAggregate } from "../reviews/reviews.dto";
 
 export interface CreateClassBodyRequest {
   name: string;
@@ -30,6 +31,7 @@ export interface ClassDTO {
   status: ClassStatus;
   completedAt?: Date | string | null;
   totalCertificates?: number;
+  rating?: ClassRatingAggregate | null;
   totalParticipant: number;
   isAlreadyJoin?: boolean
   level: Level;

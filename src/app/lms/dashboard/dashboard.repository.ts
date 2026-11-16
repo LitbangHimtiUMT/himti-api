@@ -80,6 +80,28 @@ export const getDashboardModuleCountsRepository = async (
   });
 };
 
+/**
+ * Rating average + count per class, one groupBy over the mentor's
+ * scoped class ids. Only rated classes appear; a class with no
+ * reviews is absent from the result, never a zero-average row.
+ */
+export const getDashboardRatingsRepository = async (classIds: string[]) => {
+  return await prisma.review.groupBy({
+    by: ["classId"],
+    where: {
+      classId: {
+        in: classIds,
+      },
+    },
+    _avg: {
+      rating: true,
+    },
+    _count: {
+      _all: true,
+    },
+  });
+};
+
 export const getDashboardModulesRepository = async (classIds: string[]) => {
   return await prisma.module.findMany({
     where: {

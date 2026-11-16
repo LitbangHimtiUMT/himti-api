@@ -92,6 +92,7 @@ export const MESSAGES = {
       CATEGORY: "Category is already exist",
       SESSION_CLASS: "Session already exists in this class",
       TICKET_SUPPORT_TODAY: `You're already submit ticket support today, please submit again tomorrow`,
+      REVIEW: "You have already reviewed this class",
     },
     INVALID: {
       GLOBAL: {
@@ -181,6 +182,8 @@ export const MESSAGES = {
       APPROVE_SUBMISSION: "Only creator class can approve submission",
       REJECT_SUBMISSION: "Only creator class can approve submission",
       DELETE_CLASS: "Only creator class can delete class",
+      REVIEW_NO_CERTIFICATE: "Only certificate holders can review this class",
+      REVIEW_MANAGER: "Class managers cannot review their own class",
     },
     REQUIRED: {
       EMAIL: "Email is required",
@@ -398,6 +401,10 @@ export const MESSAGES = {
       GENERATE: 'Success to generate certificate',
       GET: 'Success to get certificate',
       ELIGIBILITY: 'Success to get certificate eligibility',
+    },
+    REVIEW: {
+      GET: "Success to fetch class reviews",
+      CREATE: "Success to create class review",
     },
     ASSIGNMENT: {
       GET: "Success to fetch assignment",

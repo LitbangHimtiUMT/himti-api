@@ -46,6 +46,8 @@ import {
   updateStatusClass,
 } from "./classes.repository";
 import { getCertificatesCountByClassRepository } from "../certificates/certificates.repository";
+import { getClassRatingsRepository } from "../reviews/reviews.repository";
+import { ClassRatingAggregate } from "../reviews/reviews.dto";
 import { createClassValidate } from "./classes.validate";
 import {
   historyCreateFlag,
@@ -272,8 +274,27 @@ export const getClassService = async (query: Query, userId?: string) => {
 
   const meta = Meta(Number(page), Number(perPage), totalData);
 
+  // One groupBy for the whole page: rating aggregates ride along with
+  // the list instead of one query per class. An empty page skips the
+  // query entirely.
+  const ratings = new Map<string, ClassRatingAggregate>();
+  if (classess.length > 0) {
+    const ratingRows = await getClassRatingsRepository(
+      classess.map((klass) => klass.id)
+    );
+    for (const row of ratingRows) {
+      ratings.set(row.classId, {
+        average:
+          row._avg.rating === null
+            ? null
+            : Number(row._avg.rating.toFixed(2)),
+        count: row._count._all,
+      });
+    }
+  }
+
   return {
-    data: getClassMapper(classess as ClassData[]),
+    data: getClassMapper(classess as ClassData[], ratings),
     meta,
   };
 };

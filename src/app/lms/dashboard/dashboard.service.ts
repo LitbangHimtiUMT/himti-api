@@ -12,6 +12,7 @@ import {
   getDashboardModulesRepository,
   getDashboardParticipantsRepository,
   getDashboardPendingReviewsRepository,
+  getDashboardRatingsRepository,
   getDashboardReviewQueueRepository,
 } from "./dashboard.repository";
 
@@ -50,6 +51,7 @@ export const getDashboardStatsService = async (
     assignments,
     pendingReviews,
     certificates,
+    ratings,
     queue,
   ] = await Promise.all([
     getDashboardParticipantsRepository(classIds),
@@ -59,6 +61,7 @@ export const getDashboardStatsService = async (
     getDashboardAssignmentsRepository(classIds),
     getDashboardPendingReviewsRepository(classIds),
     getDashboardCertificatesRepository(classIds),
+    getDashboardRatingsRepository(classIds),
     getDashboardReviewQueueRepository(classIds),
   ]);
 
@@ -127,6 +130,22 @@ export const getDashboardStatsService = async (
     certificatesByClass.set(row.classId, row._count._all);
   }
 
+  const ratingsByClass = new Map<
+    string,
+    { average: number | null; count: number }
+  >();
+  for (const row of ratings) {
+    ratingsByClass.set(row.classId, {
+      // A group only exists when the class has reviews, so the
+      // average is a real number; the null stays for the type.
+      average:
+        row._avg.rating === null
+          ? null
+          : Number(row._avg.rating.toFixed(2)),
+      count: row._count._all,
+    });
+  }
+
   const perClass: DashboardPerClassDTO[] = classes.map((klass) => {
     const members = participantsByClass.get(klass.id) ?? new Set<string>();
     const totalModules = totalModulesByClass.get(klass.id) ?? 0;
@@ -142,6 +161,7 @@ export const getDashboardStatsService = async (
     }
     const avgProgress =
       members.size === 0 ? 0 : Number((progressSum / members.size).toFixed(2));
+    const rating = ratingsByClass.get(klass.id);
     return {
       id: klass.id,
       name: klass.name,
@@ -150,6 +170,8 @@ export const getDashboardStatsService = async (
       participants: members.size,
       pendingReviews: pendingByClass.get(klass.id) ?? 0,
       avgProgress,
+      ratingAverage: rating?.average ?? null,
+      ratingCount: rating?.count ?? 0,
     };
   });
 
