@@ -371,6 +371,9 @@ export const MESSAGES = {
       DELETE: "Success to delete class participant",
       UPDATE: "Success to update class participant",
     },
+    DASHBOARD: {
+      GET: "Success to fetch dashboard stats",
+    },
     TRANSACTION: {
       CALLBACK: "Success to callback transaction",
     },
