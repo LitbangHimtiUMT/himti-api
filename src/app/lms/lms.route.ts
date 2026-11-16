@@ -12,6 +12,7 @@ import { completedClassRoute } from "./completed-classes/completed-classes.route
 import { assignmentRoute } from "./assignment/assignment.route";
 import { certificateRoute } from "./certificates/certificates.route";
 import { courseRoute } from "./course/course.route";
+import { dashboardRoute } from "./dashboard/dashboard.route";
 
 export const lmsRoute = Router();
 
@@ -28,3 +29,4 @@ lmsRoute.use("/assignments", assignmentRoute);
 lmsRoute.use("/completed-modules", completedModuleRoute);
 lmsRoute.use("/completed-classes", completedClassRoute);
 lmsRoute.use("/course", courseRoute);
+lmsRoute.use("/dashboard", dashboardRoute);
