@@ -262,6 +262,19 @@ export const updateStatusClass = async (
   });
 };
 
+// Permanent: no repository function ever clears completedAt, and no
+// endpoint sets it to null.
+export const markClassCompletedRepository = async (classId: string) => {
+  return await prisma.class.update({
+    where: {
+      id: classId,
+    },
+    data: {
+      completedAt: new Date(),
+    },
+  });
+};
+
 export const deleteClassRepository = async (classId: string) => {
   return await prisma.class.delete({
     where: {

@@ -116,6 +116,47 @@ export const requireClassManage = async (
   );
 };
 
+/**
+ * Creator-or-admin scope for lifecycle transitions (publish, archive,
+ * unarchive, complete). Co-mentors do NOT pass: only the creator or
+ * an admin may move a class between lifecycle states. Takes the
+ * already-loaded createdBy so callers do not fetch the class twice.
+ */
+export const requireClassCreatorOrAdmin = async (
+  userId: string,
+  createdBy: string
+): Promise<ErrorApp | null> => {
+  if (createdBy === userId) return null;
+  if (await isAdminRole(userId)) return null;
+  return new ErrorApp(
+    MESSAGES.ERROR.INVALID.CREATOR_OR_ADMIN_ONLY,
+    400,
+    MESSAGE_CODE.BAD_REQUEST
+  );
+};
+
+/**
+ * Completed-class lock (M30 §2.3). A class with completedAt set is
+ * frozen: no content write may proceed. Lock-only by design: an
+ * empty id or a missing class returns null, so this never replaces
+ * a caller's own 404/403 check — it only adds the lock verdict.
+ */
+export const requireNotCompleted = async (
+  classId: string
+): Promise<ErrorApp | null> => {
+  if (!classId) return null;
+  const klass = await prisma.class.findUnique({
+    where: { id: classId },
+    select: { completedAt: true },
+  });
+  if (!klass?.completedAt) return null;
+  return new ErrorApp(
+    MESSAGES.ERROR.INVALID.CLASS_COMPLETED_LOCKED,
+    400,
+    MESSAGE_CODE.BAD_REQUEST
+  );
+};
+
 export const classIdFromSession = async (
   sessionId: string
 ): Promise<string | null> => {

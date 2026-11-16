@@ -6,6 +6,8 @@ import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import { createClassSchema, updateClassSchema } from "./classes.request";
 import {
+  archiveClassService,
+  completeClassService,
   createClassService,
   deleteClassessService,
   getClassService,
@@ -14,6 +16,7 @@ import {
   getDetailClassService,
   joinInvitationClassService,
   publishClassService,
+  unarchiveClassService,
   updateClassService,
   userJoinClassService,
 } from "./classes.service";
@@ -235,6 +238,66 @@ export const publishClassController = async (
     200,
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.CLASS.PUBLISH
+  );
+};
+
+export const archiveClassController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { classId } = params;
+  const result = await archiveClassService(classId, userId ?? "");
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.ARCHIVE
+  );
+};
+
+export const unarchiveClassController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { classId } = params;
+  const result = await unarchiveClassService(classId, userId ?? "");
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.UNARCHIVE
+  );
+};
+
+export const completeClassController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { classId } = params;
+  const result = await completeClassService(classId, userId ?? "");
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CLASS.COMPLETE
   );
 };
 

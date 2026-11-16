@@ -33,6 +33,7 @@ export interface ClassData extends Class {
     session: number;
   };
   isAlreadyJoin?: boolean;
+  totalCertificates?: number;
   certificate: Certificate[];
 }
 
@@ -46,6 +47,7 @@ export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
     name: item.name,
     description: item.description,
     status: item.status,
+    completedAt: item.completedAt,
     level: item.level,
     code: btoa(item.code),
     category: {
@@ -80,6 +82,8 @@ export const getDetailClassMapper = async (
     name: data.name,
     description: data.description,
     status: data.status,
+    completedAt: data.completedAt,
+    totalCertificates: data.totalCertificates,
     level: data.level,
     code: btoa(data.code),
     thumbnailFileSize: file?.buffer?.ContentLength ?? 0,
