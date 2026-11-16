@@ -15,6 +15,7 @@ import {
 } from "../../../utils/upload-file-to-storage";
 import { ModuleData } from "../modules/modules.mapper";
 import { ClassDTO } from "./classes.dto";
+import { ClassRatingAggregate } from "../reviews/reviews.dto";
 import { formatTime } from "../../../utils/format-time";
 
 interface SessionData extends Session {
@@ -41,13 +42,20 @@ export interface ClassParticipantData extends ClassParticipant {
   class: ClassData;
 }
 
-export const getClassMapper = (data: ClassData[]): ClassDTO[] => {
+export const getClassMapper = (
+  data: ClassData[],
+  ratings?: Map<string, ClassRatingAggregate>
+): ClassDTO[] => {
   return data.map((item) => ({
     id: item.id,
     name: item.name,
     description: item.description,
     status: item.status,
     completedAt: item.completedAt,
+    // Null when the class has no reviews: the groupBy behind the map
+    // only returns rated classes, so a miss means "unrated", never
+    // a zero average.
+    rating: ratings?.get(item.id) ?? null,
     level: item.level,
     code: btoa(item.code),
     category: {
