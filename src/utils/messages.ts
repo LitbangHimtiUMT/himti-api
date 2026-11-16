@@ -387,6 +387,7 @@ export const MESSAGES = {
     CERTIFICATE: {
       GENERATE: 'Success to generate certificate',
       GET: 'Success to get certificate',
+      ELIGIBILITY: 'Success to get certificate eligibility',
     },
     ASSIGNMENT: {
       GET: "Success to fetch assignment",

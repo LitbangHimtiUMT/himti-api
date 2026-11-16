@@ -64,6 +64,76 @@ export const getCertificateUser = async (userId: string, classId: string) => {
   });
 };
 
+export const getCertificatesCountByClassRepository = async (
+  classId: string
+) => {
+  return await prisma.certificate.count({
+    where: {
+      classId,
+    },
+  });
+};
+
+export const getClassForEligibilityRepository = async (classId: string) => {
+  return await prisma.class.findUnique({
+    where: {
+      id: classId,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+};
+
+export const getClassAssignmentsRepository = async (classId: string) => {
+  return await prisma.assignment.findMany({
+    where: {
+      module: {
+        session: {
+          classId,
+        },
+      },
+    },
+    select: {
+      id: true,
+      title: true,
+      moduleId: true,
+      module: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+  });
+};
+
+// Latest first: createdAt desc, id desc as the deterministic
+// tie-break (createdAt has 1-second resolution, so rows created in
+// the same second need a stable order). Callers take the first row
+// per assignmentId as the latest submission.
+export const getUserSubmissionsByAssignmentsRepository = async (
+  userId: string,
+  assignmentIds: string[]
+) => {
+  return await prisma.submission.findMany({
+    where: {
+      userId,
+      assignmentId: {
+        in: assignmentIds,
+      },
+    },
+    select: {
+      id: true,
+      assignmentId: true,
+      status: true,
+      createdAt: true,
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+  });
+};
+
 export const getCertificatesRepository = async(query: CertificateQuery, userId?: string) => {
   const {search, classId} = query
   return prisma.certificate.findMany({

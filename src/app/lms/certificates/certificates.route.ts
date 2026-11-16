@@ -2,6 +2,7 @@ import { Router } from "express";
 import { CatchWrapper } from "../../../utils/catch-wrapper";
 import {
   generateCertificateController,
+  getCertificateEligibilityController,
   getCertificatesController,
   getFileCertificateController,
 } from "./certificates.controller";
@@ -27,4 +28,5 @@ certificateRoute
   .get("/file", certificateFileLimiter, CatchWrapper(getFileCertificateController))
   .use(verifyToken)
   .post("/generate/:classId", CatchWrapper(generateCertificateController))
+  .get("/eligibility/:classId", CatchWrapper(getCertificateEligibilityController))
   .get("/", CatchWrapper(getCertificatesController));
