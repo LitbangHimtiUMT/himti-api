@@ -93,3 +93,31 @@ export function sanitizeUserHtml<T extends string | null | undefined>(
   if (typeof dirty !== "string" || dirty === "") return dirty;
   return sanitizeHtml(dirty, SANITIZE_OPTIONS) as T;
 }
+
+// Plain-text variant for class reviews (M27): every HTML tag is stripped
+// and only the text survives, because review text is stored as plain text
+// and rendered as text on the client — never as HTML. Uses the same pinned
+// sanitize-html parser as sanitizeUserHtml, with no tag allowed.
+//
+// The serializer escapes &, <, and > in the surviving text, so those three
+// entities are decoded back in a single pass afterwards: without it, an
+// ordinary review like "Q&A" would be stored as "Q&amp;A" and displayed
+// literally. Decoding after parsing cannot resurrect tags — the parser
+// already removed them, and the result is only ever rendered as text.
+const STRIP_ENTITIES: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+};
+
+export function stripAllHtmlTags(dirty: string): string {
+  const stripped = sanitizeHtml(dirty, {
+    allowedTags: [],
+    allowedAttributes: {},
+    disallowedTagsMode: "discard",
+  });
+  return stripped.replace(
+    /&(amp|lt|gt);/g,
+    (entity) => STRIP_ENTITIES[entity] ?? entity
+  );
+}
