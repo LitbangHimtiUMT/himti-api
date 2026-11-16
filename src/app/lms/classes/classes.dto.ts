@@ -28,6 +28,8 @@ export interface ClassDTO {
   name: string;
   description: string | null;
   status: ClassStatus;
+  completedAt?: Date | string | null;
+  totalCertificates?: number;
   totalParticipant: number;
   isAlreadyJoin?: boolean
   level: Level;

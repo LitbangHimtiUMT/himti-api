@@ -7,6 +7,7 @@ import { MESSAGES } from "../../../utils/messages";
 import {
   generateCertificateAdvancedBuffer,
   generateCertificateService,
+  getCertificateEligibilityService,
   getCertificatesService,
 } from "./certificates.service";
 
@@ -31,6 +32,32 @@ export const generateCertificateController = async (
     201,
     MESSAGE_CODE.SUCCESS,
     MESSAGES.SUCCESS.CERTIFICATE.GENERATE,
+    result
+  );
+};
+
+export const getCertificateEligibilityController = async (
+  req: RequestWithAccessToken,
+  res: Response,
+  next: NextFunction
+) => {
+  const { params, userId } = req;
+  const { classId } = params;
+
+  const result = await getCertificateEligibilityService(
+    classId,
+    userId ?? ""
+  );
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+
+  HandleResponse(
+    res,
+    200,
+    MESSAGE_CODE.SUCCESS,
+    MESSAGES.SUCCESS.CERTIFICATE.ELIGIBILITY,
     result
   );
 };

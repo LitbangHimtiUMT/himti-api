@@ -149,6 +149,13 @@ export const MESSAGES = {
       COMMONT_EVENT: "Common event can't be register",
       REGISTERED_EVENT: "You already registered this event",
       CREATOR_PUBLISH: "Only creator can publish class",
+      CREATOR_OR_ADMIN_ONLY: "Only the class creator or admin can perform this action",
+      ONLY_DRAFT_PUBLISH: "Only draft class can be published",
+      ONLY_PUBLISH_ARCHIVE: "Only published class can be archived",
+      ONLY_ARCHIVED_UNARCHIVE: "Only archived class can be unarchived",
+      ONLY_PUBLISHED_COMPLETE: "Only published or archived class can be marked as completed",
+      CLASS_ALREADY_COMPLETED: "Class is already completed",
+      CLASS_COMPLETED_LOCKED: "Class is completed and locked, content cannot be changed",
       SUBMISSION_URL: "Submission must be a valid URL",
       SUBMISSION_FILE: "Submission must be a valid File",
       SUBMISSION_FILE_SIZE: "Submission file size must be less than 10mb",
@@ -364,6 +371,9 @@ export const MESSAGES = {
       UPDATE: "Success to update class",
       JOIN: "Success to join class",
       PUBLISH: "Success to publish class",
+      ARCHIVE: "Success to archive class",
+      UNARCHIVE: "Success to unarchive class",
+      COMPLETE: "Success to complete class",
       INVITE_MENTOR: "Success to invite mentor",
     },
     CLASS_PARTICIPANT: {
@@ -387,6 +397,7 @@ export const MESSAGES = {
     CERTIFICATE: {
       GENERATE: 'Success to generate certificate',
       GET: 'Success to get certificate',
+      ELIGIBILITY: 'Success to get certificate eligibility',
     },
     ASSIGNMENT: {
       GET: "Success to fetch assignment",

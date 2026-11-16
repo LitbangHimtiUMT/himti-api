@@ -34,6 +34,7 @@ import { environment } from "../../../libs";
 import {
   requireClassAccess,
   requireClassManage,
+  requireNotCompleted,
 } from "../../../utils/lms-access";
 
 export const createSessionService = async (
@@ -42,6 +43,8 @@ export const createSessionService = async (
 ) => {
   const denied = await requireClassManage(userId, classId);
   if (denied) return denied;
+  const locked = await requireNotCompleted(classId);
+  if (locked) return locked;
   const validate = await createSessionValidate({
     classId,
     name,
@@ -82,6 +85,8 @@ export const updateSessionService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
+  const locked = await requireNotCompleted(session.class.id);
+  if (locked) return locked;
   const sessionExist = await getSessionByName(data.name, session.class.id);
 
   if (sessionExist && sessionExist.id !== session.id) {
@@ -153,6 +158,9 @@ export const deleteSessionService = async (sessionId: string, userId: string) =>
       MESSAGE_CODE.NOT_FOUND
     );
   }
+
+  const locked = await requireNotCompleted(session.class.id);
+  if (locked) return locked;
 
   const modules = await getModulesByClass(session.classId);
 

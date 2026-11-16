@@ -41,9 +41,11 @@ import {
   getClassById,
   getClassCountRepository,
   getClassRepository,
+  markClassCompletedRepository,
   updateClassRepository,
   updateStatusClass,
 } from "./classes.repository";
+import { getCertificatesCountByClassRepository } from "../certificates/certificates.repository";
 import { createClassValidate } from "./classes.validate";
 import {
   historyCreateFlag,
@@ -51,8 +53,11 @@ import {
   historyUpdateFlag,
 } from "../../history/history.repository";
 import {
+  canAccessClass,
   isAdminRole,
+  requireClassCreatorOrAdmin,
   requireClassManage,
+  requireNotCompleted,
 } from "../../../utils/lms-access";
 
 export const createClassService = async (
@@ -178,6 +183,9 @@ export const updateClassService = async (
       const denied = await requireClassManage(userId, classId);
       if (denied) return denied;
     }
+    // Completed classes are frozen: metadata cannot change.
+    const locked = await requireNotCompleted(classId);
+    if (locked) return locked;
     const validate = await createClassValidate("update", {
       categoryId,
       level,
@@ -304,6 +312,11 @@ export const userJoinClassService = async (userId: string, classId: string) => {
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+  // The PUBLISH check already blocks ARCHIVED classes; completed
+  // classes need their own check because completion is a separate
+  // flag that leaves the status at PUBLISH.
+  const locked = await requireNotCompleted(classId);
+  if (locked) return locked;
 
   const alreadyJoin = await getExistingClassParticipantRepository(
     classId,
@@ -395,9 +408,26 @@ export const getDetailClassService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
+  // Guests and non-members only see PUBLISH classes, whatever the
+  // completed flag is. Members (participants, mentors, admins) see
+  // every status, including DRAFT and ARCHIVED. A 404 — not 403 —
+  // keeps unpublished classes invisible instead of confirming that
+  // a class with this id exists.
+  if (classess.status !== "PUBLISH") {
+    if (!userId || !(await canAccessClass(userId, classess.id))) {
+      return new ErrorApp(
+        MESSAGES.ERROR.NOT_FOUND.CLASS,
+        404,
+        MESSAGE_CODE.NOT_FOUND
+      );
+    }
+  }
   const alreadyJoin = userId
     ? await getExistingClassParticipantRepository(classess.id, userId)
     : null;
+  const totalCertificates = await getCertificatesCountByClassRepository(
+    classess.id
+  );
 
   // Detail returns every session in one payload, so meta describes a
   // single page holding all of them; perPage never drops to 0 on an
@@ -408,6 +438,7 @@ export const getDetailClassService = async (
     data: await getDetailClassMapper({
       ...classess,
       isAlreadyJoin: !!alreadyJoin,
+      totalCertificates,
     } as ClassData),
     meta,
   };
@@ -425,14 +456,31 @@ export const getDetailClassByCodeService = async (
       MESSAGE_CODE.NOT_FOUND
     );
   }
+  // Same visibility rule as the id detail: an invitation code is not
+  // a pass to preview an unpublished class. Joining requires PUBLISH
+  // anyway, so a non-member has no use for a DRAFT/ARCHIVED preview.
+  if (
+    classess.status !== "PUBLISH" &&
+    !(await canAccessClass(userId, classess.id))
+  ) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
   const alreadyJoin = await getExistingClassParticipantRepository(
     classess.id,
     userId
+  );
+  const totalCertificates = await getCertificatesCountByClassRepository(
+    classess.id
   );
 
   return await getDetailClassMapper({
     ...classess,
     isAlreadyJoin: !!alreadyJoin,
+    totalCertificates,
   } as ClassData);
 };
 
@@ -477,6 +525,8 @@ export const joinInvitationClassService = async (
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+  const locked = await requireNotCompleted(classess.id);
+  if (locked) return locked;
   const result = await createClassParticipantRepository(
     {
       classId: classess.id,
@@ -517,6 +567,15 @@ export const publishClassService = async (classId: string, userId: string) => {
       );
     }
   }
+  // Publish is DRAFT-only: an archived class returns via unarchive,
+  // never by publishing again.
+  if (classess.status !== ClassStatus.DRAFT) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ONLY_DRAFT_PUBLISH,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
   historyUpdateFlag({
     module: HistoryModule.CLASS,
     title: `Publish class ${classess.name}`,
@@ -524,6 +583,106 @@ export const publishClassService = async (classId: string, userId: string) => {
     createdBy: userId,
   });
   return await updateStatusClass(classess.id, ClassStatus.PUBLISH);
+};
+
+export const archiveClassService = async (classId: string, userId: string) => {
+  const classess = await getClassById(classId);
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  const denied = await requireClassCreatorOrAdmin(userId, classess.createdBy);
+  if (denied) return denied;
+  if (classess.status !== ClassStatus.PUBLISH) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ONLY_PUBLISH_ARCHIVE,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  // Archiving does not lock content and does not touch completedAt:
+  // an archived class can still be edited and unarchived.
+  historyUpdateFlag({
+    module: HistoryModule.CLASS,
+    title: `Archive class ${classess.name}`,
+    actionId: classess.id,
+    createdBy: userId,
+  });
+  return await updateStatusClass(classess.id, ClassStatus.ARCHIVED);
+};
+
+export const unarchiveClassService = async (
+  classId: string,
+  userId: string
+) => {
+  const classess = await getClassById(classId);
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  const denied = await requireClassCreatorOrAdmin(userId, classess.createdBy);
+  if (denied) return denied;
+  if (classess.status !== ClassStatus.ARCHIVED) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ONLY_ARCHIVED_UNARCHIVE,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  // completedAt is left untouched: unarchiving never un-completes.
+  historyUpdateFlag({
+    module: HistoryModule.CLASS,
+    title: `Unarchive class ${classess.name}`,
+    actionId: classess.id,
+    createdBy: userId,
+  });
+  return await updateStatusClass(classess.id, ClassStatus.PUBLISH);
+};
+
+export const completeClassService = async (
+  classId: string,
+  userId: string
+) => {
+  const classess = await getClassById(classId);
+  if (!classess) {
+    return new ErrorApp(
+      MESSAGES.ERROR.NOT_FOUND.CLASS,
+      404,
+      MESSAGE_CODE.NOT_FOUND
+    );
+  }
+  const denied = await requireClassCreatorOrAdmin(userId, classess.createdBy);
+  if (denied) return denied;
+  if (
+    classess.status !== ClassStatus.PUBLISH &&
+    classess.status !== ClassStatus.ARCHIVED
+  ) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.ONLY_PUBLISHED_COMPLETE,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  if (classess.completedAt) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.CLASS_ALREADY_COMPLETED,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  historyUpdateFlag({
+    module: HistoryModule.CLASS,
+    title: `Complete class ${classess.name}`,
+    actionId: classess.id,
+    createdBy: userId,
+  });
+  return await markClassCompletedRepository(classess.id);
 };
 
 export const deleteClassessService = async (

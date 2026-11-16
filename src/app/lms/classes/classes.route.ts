@@ -9,6 +9,8 @@ import {
 import { CatchWrapper } from "../../../utils/catch-wrapper";
 import { upload } from "../../../utils/upload-file-to-storage";
 import {
+  archiveClassController,
+  completeClassController,
   createClassController,
   deleteClassessController,
   getClassController,
@@ -17,6 +19,7 @@ import {
   getDetailClassController,
   joinInvitationClassController,
   publishClassController,
+  unarchiveClassController,
   updateClassController,
   userJoinClassController,
 } from "./classes.controller";
@@ -68,5 +71,20 @@ classRoute
     "/publish/:classId",
     verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     CatchWrapper(publishClassController)
+  )
+  .patch(
+    "/archive/:classId",
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
+    CatchWrapper(archiveClassController)
+  )
+  .patch(
+    "/unarchive/:classId",
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
+    CatchWrapper(unarchiveClassController)
+  )
+  .patch(
+    "/complete/:classId",
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
+    CatchWrapper(completeClassController)
   )
   .delete("/:classId", CatchWrapper(deleteClassessController));
