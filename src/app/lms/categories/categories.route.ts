@@ -20,6 +20,11 @@ import {
 
 export const categoriesRoute = Router();
 
+// The category list is public: the guest-visible class catalog needs it
+// for its filter tabs, and it carries no per-user data (id, name, count).
+// Writes and the single-category lookup stay behind auth below.
+categoriesRoute.get("/", CatchWrapper(getCategoriesController));
+
 categoriesRoute
   .use(verifyToken)
   .post(
@@ -28,7 +33,6 @@ categoriesRoute
     validateRequest(createCategorySchema),
     CatchWrapper(createCategoryController)
   )
-  .get("/", CatchWrapper(getCategoriesController))
   .get("/:categoryId", CatchWrapper(getCategoryByIdController))
   .put(
     "/:categoryId",
