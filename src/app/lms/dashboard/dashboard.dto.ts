@@ -15,6 +15,8 @@ export interface DashboardPerClassDTO {
   participants: number;
   pendingReviews: number;
   avgProgress: number;
+  ratingAverage: number | null;
+  ratingCount: number;
 }
 
 export interface DashboardReviewQueueItemDTO {
