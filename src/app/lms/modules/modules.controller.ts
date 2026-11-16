@@ -30,7 +30,6 @@ export const createModuleController = async (
     fileModule: files?.fileModule?.[0] ?? req.file ?? undefined,
     sessionId,
   };
-  console.log({ combineBodyFile, files, file: req.file });
   const validate = createModuleSchema.validate(combineBodyFile);
   if (validate.error) {
     next(
