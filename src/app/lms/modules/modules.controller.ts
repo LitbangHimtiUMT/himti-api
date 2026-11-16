@@ -4,12 +4,13 @@ import { MESSAGE_CODE } from "../../../utils/error-code";
 import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
-import { createModuleSchema } from "./modules.request";
+import { createModuleSchema, updateModuleSchema } from "./modules.request";
 import {
   createModuleService,
   deleteModuleService,
   getDetailModuleService,
   getModulesService,
+  updateModuleService,
 } from "./modules.service";
 
 export const createModuleController = async (
@@ -49,6 +50,43 @@ export const createModuleController = async (
   }
 
   HandleResponse(res, 201, MESSAGE_CODE.SUCCESS, MESSAGES.CREATED.MODULE);
+};
+
+export const updateModuleController = async (
+  req: RequestWithAccessToken & {
+    files: {
+      fileModule: Express.Multer.File[];
+    };
+  },
+  res: Response,
+  next: NextFunction
+) => {
+  const { body, files, params, userId } = req;
+  const { moduleId } = params;
+
+  const combineBodyFile = {
+    ...body,
+    fileModule: files?.fileModule?.[0] ?? req.file ?? undefined,
+  };
+  const validate = updateModuleSchema.validate(combineBodyFile);
+  if (validate.error) {
+    next(
+      new ErrorApp(
+        validate.error.message.replace(/"/g, ""),
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      )
+    );
+    return;
+  }
+  const result = await updateModuleService(moduleId, combineBodyFile, userId);
+
+  if (result instanceof ErrorApp) {
+    next(result);
+    return;
+  }
+
+  HandleResponse(res, 200, MESSAGE_CODE.SUCCESS, MESSAGES.SUCCESS.MODULES.UPDATE);
 };
 
 export const getModulesController = async (

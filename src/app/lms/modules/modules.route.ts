@@ -11,6 +11,7 @@ import {
   deleteModuleController,
   getDetailModuleController,
   getModulesController,
+  updateModuleController,
 } from "./modules.controller";
 
 export const moduleRoute = Router();
@@ -22,6 +23,12 @@ moduleRoute
     verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
     CatchWrapper(upload.single("fileModule")),
     CatchWrapper(createModuleController)
+  )
+  .put(
+    "/:moduleId",
+    verifyRole([RolesEnum.MENTOR, RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]),
+    CatchWrapper(upload.single("fileModule")),
+    CatchWrapper(updateModuleController)
   )
   .get("/session/:sessionId", CatchWrapper(getModulesController))
   .get(
