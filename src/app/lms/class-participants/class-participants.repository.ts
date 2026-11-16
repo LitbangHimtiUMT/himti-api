@@ -71,6 +71,9 @@ export const getClassParticipantByUserIdRepository = async (
           },
           id: true,
           name: true,
+          description: true,
+          status: true,
+          completedAt: true,
           price: true,
           category: {
             select: {
