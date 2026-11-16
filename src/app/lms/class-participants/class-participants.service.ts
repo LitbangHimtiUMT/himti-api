@@ -9,7 +9,7 @@ import {
   getClassParticipantByClassIdRepository,
 } from "./class-participants.repository";
 import { createClassParticipantValidate } from "./class-participants.validate";
-import { requireClassManage } from "../../../utils/lms-access";
+import { requireClassManage, requireNotCompleted } from "../../../utils/lms-access";
 import {
   getClassById,
 } from "../classes/classes.repository";
@@ -49,6 +49,11 @@ export const createClassParticipantService = async (
       MESSAGE_CODE.BAD_REQUEST
     );
   }
+  // Third enrol path alongside the join and invitation flows: the
+  // completed lock applies here too, with the same PUBLISH guard
+  // above already blocking ARCHIVED classes.
+  const locked = await requireNotCompleted(classId as string);
+  if (locked) return locked;
   const already = await getExistingClassParticipantRepository(
     classId as string,
     userId

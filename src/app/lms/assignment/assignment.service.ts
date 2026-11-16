@@ -25,6 +25,7 @@ import {
   canManageClass,
   requireClassAccess,
   requireClassManage,
+  requireNotCompleted,
 } from "../../../utils/lms-access";
 import { getModuleById } from "../modules/modules.repository";
 import { CreateAssignmentDTO, SubmissionCreationDTO } from "./assignment.dto";
@@ -52,6 +53,9 @@ export const createAssignmentService = async (
 
   const denied = await requireClassManage(userId, modules.session.class.id);
   if (denied) return denied;
+
+  const locked = await requireNotCompleted(modules.session.class.id);
+  if (locked) return locked;
 
   const isOpen = checkDueDate(new Date(data.dueDate));
 
@@ -102,6 +106,11 @@ export const updateAssignmentService = async (
     assignment.module?.session?.class?.id ?? ""
   );
   if (denied) return denied;
+
+  const locked = await requireNotCompleted(
+    assignment.module?.session?.class?.id ?? ""
+  );
+  if (locked) return locked;
 
   const isOpen = checkDueDate(new Date(data.dueDate));
   if (!isOpen) {
@@ -340,6 +349,11 @@ export const deleteAssignmentService = async (id: string, userId: string) => {
     assignment?.module?.session?.class?.id ?? ""
   );
   if (denied) return denied;
+
+  const locked = await requireNotCompleted(
+    assignment?.module?.session?.class?.id ?? ""
+  );
+  if (locked) return locked;
 
   await historyDeleteFlag({
     module: HistoryModule.CLASS,

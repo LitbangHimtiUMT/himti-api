@@ -40,6 +40,7 @@ import {
   classIdFromSession,
   requireClassAccess,
   requireClassManage,
+  requireNotCompleted,
 } from "../../../utils/lms-access";
 
 export const createModuleService = async (
@@ -59,11 +60,11 @@ export const createModuleService = async (
     if (validate instanceof ErrorApp) {
       return validate;
     }
-    const deniedCreate = await requireClassManage(
-      userId,
-      (await classIdFromSession(sessionId)) ?? ""
-    );
+    const classId = (await classIdFromSession(sessionId)) ?? "";
+    const deniedCreate = await requireClassManage(userId, classId);
     if (deniedCreate) return deniedCreate;
+    const lockedCreate = await requireNotCompleted(classId);
+    if (lockedCreate) return lockedCreate;
     if (fileModule) {
       let buffer = fileModule.buffer;
       fileName = `${fileModule?.originalname.replace(FileType[fileModule.mimetype], "")} - ${+new Date()}${FileType[fileModule.mimetype]}`;
@@ -143,6 +144,9 @@ export const updateModuleService = async (
       modules?.session?.class?.id ?? ""
     );
     if (denied) return denied;
+
+    const locked = await requireNotCompleted(modules?.session?.class?.id ?? "");
+    if (locked) return locked;
 
     const invalidVideoUrl = updateModuleValidate(videoUrl, modules.videoUrl);
     if (invalidVideoUrl instanceof ErrorApp) {
@@ -295,6 +299,9 @@ export const deleteModuleService = async (moduleId: string, userId: string) => {
     modules?.session?.class?.id ?? ""
   );
   if (denied) return denied;
+
+  const locked = await requireNotCompleted(modules?.session?.class?.id ?? "");
+  if (locked) return locked;
 
   await historyDeleteFlag({
     module: HistoryModule.CLASS,
