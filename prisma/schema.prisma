@@ -104,12 +104,14 @@ model Member {
 }
 
 model Structural {
-  id        String   @id @unique @default(uuid())
-  jabatan   Jabatan
-  image     String   @db.VarChar(255)
-  memberId  String   @map("member_id") @db.VarChar(110)
-  isActive  Boolean  @default(true) @map("is_active")
-  Member    Member   @relation(fields: [memberId], references: [id])
+  id             String   @id @unique @default(uuid())
+  jabatan        Jabatan
+  image          String   @db.VarChar(255)
+  memberId       String   @map("member_id") @db.VarChar(110)
+  isActive       Boolean  @default(true) @map("is_active")
+  department     String?  @db.VarChar(50)
+  signatureImage String?  @map("signature_image") @db.VarChar(255)
+  Member         Member   @relation(fields: [memberId], references: [id])
   year      Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
@@ -457,18 +459,31 @@ model CompletedClass {
 }
 
 model Certificate {
-  id        String   @id @unique @default(uuid())
-  classId   String   @map("class_id") @db.VarChar(110)
-  code      String   @unique @map("certificates_code_unique")
-  userId    String   @map("user_id") @db.VarChar(110)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
-  class     Class    @relation(fields: [classId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  id           String          @id @unique @default(uuid())
+  classId      String          @map("class_id") @db.VarChar(110)
+  code         String          @unique @map("certificates_code_unique")
+  userId       String          @map("user_id") @db.VarChar(110)
+  role         CertificateRole @default(PESERTA)
+  formalNumber String?         @map("formal_number") @db.VarChar(100)
+  signers      Json?
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.Timestamp(0)
+  class        Class           @relation(fields: [classId], references: [id])
+  user         User            @relation(fields: [userId], references: [id])
 
   @@index([classId], map: "certificates_fk_1")
   @@index([userId], map: "certificates_fk_2")
   @@map("certificates")
+}
+
+// A single global row (id = 1): the formal certificate number
+// sequence never resets — it keeps counting across years. Only the
+// roman month + year printed in the number come from the claim date.
+model CertificateCounter {
+  id         Int @id @default(1)
+  lastNumber Int @map("last_number")
+
+  @@map("certificate_counters")
 }
 
 model Review {
@@ -638,6 +653,11 @@ enum Jabatan {
   KETUA_DEPARTMENT
 }
 
+enum CertificateRole {
+  PESERTA
+  PEMATERI
+}
+
 enum Role {
   SUPER_ADMIN
   ADMIN
@@ -745,10 +765,11 @@ model PotentialUserKey {
 }
 
 model ProdiStructural {
-  id        String   @id @default(uuid())
-  name      String   @db.VarChar(255)
-  role      String   @db.VarChar(255)
-  image     String?  @db.VarChar(255)
+  id             String   @id @default(uuid())
+  name           String   @db.VarChar(255)
+  role           String   @db.VarChar(255)
+  image          String?  @db.VarChar(255)
+  signatureImage String?  @map("signature_image") @db.VarChar(255)
   bio       String?  @db.Text
   sequence  Int      @default(0)
   isActive  Boolean  @default(true) @map("is_active")
