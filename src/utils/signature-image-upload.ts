@@ -32,12 +32,14 @@ export const uploadSignatureImage = async (
   }
 
   // The original name is untrusted input: keep only safe characters
-  // so it can never smuggle path separators into the storage key.
+  // so it can never smuggle path separators into the storage key,
+  // and collapse dot runs so no ".." segment survives.
   const baseName =
     file.originalname
       .replace(/\.[^.]*$/, "")
       .replace(/[^A-Za-z0-9._-]+/g, "-")
-      .replace(/^-+|-+$/g, "")
+      .replace(/\.{2,}/g, ".")
+      .replace(/^[-.]+|[-.]+$/g, "")
       .slice(0, 80) || "signature";
   const filename = `${baseName} - ${Date.now()}.png`;
 
