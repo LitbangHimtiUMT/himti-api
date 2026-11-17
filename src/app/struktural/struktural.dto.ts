@@ -11,8 +11,6 @@ export const DEPARTMENT_CODES = [
   "ORGANISASI",
 ] as const;
 
-export type DepartmentCode = (typeof DEPARTMENT_CODES)[number];
-
 export interface StructuralBodyDTO {
     id?: string,
     memberId?: string,
