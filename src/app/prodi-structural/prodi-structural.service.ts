@@ -10,6 +10,7 @@ import { CreateProdiStructuralDTO, UpdateProdiStructuralDTO } from "./prodi-stru
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ImagePath } from "../../utils/image-path";
+import { uploadSignatureImage } from "../../utils/signature-image-upload";
 import { environment } from "../../libs";
 import {
   FileType,
@@ -22,6 +23,9 @@ export const getAllProdiStructuralService = async () => {
   return list.map((item) => ({
     ...item,
     image: item.image ? ImagePath(`prodi-structural/${item.image}`) : null,
+    signatureImage: item.signatureImage
+      ? ImagePath(`prodi-structural/${item.signatureImage}`)
+      : null,
   }));
 };
 
@@ -37,12 +41,16 @@ export const getProdiStructuralByIdService = async (id: string) => {
   return {
     ...item,
     image: item.image ? ImagePath(`prodi-structural/${item.image}`) : null,
+    signatureImage: item.signatureImage
+      ? ImagePath(`prodi-structural/${item.signatureImage}`)
+      : null,
   };
 };
 
 export const createProdiStructuralService = async (
   data: CreateProdiStructuralDTO,
-  imageFile?: Express.Multer.File
+  imageFile?: Express.Multer.File,
+  signatureFile?: Express.Multer.File
 ) => {
   let imageName = null;
   if (imageFile) {
@@ -58,16 +66,26 @@ export const createProdiStructuralService = async (
     });
   }
 
+  let signatureName = null;
+  if (signatureFile) {
+    signatureName = await uploadSignatureImage(
+      signatureFile,
+      "prodi-structural"
+    );
+  }
+
   return await createProdiStructural({
     ...data,
     image: imageName || undefined,
+    signatureImage: signatureName || undefined,
   });
 };
 
 export const updateProdiStructuralService = async (
   id: string,
   data: UpdateProdiStructuralDTO,
-  imageFile?: Express.Multer.File
+  imageFile?: Express.Multer.File,
+  signatureFile?: Express.Multer.File
 ) => {
   const existing = await findProdiStructuralById(id);
   if (!existing) {
@@ -96,9 +114,26 @@ export const updateProdiStructuralService = async (
     });
   }
 
+  let signatureName = existing.signatureImage;
+  if (signatureFile) {
+    signatureName = await uploadSignatureImage(
+      signatureFile,
+      "prodi-structural"
+    );
+
+    if (existing.signatureImage) {
+      try {
+        await RemoveFileFromStorage(`${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${existing.signatureImage}`);
+      } catch (err) {
+        console.error("Failed to remove old prodi structural signature image:", err);
+      }
+    }
+  }
+
   return await updateProdiStructural(id, {
     ...data,
     image: imageName || undefined,
+    signatureImage: signatureName || undefined,
   });
 };
 
@@ -113,6 +148,14 @@ export const deleteProdiStructuralService = async (id: string) => {
       await RemoveFileFromStorage(`${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${existing.image}`);
     } catch (err) {
       console.error("Failed to remove image on delete prodi structural:", err);
+    }
+  }
+
+  if (existing.signatureImage) {
+    try {
+      await RemoveFileFromStorage(`${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${existing.signatureImage}`);
+    } catch (err) {
+      console.error("Failed to remove signature image on delete prodi structural:", err);
     }
   }
 
