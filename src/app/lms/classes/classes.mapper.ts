@@ -34,6 +34,7 @@ export interface ClassData extends Class {
     session: number;
   };
   isAlreadyJoin?: boolean;
+  isClassMentor?: boolean;
   totalCertificates?: number;
   certificate: Certificate[];
 }
@@ -96,6 +97,7 @@ export const getDetailClassMapper = async (
     code: btoa(data.code),
     thumbnailFileSize: file?.buffer?.ContentLength ?? 0,
     isAlreadyJoin: !!data?.isAlreadyJoin,
+    isClassMentor: !!data?.isClassMentor,
     category: {
       id: data.category.id,
       name: data.category.name,

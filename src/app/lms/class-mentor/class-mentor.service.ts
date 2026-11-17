@@ -15,7 +15,7 @@ import {
 import { getClassMentorMapper } from "./class-mentor.mapper";
 import { getUserById } from "../../authentication/auth.repository";
 import { sendMailInvitationMentor } from "./class-mentor.utility";
-import { requireClassManage } from "../../../utils/lms-access";
+import { requireClassManage, requireNotCompleted } from "../../../utils/lms-access";
 
 export const inviteMentorService = async (
   createdBy: string,
@@ -34,6 +34,12 @@ export const inviteMentorService = async (
   // invite.
   const denied = await requireClassManage(createdBy, data.classId);
   if (denied) return denied;
+  // A completed class is frozen: no new mentor may be invited after
+  // completion, or the mentor roster — and mentor-claim eligibility —
+  // could change after certificates start issuing. Mentors invited
+  // before completion keep their claim.
+  const locked = await requireNotCompleted(data.classId);
+  if (locked) return locked;
 
   const mentor = await getMentorByIdRepository(data.mentorId);
   if (!mentor) {

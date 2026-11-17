@@ -4,6 +4,7 @@ export const getCertificatesMapper = (data: CertificateData[]) => {
     return data.map(item => ({
         id: item.id,
         code: item.code,
+        role: item.role,
         class: {
             id: item.class.id,
             name: item.class.name,
