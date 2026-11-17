@@ -34,6 +34,7 @@ export interface ClassDTO {
   rating?: ClassRatingAggregate | null;
   totalParticipant: number;
   isAlreadyJoin?: boolean
+  isClassMentor?: boolean
   level: Level;
   createdAt?: Date | string;
   category: {

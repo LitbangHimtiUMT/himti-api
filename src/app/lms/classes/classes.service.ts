@@ -59,6 +59,7 @@ import {
 import {
   canAccessClass,
   isAdminRole,
+  isClassMentor,
   requireClassCreatorOrAdmin,
   requireClassManage,
   requireNotCompleted,
@@ -448,6 +449,12 @@ export const getDetailClassService = async (
   const alreadyJoin = userId
     ? await getExistingClassParticipantRepository(classess.id, userId)
     : null;
+  // Same shape as isAlreadyJoin: guests (no token) are never the
+  // class mentor. The LMS enables the certificate section for
+  // participants OR mentors from these two flags.
+  const classMentor = userId
+    ? await isClassMentor(userId, classess.id)
+    : false;
   const totalCertificates = await getCertificatesCountByClassRepository(
     classess.id
   );
@@ -461,6 +468,7 @@ export const getDetailClassService = async (
     data: await getDetailClassMapper({
       ...classess,
       isAlreadyJoin: !!alreadyJoin,
+      isClassMentor: classMentor,
       totalCertificates,
     } as ClassData),
     meta,
@@ -496,6 +504,7 @@ export const getDetailClassByCodeService = async (
     classess.id,
     userId
   );
+  const classMentor = await isClassMentor(userId, classess.id);
   const totalCertificates = await getCertificatesCountByClassRepository(
     classess.id
   );
@@ -503,6 +512,7 @@ export const getDetailClassByCodeService = async (
   return await getDetailClassMapper({
     ...classess,
     isAlreadyJoin: !!alreadyJoin,
+    isClassMentor: classMentor,
     totalCertificates,
   } as ClassData);
 };
