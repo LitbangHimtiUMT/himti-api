@@ -282,3 +282,19 @@ export const deleteClassRepository = async (classId: string) => {
     },
   });
 };
+
+export const countClassCertificatesRepository = async (classId: string) => {
+  return await prisma.certificate.count({
+    where: {
+      classId,
+    },
+  });
+};
+
+export const countClassTransactionsRepository = async (classId: string) => {
+  return await prisma.transaction.count({
+    where: {
+      classId,
+    },
+  });
+};

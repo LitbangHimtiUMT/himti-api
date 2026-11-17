@@ -157,6 +157,12 @@ export const MESSAGES = {
       ONLY_PUBLISHED_COMPLETE: "Only published or archived class can be marked as completed",
       CLASS_ALREADY_COMPLETED: "Class is already completed",
       CLASS_COMPLETED_LOCKED: "Class is completed and locked, content cannot be changed",
+      CLASS_HAS_CERTIFICATES:
+        "Class cannot be deleted because certificates have been issued for it",
+      CLASS_HAS_TRANSACTIONS:
+        "Class cannot be deleted because it has transactions",
+      CLASS_DELETE_HAS_LINKED_DATA:
+        "Class cannot be deleted because it still has linked data",
       SUBMISSION_URL: "Submission must be a valid URL",
       SUBMISSION_FILE: "Submission must be a valid File",
       SUBMISSION_FILE_SIZE: "Submission file size must be less than 10mb",
