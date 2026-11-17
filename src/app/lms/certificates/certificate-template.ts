@@ -49,15 +49,15 @@ const INK = rgb(0.12, 0.12, 0.12);
 const GRAY = rgb(0.4, 0.4, 0.4);
 
 // Printed signer labels are fixed in the template, not read from
-// the CMS. The print label says SDM; the department lookup key
-// stays PSDM (explicit decision — do not "fix").
+// the CMS. The PSDM label uses the department name PSDM, matching
+// the department lookup key.
 const SIGNER_BLOCKS: Array<{
   key: keyof CertificateSignersSnapshot;
   label: string[];
   cx: number;
 }> = [
-  { key: "psdm", label: ["KEPALA DEPARTEMEN SDM", "HIMTI UMT"], cx: 155 },
-  { key: "kahim", label: ["KETUA HIMPUNAN", "HIMTI UMT"], cx: 421 },
+  { key: "psdm", label: ["KEPALA DEPARTEMEN PSDM", "HIMTI UMT"], cx: 155 },
+  { key: "kahim", label: ["KETUA HIMTI UMT"], cx: 421 },
   {
     key: "kaprodi",
     label: [
