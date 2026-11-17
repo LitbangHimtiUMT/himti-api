@@ -55,7 +55,16 @@ export const createProdiStructuralController = async (
     return next(new ErrorApp(error.message, 400, MESSAGE_CODE.BAD_REQUEST));
   }
 
-  const result = await createProdiStructuralService(body, req.file);
+  // The route uses upload.fields(), so files arrive grouped by
+  // field name instead of a single req.file.
+  const files = req.files as unknown as
+    | Record<string, Express.Multer.File[]>
+    | undefined;
+  const result = await createProdiStructuralService(
+    body,
+    files?.image?.[0],
+    files?.signatureImage?.[0]
+  );
   if (result instanceof ErrorApp) {
     return next(result);
   }
@@ -82,7 +91,15 @@ export const updateProdiStructuralController = async (
     return next(new ErrorApp(error.message, 400, MESSAGE_CODE.BAD_REQUEST));
   }
 
-  const result = await updateProdiStructuralService(id, body, req.file);
+  const files = req.files as unknown as
+    | Record<string, Express.Multer.File[]>
+    | undefined;
+  const result = await updateProdiStructuralService(
+    id,
+    body,
+    files?.image?.[0],
+    files?.signatureImage?.[0]
+  );
   if (result instanceof ErrorApp) {
     return next(result);
   }

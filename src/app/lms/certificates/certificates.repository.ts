@@ -1,57 +1,86 @@
 import moment from "moment";
+import { CertificateRole, Prisma } from "@prisma/client";
 import { prisma } from "../../../config";
+import { MESSAGE_CODE } from "../../../utils/error-code";
+import { ErrorApp } from "../../../utils/http-error";
 import { CertificateQuery } from "./certificates.interface";
 import { queryPagination } from "../../../utils/pagination";
+import {
+  buildFormalNumber,
+  resolveActiveSigners,
+} from "./certificate-signers";
 
-export const getLastCertificate = async (
-  month: string | number,
-  year: string | number
-) => {
-  return await prisma.certificate.findFirst({
-    where: {
-      code: {
-        startsWith: `CERT-HIMTI-${year}-${month}`,
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-};
+// The single global counter row (id = 1). The formal-number
+// sequence never resets; the migration seeds lastNumber = 30.
+const GLOBAL_COUNTER_ID = 1;
+// First number if the seed row was never applied: seed (30) + 1.
+// Only reachable when the migration seed did not run.
+const FIRST_FORMAL_NUMBER = 31;
 
 export const generateCertificateRepository = async (
   userId: string,
   classId: string
 ) => {
-  const now = moment();
-
-  const year = now.format("YYYY"); // e.g. "2025"
-  const month = now.format("MM"); // e.g. "05"
-
-  const codePrefix = `${year}-${month}`; // For display in code
-
-  const lastCertificate = await getLastCertificate(month, year);
-
-  let nextNumber = 1;
-  if (lastCertificate?.code) {
-    const parts = lastCertificate.code.split("-");
-    const lastRunning = parseInt(parts[4], 10);
-    console.log({ lastRunning, parts });
-    if (!isNaN(lastRunning)) {
-      nextNumber = lastRunning + 1;
+  return await prisma.$transaction(async (tx) => {
+    // A missing signer ROW blocks the claim: the admin must
+    // complete the signer data in the CMS first. A missing
+    // signature IMAGE does not block — it snapshots as null and
+    // the PDF renders the signature zone empty.
+    const signers = await resolveActiveSigners(tx);
+    if (!signers) {
+      throw new ErrorApp(
+        "data penandatangan belum lengkap di CMS",
+        500,
+        MESSAGE_CODE.INTERNAL_SERVER_ERROR
+      );
     }
-  }
 
-  console.log({ nextNumber, lastCertificate, month, year });
+    // Atomic upsert+increment on the single global row: concurrent
+    // claims serialize on the row lock, so no number is ever
+    // issued twice.
+    const counter = await tx.certificateCounter.upsert({
+      where: { id: GLOBAL_COUNTER_ID },
+      update: { lastNumber: { increment: 1 } },
+      create: { id: GLOBAL_COUNTER_ID, lastNumber: FIRST_FORMAL_NUMBER },
+    });
 
-  const code = `CERT-HIMTI-${codePrefix}-${String(nextNumber).padStart(4, "0")}`;
+    const now = moment();
+    const year = now.format("YYYY"); // e.g. "2025"
+    const month = now.format("MM"); // e.g. "05"
 
-  return await prisma.certificate.create({
-    data: {
-      userId,
-      classId,
-      code,
-    },
+    const lastCertificate = await tx.certificate.findFirst({
+      where: {
+        code: {
+          startsWith: `CERT-HIMTI-${year}-${month}`,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    let nextNumber = 1;
+    if (lastCertificate?.code) {
+      const parts = lastCertificate.code.split("-");
+      const lastRunning = parseInt(parts[4], 10);
+      if (!isNaN(lastRunning)) {
+        nextNumber = lastRunning + 1;
+      }
+    }
+
+    const code = `CERT-HIMTI-${year}-${month}-${String(nextNumber).padStart(4, "0")}`;
+    const formalNumber = buildFormalNumber(counter.lastNumber, now.toDate());
+
+    return await tx.certificate.create({
+      data: {
+        userId,
+        classId,
+        code,
+        role: CertificateRole.PESERTA,
+        formalNumber,
+        signers: signers as unknown as Prisma.InputJsonValue,
+      },
+    });
   });
 };
 

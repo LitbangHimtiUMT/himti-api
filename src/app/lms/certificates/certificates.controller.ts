@@ -5,11 +5,16 @@ import { HandleResponse } from "../../../utils/handle-response";
 import { ErrorApp } from "../../../utils/http-error";
 import { MESSAGES } from "../../../utils/messages";
 import {
-  generateCertificateAdvancedBuffer,
   generateCertificateService,
   getCertificateEligibilityService,
   getCertificatesService,
 } from "./certificates.service";
+import {
+  CertificateSignersSnapshot,
+  parseSignersSnapshot,
+  resolveActiveSigners,
+} from "./certificate-signers";
+import { renderCertificatePdf } from "./certificate-template";
 
 import { prisma } from "../../../config";
 
@@ -94,20 +99,22 @@ export const getFileCertificateController = async (
   // certificate itself, so this stays public for verification.
   const { code } = req.query;
 
-  if (!code) {
+  if (!code || typeof code !== "string") {
     next(new ErrorApp("Certificate code is required", 400, MESSAGE_CODE.BAD_REQUEST));
     return;
   }
 
   const certificate = await prisma.certificate.findFirst({
     where: {
-      code: code as string,
+      code,
     },
     // Explicit selects: never load the full user row (it carries
     // the password hash) for a public verification endpoint.
     select: {
       code: true,
-      createdAt: true,
+      role: true,
+      formalNumber: true,
+      signers: true,
       user: {
         select: {
           name: true,
@@ -116,7 +123,7 @@ export const getFileCertificateController = async (
       class: {
         select: {
           name: true,
-          user: {
+          category: {
             select: {
               name: true,
             },
@@ -131,26 +138,41 @@ export const getFileCertificateController = async (
     return;
   }
 
-  const certificateData = {
-    studentName: certificate.user.name,
-    courseName: certificate.class.name,
-    completionDate: new Date(certificate.createdAt).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }),
-    certificateId: certificate.code,
-    issuerName: "HIMTI UMT",
-    instructorName: certificate.class.user.name,
-    additionalText: `This certificate verifies the completion of all course requirements for "${certificate.class.name}".`,
-  };
+  // Render from the snapshot frozen at claim time: a leadership
+  // rotation must not rewrite an issued certificate. Certificates
+  // issued before snapshots existed fall back to the live signer
+  // rows and print no formal-number row; if even the live rows are
+  // incomplete, the blocks render with names blank rather than
+  // breaking verification of an already-issued certificate.
+  let signers: CertificateSignersSnapshot | null = parseSignersSnapshot(
+    certificate.signers
+  );
+  let formalNumber: string | null = certificate.formalNumber;
+  if (!signers) {
+    formalNumber = null;
+    signers =
+      (await resolveActiveSigners(prisma)) ??
+      {
+        psdm: { name: "", signatureImage: null },
+        kahim: { name: "", signatureImage: null },
+        kaprodi: { name: "", signatureImage: null },
+      };
+  }
 
-  const pdfBytes = await generateCertificateAdvancedBuffer(certificateData);
+  const pdfBytes = await renderCertificatePdf({
+    recipientName: certificate.user.name,
+    className: certificate.class.name,
+    categoryName: certificate.class.category.name,
+    role: certificate.role,
+    formalNumber,
+    verificationCode: certificate.code,
+    signers,
+  });
   // Set headers
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="${certificateData.certificateId}.pdf"`
+    `attachment; filename="${certificate.code}.pdf"`
   );
 
   // Send the PDF

@@ -3,6 +3,7 @@ export interface ProdiStructuralDTO {
   name: string;
   role: string;
   image?: string;
+  signatureImage?: string | null;
   bio?: string;
   sequence: number;
   isActive: boolean;
@@ -14,6 +15,7 @@ export interface CreateProdiStructuralDTO {
   name: string;
   role: string;
   image?: string;
+  signatureImage?: string;
   bio?: string;
   sequence: number;
   isActive?: boolean;
@@ -23,6 +25,7 @@ export interface UpdateProdiStructuralDTO {
   name?: string;
   role?: string;
   image?: string;
+  signatureImage?: string;
   bio?: string;
   sequence?: number;
   isActive?: boolean;

@@ -12,10 +12,18 @@ import {
 
 const route = Router();
 
+// Two file fields share the same multer setup (extension allowlist
+// + size limit): the photo (`image`) and the optional signature
+// image (`signatureImage`) used on certificates.
+const structuralUpload = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "signatureImage", maxCount: 1 },
+]);
+
 route.post(
   "/",
   VerifyAdmin,
-  upload.single("image"),
+  structuralUpload,
   CatchWrapper(createStrukturalController)
 );
 route.get("/", CatchWrapper(getStrukturalController));
@@ -27,7 +35,7 @@ route.delete("/:id", VerifyAdmin, CatchWrapper(deleteStrukturalController));
 route.put(
   "/:id",
   VerifyAdmin,
-  upload.single("image"),
+  structuralUpload,
   CatchWrapper(updateStrukturalController)
 );
 

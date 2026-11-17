@@ -10,6 +10,7 @@ import { CreateProdiStructuralDTO, UpdateProdiStructuralDTO } from "./prodi-stru
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGE_CODE } from "../../utils/error-code";
 import { ImagePath } from "../../utils/image-path";
+import { uploadSignatureImage } from "../../utils/signature-image-upload";
 import { environment } from "../../libs";
 import {
   FileType,
@@ -22,6 +23,9 @@ export const getAllProdiStructuralService = async () => {
   return list.map((item) => ({
     ...item,
     image: item.image ? ImagePath(`prodi-structural/${item.image}`) : null,
+    signatureImage: item.signatureImage
+      ? ImagePath(`prodi-structural/${item.signatureImage}`)
+      : null,
   }));
 };
 
@@ -37,12 +41,16 @@ export const getProdiStructuralByIdService = async (id: string) => {
   return {
     ...item,
     image: item.image ? ImagePath(`prodi-structural/${item.image}`) : null,
+    signatureImage: item.signatureImage
+      ? ImagePath(`prodi-structural/${item.signatureImage}`)
+      : null,
   };
 };
 
 export const createProdiStructuralService = async (
   data: CreateProdiStructuralDTO,
-  imageFile?: Express.Multer.File
+  imageFile?: Express.Multer.File,
+  signatureFile?: Express.Multer.File
 ) => {
   let imageName = null;
   if (imageFile) {
@@ -50,24 +58,44 @@ export const createProdiStructuralService = async (
     const quality = imageFile.size > 5 * 1024 * 1024 ? 75 : 100;
     const compress = await sharp(imageFile.buffer).webp({ quality }).toBuffer();
 
-    await UploadFileToStorage({
+    // UploadFileToStorage returns the error instead of throwing,
+    // so check it: a failed upload must not leave a DB row
+    // pointing at a file that was never stored.
+    const photoUpload = await UploadFileToStorage({
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${imageName}`,
       Body: compress,
       ContentType: "image/webp",
     });
+    if (photoUpload instanceof Error) {
+      throw new ErrorApp(
+        "Failed to upload image",
+        500,
+        MESSAGE_CODE.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  let signatureName = null;
+  if (signatureFile) {
+    signatureName = await uploadSignatureImage(
+      signatureFile,
+      "prodi-structural"
+    );
   }
 
   return await createProdiStructural({
     ...data,
     image: imageName || undefined,
+    signatureImage: signatureName || undefined,
   });
 };
 
 export const updateProdiStructuralService = async (
   id: string,
   data: UpdateProdiStructuralDTO,
-  imageFile?: Express.Multer.File
+  imageFile?: Express.Multer.File,
+  signatureFile?: Express.Multer.File
 ) => {
   const existing = await findProdiStructuralById(id);
   if (!existing) {
@@ -80,6 +108,24 @@ export const updateProdiStructuralService = async (
     const quality = imageFile.size > 5 * 1024 * 1024 ? 75 : 100;
     const compress = await sharp(imageFile.buffer).webp({ quality }).toBuffer();
 
+    // Upload the replacement BEFORE removing the old file: if the
+    // upload fails, the old photo must still exist. The result is
+    // checked because UploadFileToStorage returns errors instead
+    // of throwing them.
+    const photoUpload = await UploadFileToStorage({
+      Bucket: environment.STORAGE.BUCKET,
+      Key: `${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${imageName}`,
+      Body: compress,
+      ContentType: "image/webp",
+    });
+    if (photoUpload instanceof Error) {
+      throw new ErrorApp(
+        "Failed to upload image",
+        500,
+        MESSAGE_CODE.INTERNAL_SERVER_ERROR
+      );
+    }
+
     if (existing.image) {
       try {
         await RemoveFileFromStorage(`${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${existing.image}`);
@@ -87,18 +133,28 @@ export const updateProdiStructuralService = async (
         console.error("Failed to remove old prodi structural image:", err);
       }
     }
+  }
 
-    await UploadFileToStorage({
-      Bucket: environment.STORAGE.BUCKET,
-      Key: `${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${imageName}`,
-      Body: compress,
-      ContentType: "image/webp",
-    });
+  let signatureName = existing.signatureImage;
+  if (signatureFile) {
+    signatureName = await uploadSignatureImage(
+      signatureFile,
+      "prodi-structural"
+    );
+
+    if (existing.signatureImage) {
+      try {
+        await RemoveFileFromStorage(`${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${existing.signatureImage}`);
+      } catch (err) {
+        console.error("Failed to remove old prodi structural signature image:", err);
+      }
+    }
   }
 
   return await updateProdiStructural(id, {
     ...data,
     image: imageName || undefined,
+    signatureImage: signatureName || undefined,
   });
 };
 
@@ -113,6 +169,14 @@ export const deleteProdiStructuralService = async (id: string) => {
       await RemoveFileFromStorage(`${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${existing.image}`);
     } catch (err) {
       console.error("Failed to remove image on delete prodi structural:", err);
+    }
+  }
+
+  if (existing.signatureImage) {
+    try {
+      await RemoveFileFromStorage(`${environment.STORAGE.BUCKET_FOLDER}/prodi-structural/${existing.signatureImage}`);
+    } catch (err) {
+      console.error("Failed to remove signature image on delete prodi structural:", err);
     }
   }
 
