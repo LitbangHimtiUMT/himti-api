@@ -344,7 +344,8 @@ export const renderCertificatePdf = async (
   drawDots(page, 20, 22, 15, 15, 5, 4, NAVY);
 
   // ---- Logos ----
-  page.drawImage(umtImg, { x: 88, y: 492, width: 64, height: 66.6 });
+  // UMT emblem is 500x502, drawn at 64 wide preserving aspect.
+  page.drawImage(umtImg, { x: 88, y: 492, width: 64, height: 64.3 });
   page.drawImage(himtiImg, { x: 668, y: 492, width: 100, height: 80 });
 
   // ---- Title + formal number ----
