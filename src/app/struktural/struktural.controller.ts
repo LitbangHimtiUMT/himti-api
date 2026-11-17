@@ -18,12 +18,25 @@ export const createStrukturalController = async (
   next: NextFunction
 ) => {
   const { body } = req;
-  const file = req.file;
+  // The route uses upload.fields(), so files arrive grouped by
+  // field name instead of a single req.file.
+  const files = req.files as unknown as
+    | Record<string, Express.Multer.File[]>
+    | undefined;
   const combine = { ...body };
-  if (file) {
-    combine.image = file;
+  // A string `signatureImage` in the body (old URL, or "") is never
+  // a new upload: drop it so only a real multipart file is
+  // processed. The service guards this too (isUploadedFile).
+  delete combine.signatureImage;
+  const imageFile = files?.image?.[0];
+  const signatureFile = files?.signatureImage?.[0];
+  if (imageFile) {
+    combine.image = imageFile;
   }
-  console.log(file, "file");
+  if (signatureFile) {
+    combine.signatureImage = signatureFile;
+  }
+  console.log(imageFile, "file");
   const validate = createStrukturalSchema.validate(combine);
   console.log(validate);
   if (validate.error) {
@@ -103,18 +116,23 @@ export const updateStrukturalController = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-  const { isActive, jabatan, memberId } = req.body;
+  const { isActive, jabatan, memberId, department } = req.body;
+  const files = req.files as unknown as
+    | Record<string, Express.Multer.File[]>
+    | undefined;
 
   const struktural = await updateStrukturalService({
     id,
     isActive,
     memberId,
     jabatan,
+    department,
     // Upload memakai multer.memoryStorage, jadi file tidak punya `.path`
     // (hanya buffer/originalname/mimetype). Oper objek file-nya, seperti
     // create — sebelumnya `req.file?.path` selalu undefined sehingga
     // foto baru diam-diam tidak pernah tersimpan.
-    image: req.file,
+    image: files?.image?.[0],
+    signatureImage: files?.signatureImage?.[0],
   });
   if (struktural instanceof ErrorApp) {
     next(struktural);

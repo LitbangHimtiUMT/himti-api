@@ -29,11 +29,14 @@ export const deleteStructural = async (id: string) => {
 };
 
 export const createStructural = async (data: StructuralBodyDTO) => {
-  const { memberId, image, isActive, jabatan } = data;
+  const { memberId, image, signatureImage, department, isActive, jabatan } =
+    data;
 
   return await prisma.structural.create({
     data: {
       image: image as string,
+      signatureImage: signatureImage as string,
+      department,
       jabatan: jabatan as Jabatan,
       memberId: memberId as string,
       isActive,
@@ -126,6 +129,8 @@ export const updateStructural = async (data: StructuralBodyDTO) => {
     },
     data: {
       image: data.image as string,
+      signatureImage: data.signatureImage as string,
+      department: data.department,
       jabatan: data.jabatan as Jabatan,
       memberId: data.memberId as string,
       isActive: data.isActive,

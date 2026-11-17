@@ -3,7 +3,7 @@ import { MESSAGE_CODE } from "../../utils/error-code";
 import { ErrorApp } from "../../utils/http-error";
 import { MESSAGES } from "../../utils/messages";
 import { Meta } from "../../utils/meta";
-import { StructuralBodyDTO } from "./struktural.dto";
+import { DEPARTMENT_CODES, StructuralBodyDTO } from "./struktural.dto";
 import {
   createStructural,
   deleteStructural,
@@ -29,6 +29,7 @@ import {
 } from "./struktural.mapper";
 import { IFilterStructural } from "./struktural.types";
 import { strukturalValidate } from "./struktural.validate";
+import { uploadSignatureImage } from "../../utils/signature-image-upload";
 import sharp from "sharp";
 
 dotenv.config();
@@ -43,11 +44,44 @@ export const jabatanChecker = (jabatan: string) => {
   );
 };
 
+// Department is optional, but when given it must be one of the
+// known codes. The update route has no Joi schema, so the service
+// is the enforcement point there; create is also covered by Joi.
+export const departmentChecker = (department: string) => {
+  return (DEPARTMENT_CODES as readonly string[]).includes(department);
+};
+
+// The CMS form sends `department` as "" when nothing is selected
+// (its generic FormData loop always includes the field). Coerce
+// that to null so "no department" stores as NULL instead of an
+// empty string or a validation error.
+export const normalizeDepartment = (
+  department: string | null | undefined
+): string | null | undefined => {
+  return department === "" ? null : department;
+};
+
+// Only a real multipart file is ever processed as a signature
+// image. The CMS form also sends the field as a plain string (the
+// old URL, or "") when no new file is chosen; string values must
+// be ignored so an edit without a new file keeps the old image.
+export const isUploadedFile = (
+  value: Express.Multer.File | string | undefined
+): value is Express.Multer.File => {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    Buffer.isBuffer((value as Express.Multer.File).buffer)
+  );
+};
+
 export const createStrukturalService = async ({
   memberId,
   jabatan,
   isActive,
   image,
+  signatureImage,
+  department,
 }: StructuralBodyDTO) => {
   const replaceJabatan = jabatan?.toUpperCase().replace(/ /g, "_");
   const validate = await strukturalValidate({
@@ -57,9 +91,22 @@ export const createStrukturalService = async ({
   if (validate instanceof ErrorApp) {
     return new ErrorApp(validate.message, validate.statusCode, validate.code);
   }
+  const normalizedDepartment = normalizeDepartment(department);
+  if (
+    normalizedDepartment !== undefined &&
+    normalizedDepartment !== null &&
+    !departmentChecker(normalizedDepartment)
+  ) {
+    return new ErrorApp(
+      "Invalid department",
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
 
   const img = image as Express.Multer.File;
   let filename;
+  let signatureFilename;
 
   if (image) {
     const quality =
@@ -78,6 +125,13 @@ export const createStrukturalService = async ({
     });
   }
 
+  if (isUploadedFile(signatureImage)) {
+    signatureFilename = await uploadSignatureImage(
+      signatureImage,
+      BUCKET_FOLDER.structural
+    );
+  }
+
   const status =
     typeof isActive !== "undefined" ? JSON.parse(String(isActive)) : undefined;
 
@@ -85,6 +139,8 @@ export const createStrukturalService = async ({
     isActive: status,
     memberId,
     image: filename,
+    signatureImage: signatureFilename,
+    department: normalizedDepartment,
     jabatan: replaceJabatan as Jabatan,
   });
   return response;
@@ -134,6 +190,8 @@ export const updateStrukturalService = async ({
   isActive,
   jabatan,
   image,
+  signatureImage,
+  department,
   memberId,
 }: StructuralBodyDTO) => {
   const matchStruktural = await getStructuralById(id as string);
@@ -143,6 +201,18 @@ export const updateStrukturalService = async ({
   if (jabatan && !jabatanIsValid) {
     return new ErrorApp(
       MESSAGES.ERROR.INVALID.JABATAN,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  const normalizedDepartment = normalizeDepartment(department);
+  if (
+    normalizedDepartment !== undefined &&
+    normalizedDepartment !== null &&
+    !departmentChecker(normalizedDepartment)
+  ) {
+    return new ErrorApp(
+      "Invalid department",
       400,
       MESSAGE_CODE.BAD_REQUEST
     );
@@ -182,6 +252,7 @@ export const updateStrukturalService = async ({
   }
 
   let filename;
+  let signatureFilename;
 
   if (image) {
     const img = image as Express.Multer.File;
@@ -208,16 +279,32 @@ export const updateStrukturalService = async ({
     ]);
   }
 
+  if (isUploadedFile(signatureImage)) {
+    signatureFilename = await uploadSignatureImage(
+      signatureImage,
+      BUCKET_FOLDER.structural
+    );
+    if (matchStruktural.signatureImage) {
+      await RemoveFileFromStorage(
+        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.structural}/${matchStruktural.signatureImage}`
+      );
+    }
+  }
+
   const updateFields: Partial<StructuralBodyDTO> = { id };
 
   if (isActive !== undefined)
     updateFields.isActive = JSON.parse(String(isActive));
   if (memberId !== undefined) updateFields.memberId = memberId;
   if (jabatan !== undefined) updateFields.jabatan = replaceJabatan;
+  if (normalizedDepartment !== undefined)
+    updateFields.department = normalizedDepartment;
   // `filename` hanya terisi bila ada file baru yang di-upload; kondisi
   // terbalik di sini (`!image`) membuat foto baru tidak pernah
   // tersimpan ke DB meskipun file sudah naik ke storage.
   if (image) updateFields.image = filename;
+  if (isUploadedFile(signatureImage))
+    updateFields.signatureImage = signatureFilename;
 
   const response = await updateStructural(updateFields);
 
