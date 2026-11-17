@@ -69,6 +69,20 @@ const SIGNER_BLOCKS: Array<{
   },
 ];
 
+// pdf-lib reads embedded bytes through `new DataView(bytes.buffer)`
+// starting at offset 0, IGNORING the view's byteOffset. Node Buffers
+// from fs.readFileSync, axios, and sharp are routinely allocated
+// inside a shared pool with byteOffset > 0, so passing them to
+// pdf-lib directly fails nondeterministically (proven: a valid
+// JPEG failed embedJpg with "SOI not found" until copied). Every
+// byte array handed to pdf-lib MUST go through this copy first.
+const toExactBytes = (buffer: Buffer | Uint8Array): Uint8Array =>
+  buffer instanceof Uint8Array &&
+  buffer.byteOffset === 0 &&
+  buffer.byteLength === buffer.buffer.byteLength
+    ? buffer
+    : new Uint8Array(buffer);
+
 // Bundled assets (2 PNG logos + 1 TTF) are read once per process
 // and cached in memory. Resolution tries, in order:
 // 1. next to this module (ts-node dev, or a build that copies assets
@@ -78,9 +92,9 @@ const SIGNER_BLOCKS: Array<{
 //    levels below the project root),
 // 3. the src tree relative to the working directory (repo-root runs).
 // The literal path segments keep the files visible to @vercel/nft.
-const assetCache = new Map<string, Buffer>();
+const assetCache = new Map<string, Uint8Array>();
 
-const readAsset = (filename: string): Buffer => {
+const readAsset = (filename: string): Uint8Array => {
   const cached = assetCache.get(filename);
   if (cached) {
     return cached;
@@ -112,9 +126,9 @@ const readAsset = (filename: string): Buffer => {
   ];
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) {
-      const buffer = fs.readFileSync(candidate);
-      assetCache.set(filename, buffer);
-      return buffer;
+      const bytes = toExactBytes(fs.readFileSync(candidate));
+      assetCache.set(filename, bytes);
+      return bytes;
     }
   }
   throw new Error(`Certificate asset not found: ${filename}`);
@@ -275,13 +289,13 @@ const embedSignature = async (
     });
     let buffer = Buffer.from(response.data);
     if (isPng(buffer)) {
-      return await pdfDoc.embedPng(buffer);
+      return await pdfDoc.embedPng(toExactBytes(buffer));
     }
     if (isJpeg(buffer)) {
-      return await pdfDoc.embedJpg(buffer);
+      return await pdfDoc.embedJpg(toExactBytes(buffer));
     }
     buffer = await sharp(buffer).png().toBuffer();
-    return await pdfDoc.embedPng(buffer);
+    return await pdfDoc.embedPng(toExactBytes(buffer));
   } catch (error) {
     console.error(
       `Failed to embed certificate signature (${signerKey}):`,
