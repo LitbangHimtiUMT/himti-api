@@ -1,8 +1,9 @@
-import { ClassStatus, SubmissionStatus } from "@prisma/client";
+import { CertificateRole, ClassStatus, SubmissionStatus } from "@prisma/client";
 import { MESSAGE_CODE } from "../../../utils/error-code";
 import { ErrorApp } from "../../../utils/http-error";
 import {
   canManageClass,
+  isClassMentor,
   isClassParticipant,
 } from "../../../utils/lms-access";
 import { MESSAGES } from "../../../utils/messages";
@@ -25,13 +26,21 @@ import {
 } from "./certificates.repository";
 
 /**
- * Single graduation check (M30-SPESIAL §1.1), shared by generate and
- * eligibility. A participant graduates iff: enrolled in the class,
- * not a class manager (creator, co-mentor, or admin), the class is
- * not DRAFT, the mentor has marked the class completed, the class
+ * Single graduation check (M30-SPESIAL §1.1 + mentor claim), shared
+ * by generate and eligibility.
+ *
+ * Two paths, mentor FIRST. A caller who is the class creator or a
+ * co-mentor (`isClassMentor` — deliberately NOT `canManageClass`,
+ * which would also admit pure admins) claims as PEMATERI and needs
+ * no assignments: the class must be non-DRAFT, completed, and have
+ * at least one session. A caller in both roles — a mentor who also
+ * enrolled — takes the mentor path, so their certificate reads
+ * PEMATERI. Everyone else falls through to the participant path: a
+ * participant graduates iff enrolled, not a class manager, the
+ * class is not DRAFT, the mentor marked it completed, the class
  * has at least one assignment, and every assignment has an APPROVE
  * submission from them. Module completion counts are deliberately
- * NOT consulted.
+ * NOT consulted on either path.
  *
  * Counting is per assignment, never per submission row: submissions
  * have no unique constraint, so one assignment with several rows
@@ -44,6 +53,25 @@ export const getCertificateEligibility = async (
   const klass = await getClassForEligibilityRepository(classId);
   if (!klass) {
     return { kind: "not-found" };
+  }
+  // Mentor branch first: mentor-wins over the participant path
+  // below, and mentors need no enrollment row to claim.
+  if (await isClassMentor(userId, classId)) {
+    const certificate = await getCertificateUser(userId, classId);
+    return {
+      kind: "ok",
+      role: CertificateRole.PEMATERI,
+      eligible:
+        klass.status !== ClassStatus.DRAFT &&
+        klass.completedAt !== null &&
+        klass._count.session > 0,
+      classCompleted: klass.completedAt !== null,
+      totalAssignments: 0,
+      approvedAssignments: 0,
+      assignments: [],
+      hasCertificate: !!certificate,
+      certificateCode: certificate?.code ?? null,
+    };
   }
   if (!(await isClassParticipant(userId, classId))) {
     return { kind: "forbidden" };
@@ -103,12 +131,14 @@ export const getCertificateEligibility = async (
 
   return {
     kind: "ok",
+    role: CertificateRole.PESERTA,
     eligible,
     classCompleted: klass.completedAt !== null,
     totalAssignments,
     approvedAssignments,
     assignments: mapped,
     hasCertificate: !!certificate,
+    certificateCode: certificate?.code ?? null,
   };
 };
 
@@ -145,7 +175,7 @@ export const generateCertificateService = async (
     );
   }
 
-  return await generateCertificateRepository(userId, classId);
+  return await generateCertificateRepository(userId, classId, eligibility.role);
 };
 
 export const getCertificateEligibilityService = async (
@@ -168,11 +198,14 @@ export const getCertificateEligibilityService = async (
     );
   }
   return {
+    role: eligibility.role,
     eligible: eligibility.eligible,
     classCompleted: eligibility.classCompleted,
     totalAssignments: eligibility.totalAssignments,
     approvedAssignments: eligibility.approvedAssignments,
     assignments: eligibility.assignments,
+    hasCertificate: eligibility.hasCertificate,
+    certificateCode: eligibility.certificateCode,
   };
 };
 

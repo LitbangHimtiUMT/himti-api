@@ -19,7 +19,8 @@ const FIRST_FORMAL_NUMBER = 31;
 
 export const generateCertificateRepository = async (
   userId: string,
-  classId: string
+  classId: string,
+  role: CertificateRole
 ) => {
   return await prisma.$transaction(async (tx) => {
     // A missing signer ROW blocks the claim: the admin must
@@ -43,6 +44,30 @@ export const generateCertificateRepository = async (
       update: { lastNumber: { increment: 1 } },
       create: { id: GLOBAL_COUNTER_ID, lastNumber: FIRST_FORMAL_NUMBER },
     });
+
+    // One-shot hardening: the service-level duplicate check is only
+    // a fast path — two concurrent claims can both pass it before
+    // either commits, and there is no unique (userId, classId)
+    // constraint to catch the second. This second check runs INSIDE
+    // the transaction, after the counter upsert serializes
+    // concurrent claims on the row lock, so it sees the rival
+    // claim's committed row. It must use the tx client, not the
+    // module-level getCertificateUser, or it would read outside
+    // the transaction. Throwing rolls the counter increment back,
+    // so a rejected duplicate never burns a formal number.
+    const existing = await tx.certificate.findFirst({
+      where: {
+        userId,
+        classId,
+      },
+    });
+    if (existing) {
+      throw new ErrorApp(
+        "Certificate already generated",
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
 
     const now = moment();
     const year = now.format("YYYY"); // e.g. "2025"
@@ -76,7 +101,7 @@ export const generateCertificateRepository = async (
         userId,
         classId,
         code,
-        role: CertificateRole.PESERTA,
+        role,
         formalNumber,
         signers: signers as unknown as Prisma.InputJsonValue,
       },
@@ -112,6 +137,13 @@ export const getClassForEligibilityRepository = async (classId: string) => {
       id: true,
       status: true,
       completedAt: true,
+      // The mentor path requires at least one session; the count
+      // rides along with the class row instead of a second query.
+      _count: {
+        select: {
+          session: true,
+        },
+      },
     },
   });
 };
