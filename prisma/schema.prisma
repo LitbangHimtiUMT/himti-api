@@ -187,7 +187,7 @@ model Meeting {
   createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt           DateTime              @updatedAt @map("updated_at") @db.Timestamp(0)
   resume              String?               @db.Text
-  class               Class?                @relation(fields: [classId], references: [id])
+  class               Class?                @relation(fields: [classId], references: [id], onDelete: SetNull)
   Attendance          Attendance[]
   NotificationHistory NotificationHistory[]
 
@@ -378,7 +378,7 @@ model ClassMentor {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
   user      User     @relation(fields: [userId], references: [id], map: "class_mentor_user")
-  class     Class    @relation(fields: [classId], references: [id], map: "class_mentor_class")
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade, map: "class_mentor_class")
 
   @@unique([userId, classId], map: "user_class_unique")
   @@index([classId], map: "class_mentor_class_id_fkey")
