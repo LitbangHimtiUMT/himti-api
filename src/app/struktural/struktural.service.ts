@@ -117,12 +117,22 @@ export const createStrukturalService = async ({
     const compress = await sharp(img.buffer).webp({ quality }).toBuffer();
 
     filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}.webp`;
-    await UploadFileToStorage({
+    const photoUpload = await UploadFileToStorage({
       Bucket: environment.STORAGE.BUCKET,
       Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.structural}/${filename}`,
       Body: compress,
       ContentType: "image/webp",
     });
+    // UploadFileToStorage returns the error instead of throwing,
+    // so check it: a failed upload must not leave a DB row
+    // pointing at a file that was never stored.
+    if (photoUpload instanceof Error) {
+      throw new ErrorApp(
+        "Failed to upload image",
+        500,
+        MESSAGE_CODE.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   if (isUploadedFile(signatureImage)) {
@@ -266,17 +276,26 @@ export const updateStrukturalService = async ({
 
     filename = `${img?.originalname.replace(FileType[img.mimetype], "")} - ${+new Date()}.webp`;
 
-    await Promise.all([
-      await RemoveFileFromStorage(
-        `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.structural}/${matchStruktural.image}`
-      ),
-      await UploadFileToStorage({
-        Bucket: environment.STORAGE.BUCKET,
-        Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.structural}/${filename}`,
-        Body: compress,
-        ContentType: "image/webp",
-      }),
-    ]);
+    // Upload the replacement BEFORE removing the old file: if the
+    // upload fails, the old photo must still exist. The result is
+    // checked because UploadFileToStorage returns errors instead
+    // of throwing them.
+    const photoUpload = await UploadFileToStorage({
+      Bucket: environment.STORAGE.BUCKET,
+      Key: `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.structural}/${filename}`,
+      Body: compress,
+      ContentType: "image/webp",
+    });
+    if (photoUpload instanceof Error) {
+      throw new ErrorApp(
+        "Failed to upload image",
+        500,
+        MESSAGE_CODE.INTERNAL_SERVER_ERROR
+      );
+    }
+    await RemoveFileFromStorage(
+      `${environment.STORAGE.BUCKET_FOLDER}/${BUCKET_FOLDER.structural}/${matchStruktural.image}`
+    );
   }
 
   if (isUploadedFile(signatureImage)) {
