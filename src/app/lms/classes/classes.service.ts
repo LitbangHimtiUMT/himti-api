@@ -1,4 +1,4 @@
-import { ClassStatus, HistoryModule } from "@prisma/client";
+import { ClassStatus, HistoryModule, Prisma } from "@prisma/client";
 import sharp from "sharp";
 import { Query } from "../../../interface/Query";
 import { environment } from "../../../libs";
@@ -35,6 +35,8 @@ import {
   getDetailClassMapper,
 } from "./classes.mapper";
 import {
+  countClassCertificatesRepository,
+  countClassTransactionsRepository,
   createClassRepository,
   deleteClassRepository,
   getClassByCode,
@@ -720,11 +722,51 @@ export const deleteClassessService = async (
   }
   const denied = await requireClassManage(userId, classId);
   if (denied) return denied;
+  // Issued certificates must stay verifiable and transactions are financial
+  // records, so a class that has either cannot be deleted at all. Mentor
+  // links and meeting links are removed by the foreign keys instead.
+  const certificateCount = await countClassCertificatesRepository(classId);
+  if (certificateCount > 0) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.CLASS_HAS_CERTIFICATES,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  const transactionCount = await countClassTransactionsRepository(classId);
+  if (transactionCount > 0) {
+    return new ErrorApp(
+      MESSAGES.ERROR.INVALID.CLASS_HAS_TRANSACTIONS,
+      400,
+      MESSAGE_CODE.BAD_REQUEST
+    );
+  }
+  let deleted;
+  try {
+    deleted = await deleteClassRepository(classess.id);
+  } catch (error) {
+    // A certificate or transaction created between the checks above and the
+    // delete still hits the foreign key: report it as the same 400 instead
+    // of leaking a database error as a 500.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return new ErrorApp(
+        MESSAGES.ERROR.INVALID.CLASS_DELETE_HAS_LINKED_DATA,
+        400,
+        MESSAGE_CODE.BAD_REQUEST
+      );
+    }
+    throw error;
+  }
+  // History is written only after the delete succeeds, so a failed delete
+  // never leaves a "Delete class" entry behind.
   await historyDeleteFlag({
     module: HistoryModule.CLASS,
     title: `Delete class ${classess.name}`,
     actionId: classess.id,
     createdBy: userId,
   });
-  return await deleteClassRepository(classess.id);
+  return deleted;
 };
