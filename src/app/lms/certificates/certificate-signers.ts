@@ -16,8 +16,8 @@ export type CertificateSignersSnapshot = {
 };
 
 // The signer rows live in the CMS tables (same database, read via
-// Prisma — no separate signer table). The printed label says SDM,
-// but the department lookup key stays PSDM (explicit decision).
+// Prisma — no separate signer table). The PSDM head is found by
+// the PSDM department code.
 const PSDM_DEPARTMENT = "PSDM";
 const KAPRODI_ROLE = "Ketua Prodi Teknik Informatika";
 
