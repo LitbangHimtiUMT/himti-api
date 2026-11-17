@@ -145,10 +145,17 @@ const ROMAN_MONTHS = [
 ];
 
 // The sequence number never resets; only the roman month + year
-// come from the claim (issue) date.
+// come from the claim (issue) date, read in WIB (Asia/Jakarta).
+// The server runs on UTC, so reading the date in server time would
+// print the previous month for a claim made just after midnight
+// WIB. WIB is UTC+7 with no daylight saving, so the Jakarta
+// calendar date is the UTC date of (issue instant + 7 hours).
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
 export const buildFormalNumber = (sequence: number, date: Date): string => {
   const padded = String(sequence).padStart(3, "0");
-  const month = ROMAN_MONTHS[date.getMonth()];
-  const year = date.getFullYear();
+  const jakarta = new Date(date.getTime() + WIB_OFFSET_MS);
+  const month = ROMAN_MONTHS[jakarta.getUTCMonth()];
+  const year = jakarta.getUTCFullYear();
   return `${padded}/KELOMPOK-BELAJAR/HIMTI-UMT/${month}/${year}`;
 };
